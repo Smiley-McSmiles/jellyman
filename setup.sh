@@ -119,7 +119,7 @@ cp scripts/jellyman /bin/
 cp scripts/jellyfin.sh /opt/jellyfin/
 mv $jellyfin_archive /opt/jellyfin/
 cp conf/jellyfin.service /usr/lib/systemd/system/
-cp conf/jellyman.conf /etc/
+cp conf/jellyfin.conf /etc/
 cd /opt/jellyfin
 tar xvzf $jellyfin_archive
 rm -f $jellyfin_archive
