@@ -519,7 +519,7 @@ Update-jellyman()
 {
    Has_sudo
    echo "Updating Jellyman - The Jellyfin Manager"
-   git clone https://github.com/Smiley-McSmiles/jellyfin-cli
+   git clone https://github.com/Smiley-McSmiles/jellyman
    cp -f jellyman/scripts/jellyman /usr/bin/
    if [ -x "$(command -v apt)" ]; then
       cp jellyman/jellyman.1 /usr/share/man/man1/
