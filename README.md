@@ -3,7 +3,7 @@
 
 > v1.4.7 - a Jellyfin Manager for the Jellyfin generic linux amd64.tar.gz package
 
-> Tested on Fedora 34/35/36, Ubuntu 22.04, Manjaro 21.3.6, Linux Mint 21
+> Tested on Fedora 34/35/36, Ubuntu 22.04, Manjaro 21.3.6, and Linux Mint 21
 
 > Should work on Any Debian, Arch, or RHEL Based Distribution
 
