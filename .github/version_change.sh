@@ -1,5 +1,5 @@
 #!/bin/bash
-currentVersion=$(cat ../jellyfin.1 | grep " - v" | cut -d "v" -f2)
+currentVersion=$(cat ../jellyman.1 | grep " - v" | cut -d "v" -f2)
 echo "Current version is v$currentVersion"
 echo
 echo "Please enter the new version number"
