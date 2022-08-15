@@ -118,7 +118,6 @@ fi
 cp scripts/jellyman /bin/
 cp scripts/jellyfin.sh /opt/jellyfin/
 mv $jellyfin_archive /opt/jellyfin/
-sed "s/
 cp conf/jellyfin.service /usr/lib/systemd/system/
 cp conf/jellyfin.conf /etc/
 cd /opt/jellyfin
