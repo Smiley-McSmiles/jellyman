@@ -119,7 +119,7 @@ Remove_version()
 Help()
 {
    # Display Help
-   echo "Jellyman - The Jellyfin Manager v1.4.6"
+   echo "Jellyman - The Jellyfin Manager v1.4.7"
    echo "-Created by Smiley McSmiles"
    echo 
    echo "Syntax: jellyman -[COMMAND] [PARAMETER]"

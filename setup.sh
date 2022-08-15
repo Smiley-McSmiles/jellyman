@@ -118,6 +118,7 @@ fi
 cp scripts/jellyman /bin/
 cp scripts/jellyfin.sh /opt/jellyfin/
 mv $jellyfin_archive /opt/jellyfin/
+sed "s/
 cp conf/jellyfin.service /usr/lib/systemd/system/
 cp conf/jellyfin.conf /etc/
 cd /opt/jellyfin
@@ -178,13 +179,14 @@ elif [ -x "$(command -v firewall-cmd)" ]; then
 else echo "FAILED TO OPEN PORT 8096/8920! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
 fi
 
+echo "Enabling jellyfin.service..."
+sed -i -e "s|User=jellyfin|User=$defaultUser|g" /usr/lib/systemd/system/jellyfin.service
+systemctl enable --now jellyfin.service
+echo
+
 echo "Enabling https..."
 sed -i -e "s|<EnableHttps>*</EnableHttps>|<EnableHttps>true</EnableHttps>|g" /opt/jellyfin/config/network.xml
 sed -i -e "s|<CertificatePath>*</CertificatePath>|<CertificatePath>/opt/jellyfin/cert/jellyfin.pfx</CertificatePath>|g" /opt/jellyfin/config/network.xml
-
-echo "Enabling jellyfin.service..."
-systemctl enable --now jellyfin.service
-echo
 
 echo "Removing git cloned directory:$DIRECTORY..."
 rm -rf $DIRECTORY
