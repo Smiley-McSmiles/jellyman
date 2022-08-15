@@ -45,7 +45,7 @@ chmod ug+x setup.sh
 sudo ./setup.sh
 ```
 
-## Usage
+### Usage
 
 ```shell
 Jellyman - The Jellyfin Manager
