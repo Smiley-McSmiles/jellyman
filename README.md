@@ -7,6 +7,11 @@
 
 > Should work on Any Debian, Arch, or RHEL Based Distribution
 
+## Description
+
+Jellyman is a simple and an easy to understand CLI(Command Line Interface) tool for installing and managing Jellyfin. Most notably, the ability to switch between already downloaded versions of Jellyfin on the fly, and create a full backup so you can move or import all your metadata and user information to another machine. This program can start, stop, enable or disable on startup, check for updates for stable or beta releases, tell Jellyfin to do a library scan, reset media permissions, and many other things.
+
+
 ### Features
 
 * **Setup** - Sets up the initial install.
