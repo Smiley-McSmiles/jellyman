@@ -119,7 +119,7 @@ Remove_version()
 Help()
 {
    # Display Help
-   echo "Jellyman - The Jellyfin Manager v1.4.7"
+   echo "Jellyman - The Jellyfin Manager v1.4.8"
    echo "-Created by Smiley McSmiles"
    echo 
    echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
@@ -146,6 +146,7 @@ Help()
    echo "-cp    Change Jellyfins http network port - Default = 8096"
    echo "-cps   Change Jellyfins https network port - Default = 8920."
    echo "-ik    Import an API key"
+   echo "-md    Change the Media Directory for Jellyman."
    echo "-X     Uninstall Jellyfin and Jellyman Completely."
    echo
    echo "To browse Jellyfin versions please use this link."
@@ -535,15 +536,25 @@ Update-jellyman()
       echo "apiKey="* >> /opt/jellyfin/config/jellyman.conf
    fi
 
-   if ( ! grep -q networkPort=8096 "/opt/jellyfin/config/jellyman.conf" ); then
+   if ( ! grep -q networkPort= "/opt/jellyfin/config/jellyman.conf" ) && ( ! grep -q httpPort= "/opt/jellyfin/config/jellyman.conf" ); then
       echo "networkPort=8096" >> /opt/jellyfin/config/jellyman.conf
-   else
+   elif ( ! grep -q httpPort= "/opt/jellyfin/config/jellyman.conf" ) || ( ! grep -q httpsPort= "/opt/jellyfin/config/jellyman.conf" );
       sed -i -e "s|networkPort=.*|httpPort=8096|g" /opt/jellyfin/config/jellyman.conf
       echo "httpsPort=8920" >> /opt/jellyfin/config/jellyman.conf
    fi
 
    rm -rf jellyman
    echo "...complete"
+}
+
+Change_Media_Directory()
+{
+   Has_sudo
+   echo "Please enter all media directories separated by a space"
+   echo "example:"
+   echo "/media/hdd1/Movies /media/hdd2/TV"
+   read mediaPath
+   sed -i -e "s|defaultPath=.*|defaultPath=$mediaPath|g" /opt/jellyfin/config/jellyman.conf
 }
 
 Has_sudo()
@@ -602,6 +613,7 @@ if [ -n "$1" ]; then
          -cp) Http_port_change ;;
          -cps) Https_port_change ;;
          -ik) Import_api_key ;;
+         -md) Change_Media_Directory ;;
          -X) Uninstall ;;
          *) echo "Option $1 not recognized" 
             Help ;;

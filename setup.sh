@@ -16,7 +16,6 @@ fi
 Import()
 {
    Has_sudo
-   #Import jellyfin-backup.tar
    importTar=$1
    echo "******WARNING******"
    echo "******CAUTION******"

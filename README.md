@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow2.png?raw=true "Jellyman Logo")
 ======
 
-> v1.4.7 - a Jellyfin Manager for the Jellyfin generic linux amd64.tar.gz package
+> v1.4.8 - a Jellyfin Manager for the Jellyfin generic linux amd64.tar.gz package
 
 > Tested on Fedora 34/35/36, Ubuntu 22.04, Manjaro 21.3.6, and Linux Mint 21
 
@@ -33,6 +33,7 @@ Jellyman is a simple and an easy to understand CLI(Command Line Interface) tool 
 * **Rename TV** - Batch renaming script for TV shows.
 * **Library Scan** - Tell Jellyfin to scan your media library.
 * **Change Port** - Change Jellyfins network port - Default = 8096.
+* **Change Media Directory** - Changes the Media Directory/Directories for Jellyman.
 * **Import API Key** - Import a new API key.
 * **Uninstall** - Uninstalls Jellyfin and Jellyman completely (Ignores the Media Directory).
 
@@ -76,6 +77,7 @@ COMMANDS:
 -cp    Change Jellyfins http network port - Default = 8096.
 -cps   Change Jellyfins https network port - Default = 8920.
 -ik    Import an API key.
+-md    Change the Media Directory for Jellyman.
 -X     Uninstall Jellyfin and Jellyman Completely.
 
 EXAMPLE:
