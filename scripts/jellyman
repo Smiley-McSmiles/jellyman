@@ -119,7 +119,7 @@ Remove_version()
 Help()
 {
    # Display Help
-   echo "Jellyman - The Jellyfin Manager v1.4.9"
+   echo "Jellyman - The Jellyfin Manager v1.5.0"
    echo "-Created by Smiley McSmiles"
    echo 
    echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
@@ -331,6 +331,7 @@ Update()
 {
    customVersionLink=$1
    Has_sudo
+   source /opt/jellyfin/config/jellyman.conf
    customVersion=""
    fileType=""
    jellyfin_archive=""
@@ -342,23 +343,23 @@ Update()
       customVersion=$(echo $customVersionLink | rev | cut -d/ -f1 | rev)
       fileType=$(echo $customVersion | cut -d_ -f3)
    
-      if [[ $fileType != "amd64.tar.gz" ]]; then
-         echo "Supplied URL does not point to a amd64.tar.gz.. EXITING..."
+      if [[ $fileType != "$architecture.tar.gz" ]]; then
+         echo "Supplied URL does not point to a architecture.tar.gz.. EXITING..."
          exit
       fi
    
       mkdir /opt/jellyfin/update
       wget -P /opt/jellyfin/update/ $customVersionLink
       jellyfin_archive=$customVersion
-      jellyfin=$(echo $jellyfin_archive | sed -r 's/_amd64.tar.gz//g')
-      new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')   
+      jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
+      new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
    
    else
       echo "Fetching newest Jellyfin version..."
       mkdir /opt/jellyfin/update
       wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/stable/combined/
-      jellyfin_archive=$(grep 'amd64.tar.gz"' /opt/jellyfin/update/index.html | cut -d '"' -f 2)
-      jellyfin=$(echo $jellyfin_archive | sed -r 's/_amd64.tar.gz//g')
+      jellyfin_archive=$(grep "$architecture.tar.gz" /opt/jellyfin/update/index.html | cut -d '"' -f 2 | sed -r "s|.sha256sum||g" | head -1)
+      jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
       new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
       rm -f /opt/jellyfin/update/index.html
       Check_Version
@@ -383,6 +384,7 @@ Update()
 Update_beta()
 {
    Has_sudo
+   source /opt/jellyfin/config/jellyman.conf
    jellyfin_archive=""
    jellyfin=""
    new_jellyfin_version=""
@@ -390,8 +392,8 @@ Update_beta()
    echo "Fetching newest beta Jellyfin version..."
    mkdir /opt/jellyfin/update
    wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/stable-pre/
-   jellyfin_archive=$(grep 'amd64.tar.gz' /opt/jellyfin/update/index.html | grep 'combined' | cut -d '/' -f5 | cut -d '<' -f1 | head -n 1)
-   jellyfin=$(echo $jellyfin_archive | sed -r 's/_amd64.tar.gz//g')
+   jellyfin_archive=$(grep "$architecture.tar.gz" /opt/jellyfin/update/index.html | grep 'combined' | cut -d '/' -f5 | cut -d '<' -f1 | head -n 1 | sed -r "s|.sha256sum||g")
+   jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
    new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
    if [[ ! -n $jellyfin_archive ]] || [[ ! -n $jellyfin ]]; then
       echo "Sorry there appears to be no Jellyfin Betas right now..."
@@ -507,6 +509,18 @@ Uninstall()
       echo "Goodbye..."
       sleep 1
       source /opt/jellyfin/config/jellyman.conf
+         echo "Unblocking port 8096 and 8920..."
+      if [ -x "$(command -v ufw)" ]; then
+         ufw deny 8096/tcp
+         ufw deny 8920/tcp
+         ufw reload
+      elif [ -x "$(command -v firewall-cmd)" ]; then
+         firewall-cmd --permanent --zone=public --remove-port=8096/tcp
+         firewall-cmd --permanent --zone=public --remove-port=8920/tcp
+         firewall-cmd --reload
+      else
+         echo "FAILED TO REMOVE PORT 8096/8920! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
+      fi
       rm -rfv /opt/jellyfin
       rm -fv /etc/jellyfin.conf
       rm -fv /bin/jellyman
@@ -621,9 +635,9 @@ if [ -n "$1" ]; then
       shift
    done
 else
-	echo "No commands found."
-	Help
-	exit
+   echo "No commands found."
+   Help
+   exit
 fi
 
 ###############################################################################
