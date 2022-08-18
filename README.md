@@ -1,4 +1,4 @@
-![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
+![jellyman](.github/banner-shadow.png?raw=false "Jellyman Logo")
 ======
 
 > v1.5.0 - a Jellyfin Manager for the Jellyfin generic linux amd64 and arm64 tar.gz package
