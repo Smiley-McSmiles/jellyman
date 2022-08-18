@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow2.png?raw=true "Jellyman Logo")
 ======
 
-> v1.5.0 - a Jellyfin Manager for the Jellyfin generic linux amd64.tar.gz package
+> v1.5.0 - a Jellyfin Manager for the Jellyfin generic linux amd64 and arm64 tar.gz package
 
 > Tested on Fedora 34/35/36, Ubuntu 22.04, Manjaro 21.3.6, and Linux Mint 21
 
