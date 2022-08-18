@@ -91,7 +91,7 @@ Import()
 
 Get_Architecture()
 {
-   cpuArchitectureFull=$(lscpu | grep Architecture | rev | cut -d " " -f1 | rev)
+   cpuArchitectureFull=$(uname -p)
    if [[ $cpuArchitectureFull == "x86_64" ]]; then
       architecture="amd64"
    elif [[ $cpuArchitectureFull == "aarch64" ]]; then
