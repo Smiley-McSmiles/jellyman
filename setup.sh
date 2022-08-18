@@ -21,11 +21,13 @@ Import()
 {
    Has_sudo
    importTar=$1
-   echo "******WARNING******"
-   echo "******CAUTION******"
-   echo "This procedure should only be used as a fresh install of Jellyfin."
-   echo "As this procedure will erase /opt/jellyfin COMPLETELY"
-   sleep 5
+   echo "|-------------------------------------------------------------------|"
+   echo "|                        ******WARNING******                        |"
+   echo "|                        ******CAUTION******                        |"
+   echo "|This procedure should only be used as a fresh install of Jellyfin. |"
+   echo "|       As this procedure will erase /opt/jellyfin COMPLETELY       |"
+   echo "|-------------------------------------------------------------------|"
+
    read -p "...Continue? [yes/No] :" importOrNotToImport
    if [[ $importOrNotToImport == [yY][eE][sS] ]]; then
       echo "IMPORTING $importTar"
@@ -42,16 +44,18 @@ Import()
          chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
          chmod -Rfv 770 /opt/jellyfin
          Install_dependancies
-         jellyman -s -t
+         jellyman -e -s -t
       else
          clear
-         echo "******WARNING******"
-         echo "*******ERROR*******"
-         echo "The imported default Jellyfin user($defaultUser) has not yet been created."
-         echo "This error is likely due to a read error of the /opt/jellyfin/config/jellyman.conf file."
-         echo "The default user is usually created by Jellyman - The Jellyfin Manager, when running setup.sh."
-         echo "You may want to see who owns that configuration file with:"
-         echo "'ls -l /opt/jellyfin/config/jellyman.conf'"
+         echo "|-----------------------------------------------------------------------------------------------|"
+         echo "|                                     ******WARNING******                                       |"
+         echo "|                                     *******ERROR*******                                       |"
+         echo "|             The imported default Jellyfin user($defaultUser) has not yet been created.        |"
+         echo "|   This error is likely due to a read error of the /opt/jellyfin/config/jellyman.conf file.    |"
+         echo "| The default user is usually created by Jellyman - The Jellyfin Manager, when running setup.sh.|"
+         echo "|                 You may want to see who owns that configuration file with:                    |"
+         echo "|                         'ls -l /opt/jellyfin/config/jellyman.conf'                            |"
+         echo "|-----------------------------------------------------------------------------------------------|"
          sleep 5
          read -p "...Continue with $defaultUser? [yes/No] :" newUserOrOld
          if [[ $newUserOrOld == [yY][eE][sS] ]]; then
@@ -76,7 +80,7 @@ Import()
             chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
             chmod -Rfv 770 /opt/jellyfin
             Install_dependancies
-            jellyman -s -t
+            jellyman -e -s -t
          fi
       fi
 
@@ -119,7 +123,12 @@ Install_dependancies()
    elif [ -x "$(command -v zypper)" ]; then
        zypper install $packagesNeededOpenSuse
    else 
-      echo "FAILED TO INSTALL PACKAGES: Package manager not found. You must manually install: ffmpeg and git";
+      echo "|----------------------------------------------------------------------------------------------------|"
+      echo "|                                       ******WARNING******                                          |"
+      echo "|                                       *******ERROR*******                                          |"
+      echo "|        FAILED TO INSTALL PACKAGES: Package manager not found. You must manually install:           |"
+      echo "|                                    ffmpeg, git, and openssl                                        |"
+      echo "|----------------------------------------------------------------------------------------------------|"
    fi
 
 }
@@ -162,7 +171,7 @@ Setup()
    tar xvzf $jellyfin_archive
    rm -f $jellyfin_archive
    ln -s $jellyfin jellyfin
-   mkdir data cache config log
+   mkdir data cache config log cert
    touch config/jellyman.confecho "architecture=$architecture" >> config/jellyman.conf
    echo "defaultPath=" >> config/jellyman.conf
    echo "apiKey=" >> config/jellyman.conf
@@ -172,12 +181,6 @@ Setup()
    echo "defaultUser=$defaultUser" >> config/jellyman.conf
 
    Install_dependancies
-   
-   echo "creating OpenSSL self signed certificate for https. Valid for the next 365 days."
-   mkdir /opt/jellyfin/cert
-   openssl req -x509 -newkey rsa:4096 -keyout /opt/jellyfin/cert/privkey.pem -out /opt/jellyfin/cert/cert.pem -days 365 -nodes -subj '/CN=jellyfin.lan'
-   openssl pkcs12 -export -out /opt/jellyfin/cert/jellyfin.pfx -inkey /opt/jellyfin/cert/privkey.pem -in /opt/jellyfin/cert/cert.pem -passout pass:
-
 
    echo "Setting Permissions for Jellyfin..."
    chown -R $defaultUser:$defaultUser /opt/jellyfin
@@ -194,17 +197,17 @@ Setup()
       firewall-cmd --permanent --zone=public --add-port=8920/tcp
       firewall-cmd --reload
    else
-      echo "FAILED TO OPEN PORT 8096/8920! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
+      echo "|-------------------------------------------------------------------|"
+      echo "|                        ******WARNING******                        |"
+      echo "|                        ******CAUTION******                        |"
+      echo "|                  FAILED TO OPEN PORT 8096/8920!                   |"
+      echo "|          ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!          |"
+      echo "|-------------------------------------------------------------------|"
    fi
 
    echo "Enabling jellyfin.service..."
    sed -i -e "s|User=jellyfin|User=$defaultUser|g" /usr/lib/systemd/system/jellyfin.service
-   systemctl enable --now jellyfin.service
    echo
-
-   echo "Enabling https..."
-   sed -i -e "s|<EnableHttps>*</EnableHttps>|<EnableHttps>true</EnableHttps>|g" /opt/jellyfin/config/network.xml
-   sed -i -e "s|<CertificatePath>*</CertificatePath>|<CertificatePath>/opt/jellyfin/cert/jellyfin.pfx</CertificatePath>|g" /opt/jellyfin/config/network.xml
 
    echo "Removing git cloned directory:$DIRECTORY..."
    rm -rf $DIRECTORY
@@ -213,24 +216,34 @@ Setup()
    echo
    echo "DONE"
    echo
-   echo "Navigate to http://localhost:8096/ or https://localhost:8920/"
-   echo "in your Web Browser to claim your Jellyfin server"
+   echo "|-------------------------------------------------------------------|"
+   echo "|   Navigate to http://localhost:8096/ or https://localhost:8920/   |"
+   echo "|        in your Web Browser to claim your Jellyfin server          |"
+   echo "|-------------------------------------------------------------------|"
    echo
-   echo "To manage Jellyfin use 'jellyman -h'"
+   echo "|-------------------------------------------------------------------|"
+   echo "|         To enable https please enter 'sudo jellyman -rc'          |"
+   echo "|             To manage Jellyfin use 'jellyman -h'                  |"
+   echo "|-------------------------------------------------------------------|"
    echo
-   read -p "Press ENTER to continue" ENTER
-   jellyman -h
-   read -p "Press ENTER to continue" ENTER
-   systemctl status jellyfin.service
+   read -p " Press ENTER to continue" ENTER
+   jellyman -h -e -s
+   echo
+   read -p " Press ENTER to continue" ENTER
+   jellyman -t
 }
 
 Pre_setup()
 {
-   echo "No commands recognized"
-   echo "setup.sh options are:"
-   echo
-   echo "-i [jellyfin-backup.tar] Import .tar to pick up where you left off on another machine"
-   echo "-U Update Jellyman only."
+   echo "|-------------------------------------------------------------------|"
+   echo "|                     No commands recognized                        |"
+   echo "|                      setup.sh options are:                        |"
+   echo "|                                                                   |"
+   echo "|  -i [jellyfin-backup.tar] Import .tar to pick up where you left   |" 
+   echo "|                    off on another machine                         |"
+   echo "|                                                                   |"
+   echo "|                  -U Update Jellyman only.                         |"
+   echo "|-------------------------------------------------------------------|"
    echo
    echo "Press ENTER to continue with first time setup or CTRL+C to exit..."
    read ENTER
