@@ -27,15 +27,17 @@ Backup()
    USER=$(stat -c '%U' $backupDirectory)
    chown -f $USER:$USER $tarPath
    chmod -f 770 $tarPath
-   echo "Your backup is: $tarPath"
+   echo "Your backup is:"
    tarSize=$(du -h $tarPath)
    echo "Size: $tarSize"
    echo
-   echo "To Import on your next setup, simply run:"
-   echo "git clone https://github.com/Smiley-McSmiles/jellyman"
-   echo "cd jellyman"
-   echo "chmod ug+x setup.sh"
-   echo "sudo ./setup.sh -i [Path to jellyfin-backup.tar]"
+   echo "|--------------------------------------------------------|"
+   echo "|      To Import on your next setup, simply run:         |"
+   echo "|  git clone https://github.com/Smiley-McSmiles/jellyman |"
+   echo "|                       cd jellyman                      |"
+   echo "|                   chmod ug+x setup.sh                  |"
+   echo "|     sudo ./setup.sh -i [Path to jellyfin-backup.tar]   |"
+   echo "|--------------------------------------------------------|"
 }
 
 Check_Version()
@@ -301,21 +303,21 @@ Permissions()
    Has_sudo
    #Check if there is a recorded media library path for chown and chmod:
    if [[ $defaultPath != /* ]]; then 
-	   echo "No default directory found..."
-	   echo "Please enter the root directory for your Media Library..."
-	   read defaultPath
-	   sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
+     echo "No default directory found..."
+      echo "Please enter the root directory for your Media Library..."
+      read defaultPath
+      sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
    else 
-	   echo "defaultPath is set to $defaultPath";
+      echo "defaultPath is set to $defaultPath";
    fi
    #Check if there is a recorded user/group for chown and chmod:
    if id "$defaultUser" &>/dev/null; then
-	   echo "defaultUser is set to $defaultUser"
+      echo "defaultUser is set to $defaultUser"
    else
-	   echo "No default user found..."
-	   echo "Please enter the owner for this directory..."
-	   read defaultUser
-	   sed -i -e "s|defaultUser=.*|defaultUser=$defaultUser|g" /opt/jellyfin/config/jellyman.conf
+      echo "No default user found..."
+      echo "Please enter the owner for this directory..."
+      read defaultUser
+      sed -i -e "s|defaultUser=.*|defaultUser=$defaultUser|g" /opt/jellyfin/config/jellyman.conf
    fi
 
    chown -Rfv $defaultUser:$defaultUser $defaultPath
@@ -341,13 +343,13 @@ Update()
    jellyfin=""
    new_jellyfin_version=""
    
-   if [[ $customVersionLink == *"://"* ]]; then 
+   if [[ $customVersionLink == *"://"* ]] ; then 
       echo "Fetching custom Jellyfin version..."
       customVersion=$(echo $customVersionLink | rev | cut -d/ -f1 | rev)
       fileType=$(echo $customVersion | cut -d_ -f3)
    
       if [[ $fileType != "$architecture.tar.gz" ]]; then
-         echo "Supplied URL does not point to a architecture.tar.gz.. EXITING..."
+         echo "Supplied URL does not point to a $architecture.tar.gz.. EXITING..."
          exit
       fi
    
@@ -438,7 +440,7 @@ Recertify_https()
       echo "Enabling https..."
       sed -i -e "s|<EnableHttps>*</EnableHttps>|<EnableHttps>true</EnableHttps>|g" /opt/jellyfin/config/network.xml
       sed -i -e "s|<CertificatePath>*</CertificatePath>|<CertificatePath>/opt/jellyfin/cert/jellyfin.pfx</CertificatePath>|g" /opt/jellyfin/config/network.xml
-      chown -Rf $defaultUser /opt/jellyfin/cert
+      chown -Rf $defaultUser:$defaultUser /opt/jellyfin/cert
       chmod -Rf 770 /opt/jellyfin/cert
       jellyman -r
    else
@@ -473,7 +475,7 @@ Rename_tv()
    echo "|      NAMES ARE IN THE SAME LOCATION IN THE DIRECTORY         |"
    echo "|--------------------------------------------------------------|"
    echo
-   read -p "Please enter a directory : "directoryToCorrect
+   read -p "Please enter a directory : " directoryToCorrect
    clear
    nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
    name2=$(echo $nameOfTestFile | cut -d "/" -f 2)
@@ -566,13 +568,9 @@ Update-jellyman()
    echo "Updating Jellyman - The Jellyfin Manager"
    git clone https://github.com/Smiley-McSmiles/jellyman
    cp -f jellyman/scripts/jellyman /usr/bin/
-   if [ -x "$(command -v apt)" ]; then
+   if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
       cp jellyman/jellyman.1 /usr/share/man/man1/
-   elif [ -x "$(command -v dnf)" ]; then 
-      cp jellyman/jellyman.1 /usr/local/share/man/man1/
-   elif [ -x "$(command -v pacman)" ]; then 
-      cp jellyman/jellyman.1 /usr/share/man/man1/
-   elif [ -x "$(command -v zypper)" ]; then 
+   elif [ -x "$(command -v dnf)" ] || [ -x "$(command -v zypper)" ]; then 
       cp jellyman/jellyman.1 /usr/local/share/man/man1/
    fi
    
