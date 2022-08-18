@@ -567,26 +567,9 @@ Update-jellyman()
    Has_sudo
    echo "Updating Jellyman - The Jellyfin Manager"
    git clone https://github.com/Smiley-McSmiles/jellyman
-   cp -f jellyman/scripts/jellyman /usr/bin/
-   if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
-      cp jellyman/jellyman.1 /usr/share/man/man1/
-   elif [ -x "$(command -v dnf)" ] || [ -x "$(command -v zypper)" ]; then 
-      cp jellyman/jellyman.1 /usr/local/share/man/man1/
-   fi
-   
-   if ( ! grep -q apiKey= "/opt/jellyfin/config/jellyman.conf" ); then
-      echo "apiKey="* >> /opt/jellyfin/config/jellyman.conf
-   fi
-
-   if ( ! grep -q networkPort= "/opt/jellyfin/config/jellyman.conf" ) && ( ! grep -q httpPort= "/opt/jellyfin/config/jellyman.conf" ); then
-      echo "networkPort=8096" >> /opt/jellyfin/config/jellyman.conf
-   elif ( ! grep -q httpPort= "/opt/jellyfin/config/jellyman.conf" ) || ( ! grep -q httpsPort= "/opt/jellyfin/config/jellyman.conf" ); then
-      sed -i -e "s|networkPort=.*|httpPort=8096|g" /opt/jellyfin/config/jellyman.conf
-      echo "httpsPort=8920" >> /opt/jellyfin/config/jellyman.conf
-   fi
-
-   rm -rf jellyman
-   echo "...complete"
+   cd jellyman
+   chmod ug+x setup.sh
+   sudo ./setup.sh -U
 }
 
 Change_Media_Directory()

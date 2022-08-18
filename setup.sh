@@ -249,7 +249,7 @@ Pre_setup()
    read ENTER
 }
 
-Update-jellyman()
+Update_jellyman()
 {
    Has_sudo
    echo "Updating Jellyman - The Jellyfin Manager"
