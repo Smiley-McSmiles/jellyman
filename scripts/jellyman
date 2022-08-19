@@ -131,7 +131,7 @@ Help()
    echo "-e     Enable Jellyfin on System Start."
    echo "-h     Print this Help."
    echo "-i     [FILE.tar] Input file to Import jellyfin-backup.tar."
-   echo "-p     Reset the permissions of Jellyfin's Media Library."
+   echo "-p     [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory."
    echo "-r     Restart Jellyfin."
    echo "-s     Start Jellyfin."
    echo "-S     Stop Jellyfin."
@@ -301,14 +301,25 @@ Https_port_change()
 Permissions()
 {
    Has_sudo
+   source /opt/jellyfin/config/jellyman.conf
+   directoryToFix=
+   if [[ "$1" == "/"* ]]; then
+      directoryToFix=$1
+   elif [[ ! -n "$1" ]]; then
+      echo "$1 is not a directory. Please enter a full path to your media"
+      echo "EXITING..."
+      exit
+   else
+      directoryToFix=$defaultPath 
+   fi
    #Check if there is a recorded media library path for chown and chmod:
-   if [[ $defaultPath != /* ]]; then 
+   if [[ -n $defaultPath ]]; then 
      echo "No default directory found..."
       echo "Please enter the root directory for your Media Library..."
       read defaultPath
       sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
    else 
-      echo "defaultPath is set to $defaultPath";
+      echo "defaultPath is set to $defaultPath"
    fi
    #Check if there is a recorded user/group for chown and chmod:
    if id "$defaultUser" &>/dev/null; then
@@ -320,8 +331,8 @@ Permissions()
       sed -i -e "s|defaultUser=.*|defaultUser=$defaultUser|g" /opt/jellyfin/config/jellyman.conf
    fi
 
-   chown -Rfv $defaultUser:$defaultUser $defaultPath
-   chmod 770 $defaultPath;
+   chown -Rfv $defaultUser:$defaultUser $directoryToFix
+   chmod 770 $directoryToFix;
 }
 
 Status()
@@ -334,9 +345,9 @@ Status()
 
 Update()
 {
-   customVersionLink=$1
    Has_sudo
    source /opt/jellyfin/config/jellyman.conf
+   customVersionLink=
    customVersion=""
    fileType=""
    jellyfin_archive=""
@@ -519,6 +530,7 @@ Rename_tv()
             echo
          fi
    done
+   jellyman -p $directoryToCorrect
 }
 
 Uninstall()
@@ -619,7 +631,12 @@ if [ -n "$1" ]; then
          -h) Help ;;
          -i) Import $2
              shift ;;
-         -p) Permissions ;;
+         -p) if [[ "$2" == "-"* ]]; then
+                Permissions 
+             else
+                Permissions $2
+                shift 
+             fi  ;;
          -r) systemctl restart jellyfin.service ;;
          -s) systemctl start jellyfin.service ;;
          -S) systemctl stop jellyfin.service ;;

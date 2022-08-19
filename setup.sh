@@ -92,14 +92,14 @@ Import()
 Get_Architecture()
 {
    cpuArchitectureFull=$(uname -p)
-   if [[ $cpuArchitectureFull == "x86_64" ]]; then
-      architecture="amd64"
-   elif [[ $cpuArchitectureFull == "aarch64" ]]; then
-      architecture="arm64"
-   else
-      echo "ERROR UNKNOWN CPU ARCHITECTURE.. EXITING."
-      exit
-   fi
+   architecture=
+      case "$cpuArchitectureFull" in
+            x86_64)   architecture="amd64" ;;
+            aarch64)  architecture="arm64" ;;
+            armv*)    architecture="armhf" ;;
+            *)        echo "ERROR UNKNOWN CPU ARCHITECTURE.. EXITING."
+                      exit ;;
+      esac
 }
 
 Install_dependancies()

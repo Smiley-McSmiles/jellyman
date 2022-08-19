@@ -16,7 +16,7 @@ Jellyman is a simple and an easy to understand CLI(Command Line Interface) tool 
 
 * **Setup** - Sets up the initial install.
 * **Update** - [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
-* **Update-cli** - Updates this Jellyman CLI Tool.
+* **Update-Jellyman** - Updates this Jellyman CLI Tool.
 * **Update Beta** Downloads and updates to the current Jellyfin Beta version.
 * **Disable** - Disable the jellyfin.service.
 * **Enable** - Enable the jellyfin.service
@@ -26,6 +26,7 @@ Jellyman is a simple and an easy to understand CLI(Command Line Interface) tool 
 * **Status** - Get status information on jellyfin.service.
 * **Backup** - Input a directroy to output the backup archive.
 * **Import** - Import a .tar file to pick up where you left off on another system.
+* **Fix Permissions** - [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
 * **Get Version** - Get the current installed version of Jellyfin.
 * **Remove Version** - Remove a specific version of Jellyfin
 * **Version Switch** - Switch Jellyfin version for another previously installed version.
@@ -60,7 +61,7 @@ COMMANDS:
 -e     Enable Jellyfin on System Start.
 -h     Print this Help.
 -i     [FILE.tar] Input file to Import jellyfin-backup.tar.
--p     Reset the permissions of Jellyfins Media Library.
+-p     [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
 -r     Restart Jellyfin.
 -s     Start Jellyfin.
 -S     Stop Jellyfin.
