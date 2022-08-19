@@ -357,8 +357,8 @@ Permissions()
       sed -i -e "s|defaultUser=.*|defaultUser=$defaultUser|g" /opt/jellyfin/config/jellyman.conf
    fi
 
-   chown -Rfv $defaultUser:$defaultUser $directoryToFix
-   chmod 770 $directoryToFix;
+   chown -Rfv $defaultUser:$defaultUser "$directoryToFix"
+   chmod 770 "$directoryToFix"
 }
 
 Status()
