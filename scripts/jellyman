@@ -378,8 +378,9 @@ Update()
    jellyfin=""
    new_jellyfin_version=""
    
-   if [[ $customVersionLink == *"://"* ]] ; then 
+   if [[ $1 == *"://"* ]] ; then 
       echo "Fetching custom Jellyfin version..."
+      customVersionLink=$1
       customVersion=$(echo $customVersionLink | rev | cut -d/ -f1 | rev)
       fileType=$(echo $customVersion | cut -d_ -f3)
    
