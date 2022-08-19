@@ -326,9 +326,11 @@ Permissions()
 {
    Has_sudo
    source /opt/jellyfin/config/jellyman.conf
+   checkForDefaultPath="yes"
    directoryToFix=
    if [[ "$1" == "/"* ]]; then
       directoryToFix=$1
+      checkForDefaultPath="no"
    elif [[ ! -n "$1" ]]; then
       echo "$1 is not a directory. Please enter a full path to your media"
       echo "EXITING..."
@@ -337,8 +339,8 @@ Permissions()
       directoryToFix=$defaultPath 
    fi
    #Check if there is a recorded media library path for chown and chmod:
-   if [[ -n $defaultPath ]]; then 
-     echo "No default directory found..."
+   if [[ -n $defaultPath ]] && [[ $checkForDefaultPath == "yes" ]]; then 
+      echo "No default directory found..."
       echo "Please enter the root directory for your Media Library..."
       read defaultPath
       sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
