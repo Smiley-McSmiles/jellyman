@@ -558,7 +558,8 @@ Rename_tv()
             echo "New Name:"
             echo "$nameOfDirectory/$nameOfShow $episodeNumber.$extensionOfFile"
             echo
-            jellyman -p "$item"
+            chown -fv $defaultUser:$defaultUser $item
+            chmod -fv 770 $item
          fi
    done
 }
