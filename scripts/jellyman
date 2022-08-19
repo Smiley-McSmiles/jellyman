@@ -73,6 +73,26 @@ Get_version()
    echo "$currentVersion"
 }
 
+Download_version()
+{
+   Has_sudo
+   source /opt/jellyfin/config/jellyman.conf
+   wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/
+   cat /opt/jellyfin/update/index.html | grep "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/" | cut -d/ -f10 | cat -n
+   echo
+   echo "Please enter the number corresponding with"
+   read -p "the version you want to install : " versionToSwitchNumber
+   newVersion=$(cat /opt/jellyfin/update/index.html | grep "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/" | cut -d/ -f10 | head -n $versionToSwitchNumber | tail -n 1)
+   maxNumber=$(cat /opt/jellyfin/update/index.html | grep "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/" | cut -d/ -f10 | wc -l)
+    if [[ $versionToSwitchNumber == *['!'@#\$%^\&*()_+.]* ]] || [[ $versionToSwitchNumber =~ [a-zA-Z]+$ ]] || (( $versionToSwitchNumber > $maxNumber )) || (( $versionToSwitchNumber < 1 )); then
+      echo "The new version you chose doesn't exist, please run this command again and pick a LISTED NUMBER"
+     exit
+   else
+      newVersionUnderscore=$(echo "$newVersion"_)
+      jellyman -u "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/$newVersion/jellyfin_$newVersionUnderscore$architecture.tar.gz"
+   fi
+}
+
 Version_switch()
 {
    echo "Current Jellyfin version installed"
@@ -80,7 +100,7 @@ Version_switch()
    echo ""
    echo "Jellyfin versions already downloaded:"
    ls /opt/jellyfin/ | grep "_" | cat -n
-   echo ""
+   echo
    echo "Please enter the number corresponding with"
    read -p "the version you want to install : " versionToSwitchNumber
    newVersion=$(ls /opt/jellyfin/ | grep "_" | head -n $versionToSwitchNumber | tail -n 1)
@@ -140,6 +160,7 @@ Help()
    echo "-U     Update Jellyman - The Jellyfin Manager."
    echo "-ub    Update Jellyfin to the most recent Beta."
    echo "-v     Get the current installed version of Jellyfin."
+   echo "-vd    Download an available Jellyfin version from the stable repository."
    echo "-vs    Switch Jellyfin version for another previously installed version."
    echo "-rv    Remove a Jellyfin version."
    echo "-rc    Removes old https certifications and creates new ones for the next 365 days."
@@ -650,6 +671,7 @@ if [ -n "$1" ]; then
          -U) Update-jellyman ;;
          -ub) Update_beta ;;
          -v) Get_version ;;
+         -vd) Download_version ;;
          -vs) Version_switch ;;
          -rv) Remove_version ;;
          -rc) Recertify_https ;;

@@ -29,6 +29,7 @@ Jellyman is a simple and an easy to understand CLI(Command Line Interface) tool 
 * **Fix Permissions** - [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
 * **Get Version** - Get the current installed version of Jellyfin.
 * **Remove Version** - Remove a specific version of Jellyfin
+* **Version Download** - Download an available Jellyfin version from the stable repository.
 * **Version Switch** - Switch Jellyfin version for another previously installed version.
 * **Recertify https** - Removes old https certifications and creates new ones for the next 365 days. 
 * **Rename TV** - Batch renaming script for TV shows.
@@ -70,6 +71,7 @@ COMMANDS:
 -U     Update Jellyman - The Jellyfin Manager
 -ub    Update Jellyfin to the most recent Beta.
 -v     Get the current version of Jellyfin.
+-vd    Download an available Jellyfin version from the stable repository.
 -vs    Switch Jellyfin version for another previously installed version.
 -rv    Remove a Jellyfin version.
 -rc    Removes old https certifications and creates new ones for the next 365 days.
