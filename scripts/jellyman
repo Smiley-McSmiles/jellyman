@@ -42,11 +42,11 @@ Backup()
 
 isCurrentVersion()
 {
-   jellyfin=$1
-   currentVersion=$2
-   if [ $jellyfin == $currentVersion ];then
+   jellyfinVersionToDownload=$1
+   currentVersionInstalled=$2
+   if [[ $jellyfinVersionToDownload == $currentVersionInstalled ]]; then
       echo "The installed version of Jellyfin matches the newest version available."
-      echo "$currentVersion"
+      echo "$currentVersionInstalled"
       return 1
    else
       echo "Newer Jellyfin version found..."
@@ -402,7 +402,7 @@ Update()
       new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
    
    else
-      echo "Fetching newest Jellyfin version..."
+      echo "Getting current version from repository..."
       mkdir /opt/jellyfin/update
       wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/stable/combined/
       jellyfin_archive=$(grep "$architecture.tar.gz" /opt/jellyfin/update/index.html | cut -d '"' -f 2 | sed -r "s|.sha256sum||g" | sed -r "s|-musl||g" | head -1)
