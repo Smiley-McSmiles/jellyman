@@ -9,7 +9,9 @@
 
 ### Description
 
-Jellyman is a simple and an easy to understand CLI(Command Line Interface) tool for installing and managing Jellyfin. Most notably, the ability to switch between already downloaded versions of Jellyfin on the fly, and create a full backup so you can move or import all your metadata and user information to another machine. This program can start, stop, enable or disable on startup, check for updates for stable or beta releases, tell Jellyfin to do a library scan, reset media permissions, and many other things.
+Jellyman is a simple BASH program and CLI (Command Line Interface) tool for installing and managing Jellyfin. Most notably, The ability to download and install the Jellyfin Media Server and switch between already downloaded versions of Jellyfin on the fly. As well as create a full backup so you can move or import all your metadata and user information to another machine.
+
+This program can start, stop, enable or disable on startup, check for updates for stable or beta releases, tell Jellyfin to do a library scan, reset media permissions, provide a list for you to choose a different version of Jellyfin, and many other things.
 
 
 ### Features
