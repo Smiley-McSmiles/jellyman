@@ -42,8 +42,8 @@ Backup()
 
 isCurrentVersion()
 {
-   source /opt/jellyfin/config/jellyman.conf
    jellyfin=$1
+   currentVersion=$2
    if [ $jellyfin == $currentVersion ];then
       echo "The installed version of Jellyfin matches the newest version available."
       echo "$currentVersion"
@@ -410,7 +410,7 @@ Update()
       new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
       rm -f /opt/jellyfin/update/index.html
       
-      if isCurrentVersion $jellyfin; then
+      if isCurrentVersion $jellyfin $currentVersion; then
          wget -O /opt/jellyfin/update/$jellyfin_archive https://repo.jellyfin.org/releases/server/linux/stable/combined/$jellyfin_archive
       else
          exit
@@ -452,7 +452,7 @@ Update_beta()
    else
       rm -f /opt/jellyfin/update/index.html
 
-      if isCurrentVersion $jellyfin; then
+      if isCurrentVersion $jellyfin $currentVersion; then
          wget -O /opt/jellyfin/update/$jellyfin_archive https://repo.jellyfin.org/releases/server/linux/stable-pre/$new_jellyfin_version/combined/$jellyfin_archive
       else
          exit
