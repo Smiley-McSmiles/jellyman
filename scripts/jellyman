@@ -405,11 +405,14 @@ Update()
       echo "Getting current version from repository..."
       mkdir /opt/jellyfin/update
       wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/stable/combined/
-      jellyfin_archive=$(grep "$architecture.tar.gz" /opt/jellyfin/update/index.html | cut -d '"' -f 2 | sed -r "s|.sha256sum||g" | sed -r "s|-musl||g" | head -1)
+      jellyfin_archive=$(grep "$architecture.tar.gz" /opt/jellyfin/update/index.html | cut -d '"' -f 2 | head -1 | sed -r "s|.sha256sum||g" | sed -r "s|-musl||g")
       jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
       new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
       rm -f /opt/jellyfin/update/index.html
       
+      echo "jellyfin_archive = $jellyfin_archive"
+      echo "jellyfin = $jellyfin"
+      echo "currentVersion = $currentVersion"
       if isCurrentVersion $jellyfin $currentVersion; then
          wget -O /opt/jellyfin/update/$jellyfin_archive https://repo.jellyfin.org/releases/server/linux/stable/combined/$jellyfin_archive
       else
