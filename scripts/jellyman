@@ -336,7 +336,7 @@ Permissions()
       exit
    else
       #Check if there is a recorded media library path for chown and chmod:
-      if [[ -n $defaultPath ]] ; then 
+      if [[ ! -n $defaultPath ]] ; then 
          echo "No default directory found..."
          echo "Please enter the root directory for your Media Library..."
          read defaultPath
