@@ -558,9 +558,8 @@ Rename_tv()
             echo "New Name:"
             echo "$nameOfDirectory/$nameOfShow $episodeNumber.$extensionOfFile"
             echo
-            item2=$(echo $item)
-            chown -fv $defaultUser:$defaultUser $item2
-            chmod -fv 770 $item2
+            chown -fv $defaultUser:$defaultUser "$item"
+            chmod -fv 770 "$item"
          fi
    done
 }
