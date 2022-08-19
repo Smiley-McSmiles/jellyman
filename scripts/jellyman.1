@@ -1,0 +1,105 @@
+." Process this file with
+." groff -man -Tascii jellyman.1
+."
+.TH Jellyman
+
+.Sh NAME
+.B Jellyman - a Jellyfin Manager for the Jellyfin generic linux amd64.tar.gz package
+
+.SH VERSION
+.B Jellyman - The Jellyfin Manager - v1.5.1
+
+.SH SYNOPSIS
+.B jellyman
+
+.SH DESCRIPTION
+.B Jellyman
+is a set of scripts to install/manage and update the jellyfin-combined tar.gz generic linux package
+
+.SH USAGE
+.B SYNTAX
+- jellyman -[COMMAND] [PARAMETER]
+.TP
+.SS COMMANDS
+.TP
+.B -b     [DIRECTORY] Input directory to output backup archive.
+.TP
+.B -d     Disable Jellyfin on System Start.
+.TP
+.B -e     Enable Jellyfin on System Start.
+.TP
+.B -h     Print this Help.
+.TP
+.B -i     [FILE.tar] Input file to Import jellyfin-backup.tar.
+.TP
+.B -p     [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
+.TP
+.B -r     Restart Jellyfin.
+.TP
+.B -s     Start Jellyfin.
+.TP
+.B -S     Stop Jellyfin.
+.TP
+.B -t     Status of Jellyfin.
+.TP
+.B -u     [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
+.TP
+.B -U     Update jellyman - The CLI Tool.
+.TP
+.B -ub    Update Jellyfin to the most recent Beta.
+.TP
+.B -v     Get the current installed version of Jellyfin.
+.TP
+.B -vd    Download an available Jellyfin version from the stable repository.
+.TP
+.B -vs    Switch Jellyfin version for another previously installed version.
+.TP
+.B -rv    Remove a Jellyfin version.
+.TP
+.B -rc    Removes old https certifications and creates new ones for the next 365 days.
+.TP
+.B -rn    Batch renaming script for TV shows.
+.TP
+.B -ls    Tell Jellyfin to scan your media library.
+.TP
+.B -cp    Change Jellyfins http network port - Default = 8096.
+.TP
+.B -cps   Change Jellyfins https network port - Default = 8920.
+.TP
+.B -ik    Import an API key.
+.TP
+.B -md    Change the Media Directory for Jellyman.
+.TP
+.B -X     Uninstall Jellyfin and jellyman Completely.
+
+.SH EXAMPLE
+.TP
+.B To stop Jellyfin, disable on startup, backup, and then start the Jellyfin server:
+.TP
+.B 'sudo jellyman -S -d -b /home/$USER/ -s'
+
+.SH FILES
+.TP
+.I
+/opt/jellyfin
+.TP
+.I
+/etc/jellyfin.conf
+.TP
+.I
+/bin/jellyman
+
+.SH URL TO NEW VERSIONS
+.PP
+***WARNING*** ONLY USE COMBINED(Web & Server) PACKAGES
+https://repo.jellyfin.org/releases/server/linux/versions/
+
+.SH COPYRIGHT
+.PP
+Copyright 2021 Smiley McSmiles. All rights reserved
+https://www.github.com/Smiley-McSmiles/jellyman
+
+.SH CREDITS
+.PP
+Jellyman and this man page was created by Smiley McSmiles <SmileyMcSmiles@Proton.me>
+
