@@ -144,7 +144,7 @@ Remove_version()
 Help()
 {
    # Display Help
-   echo "Jellyman - The Jellyfin Manager v1.5.0"
+   echo "Jellyman - The Jellyfin Manager v1.5.1"
    echo "-Created by Smiley McSmiles"
    echo 
    echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
@@ -493,6 +493,8 @@ Recertify_https()
 Rename_tv()
 {
    clear
+   Has_sudo
+   source /opt/jellyfin/config/jellyman.conf
    echo "|--------------------------------------------------------------|"
    echo "|                        ***WARNING***                         |"
    echo "|       TV SHOW FILE NAMES MUST CONTAIN 'SXXEXX' X=number      |"
@@ -514,6 +516,7 @@ Rename_tv()
    read -p "Please enter a directory : " directoryToCorrect
    clear
    nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
+   
    name2=$(echo $nameOfTestFile | cut -d "/" -f 2)
    name3=$(echo $nameOfTestFile | cut -d "/" -f 3)
    name4=$(echo $nameOfTestFile | cut -d "/" -f 4)
@@ -528,7 +531,7 @@ Rename_tv()
    echo
    echo "Please enter the number that corresponds with the show's name above"
    read directoryNumber
-   nameOfShow=$(dirname "$directoryToCorrect2" | cut -d "/" -f $directoryNumber)
+   nameOfShow=$(dirname "$directoryToCorrect" | cut -d "/" -f $directoryNumber)
    echo "You chose $nameOfShow"
 
    for item in $directoryToCorrect
@@ -553,9 +556,9 @@ Rename_tv()
             echo "New Name:"
             echo "$nameOfDirectory/$nameOfShow $episodeNumber.$extensionOfFile"
             echo
+            jellyman -p "$item"
          fi
    done
-   jellyman -p $directoryToCorrect
 }
 
 Uninstall()
