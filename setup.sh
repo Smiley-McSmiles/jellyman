@@ -172,7 +172,8 @@ Setup()
    rm -f $jellyfin_archive
    ln -s $jellyfin jellyfin
    mkdir data cache config log cert
-   touch config/jellyman.confecho "architecture=$architecture" >> config/jellyman.conf
+   touch config/jellyman.conf
+   echo "architecture=$architecture" >> config/jellyman.conf
    echo "defaultPath=" >> config/jellyman.conf
    echo "apiKey=" >> config/jellyman.conf
    echo "httpPort=8096" >> config/jellyman.conf
@@ -280,7 +281,7 @@ if [ -n "$1" ]; then
          -i)   Import $2
                rm -rf $DIRECTORY
                exit ;;
-         -U)   Update_jelllyman
+         -U)   Update_jellyman
                rm -rf $DIRECTORY
                exit ;;
          *)    Pre_setup 
