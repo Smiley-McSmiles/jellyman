@@ -27,15 +27,17 @@ Backup()
    USER=$(stat -c '%U' $backupDirectory)
    chown -f $USER:$USER $tarPath
    chmod -f 770 $tarPath
-   echo "Your backup is: $tarPath"
+   echo "Your backup is:"
    tarSize=$(du -h $tarPath)
    echo "Size: $tarSize"
    echo
-   echo "To Import on your next setup, simply run:"
-   echo "git clone https://github.com/Smiley-McSmiles/jellyman"
-   echo "cd jellyman"
-   echo "chmod ug+x setup.sh"
-   echo "sudo ./setup.sh -i [Path to jellyfin-backup.tar]"
+   echo "|--------------------------------------------------------|"
+   echo "|      To Import on your next setup, simply run:         |"
+   echo "|  git clone https://github.com/Smiley-McSmiles/jellyman |"
+   echo "|                       cd jellyman                      |"
+   echo "|                   chmod ug+x setup.sh                  |"
+   echo "|     sudo ./setup.sh -i [Path to jellyfin-backup.tar]   |"
+   echo "|--------------------------------------------------------|"
 }
 
 Check_Version()
@@ -71,6 +73,29 @@ Get_version()
    echo "$currentVersion"
 }
 
+Download_version()
+{
+   Has_sudo
+   source /opt/jellyfin/config/jellyman.conf
+   mkdir /opt/jellyfin/update
+   wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/
+   cat /opt/jellyfin/update/index.html | grep "-" | sed -e 's/<a href="//g' | sed -e "s|/.*||g" | cat -n
+   echo
+   echo "Please enter the number corresponding with"
+   read -p "the version you want to install : " versionToSwitchNumber
+   newVersion=$(cat /opt/jellyfin/update/index.html | grep "-" | sed -e 's/<a href="//g' | sed -e "s|/.*||g" | head -n $versionToSwitchNumber | tail -n 1)
+   maxNumber=$(cat /opt/jellyfin/update/index.html | grep "-" | sed -e 's/<a href="//g' | sed -e "s|/.*||g" | wc -l)
+    if [[ $versionToSwitchNumber == *['!'@#\$%^\&*()_+.]* ]] || [[ $versionToSwitchNumber =~ [a-zA-Z]+$ ]] || (( $versionToSwitchNumber > $maxNumber )) || (( $versionToSwitchNumber < 1 )); then
+      echo "The new version you chose doesn't exist, please run this command again and pick a LISTED NUMBER"
+     exit
+   else
+      newVersionUnderscore=$(echo "$newVersion"_)
+      echo "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/$newVersion/jellyfin_$newVersionUnderscore$architecture.tar.gz"
+      jellyman -u "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/$newVersion/jellyfin_$newVersionUnderscore$architecture.tar.gz"
+   fi
+   rm -fv /opt/jellyfin/update/index.html
+}
+
 Version_switch()
 {
    echo "Current Jellyfin version installed"
@@ -78,7 +103,7 @@ Version_switch()
    echo ""
    echo "Jellyfin versions already downloaded:"
    ls /opt/jellyfin/ | grep "_" | cat -n
-   echo ""
+   echo
    echo "Please enter the number corresponding with"
    read -p "the version you want to install : " versionToSwitchNumber
    newVersion=$(ls /opt/jellyfin/ | grep "_" | head -n $versionToSwitchNumber | tail -n 1)
@@ -119,7 +144,7 @@ Remove_version()
 Help()
 {
    # Display Help
-   echo "Jellyman - The Jellyfin Manager v1.4.9"
+   echo "Jellyman - The Jellyfin Manager v1.5.0"
    echo "-Created by Smiley McSmiles"
    echo 
    echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
@@ -129,7 +154,7 @@ Help()
    echo "-e     Enable Jellyfin on System Start."
    echo "-h     Print this Help."
    echo "-i     [FILE.tar] Input file to Import jellyfin-backup.tar."
-   echo "-p     Reset the permissions of Jellyfin's Media Library."
+   echo "-p     [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory."
    echo "-r     Restart Jellyfin."
    echo "-s     Start Jellyfin."
    echo "-S     Stop Jellyfin."
@@ -138,6 +163,7 @@ Help()
    echo "-U     Update Jellyman - The Jellyfin Manager."
    echo "-ub    Update Jellyfin to the most recent Beta."
    echo "-v     Get the current installed version of Jellyfin."
+   echo "-vd    Download an available Jellyfin version from the stable repository."
    echo "-vs    Switch Jellyfin version for another previously installed version."
    echo "-rv    Remove a Jellyfin version."
    echo "-rc    Removes old https certifications and creates new ones for the next 365 days."
@@ -182,14 +208,17 @@ Import()
          jellyman -s -t
       else
          clear
-         echo "******WARNING******"
-         echo "*******ERROR*******"
-         echo "The imported default Jellyfin user($defaultUser) has not yet been created."
-         echo "This error is likely due to a read error of the /opt/jellyfin/config/jellyman.conf file."
-         echo "The default user is usually created by jellyman - The CLI Tool, when running setup.sh."
-         echo "You may want to see who owns that configuration file with:"
-         echo "'ls /opt/jellyfin/config/jellyman.conf'"
-         sleep 5
+         echo "|------------------------------------------------------------------|"
+         echo "|                       *******ERROR*******                        |"
+         echo "|   The imported default Jellyfin user($defaultUser) has not yet   |"
+         echo "|   been created. This error is likely due to a read error of the  |"
+         echo "|            /opt/jellyfin/config/jellyman.conf file.              |"
+         echo "|  The default user is usually created by jellyman - The CLI Tool, |"
+         echo "|                   when running setup.sh.                         |"
+         echo "|    You may want to see who owns that configuration file with:    |"
+         echo "|            'ls /opt/jellyfin/config/jellyman.conf'               |"
+         echo "|------------------------------------------------------------------|"
+         echo
          read -p "...Continue with $defaultUser? [yes/No] :" newUserOrOld
          if [[ $newUserOrOld == [yY][eE][sS] ]]; then
             echo "Great!"
@@ -296,27 +325,38 @@ Https_port_change()
 Permissions()
 {
    Has_sudo
+   source /opt/jellyfin/config/jellyman.conf
+   directoryToFix=
+   if [[ "$1" == "/"* ]]; then
+      directoryToFix=$1
+   elif [[ ! -n "$1" ]]; then
+      echo "$1 is not a directory. Please enter a full path to your media"
+      echo "EXITING..."
+      exit
+   else
+      directoryToFix=$defaultPath 
+   fi
    #Check if there is a recorded media library path for chown and chmod:
-   if [[ $defaultPath != /* ]]; then 
-	   echo "No default directory found..."
-	   echo "Please enter the root directory for your Media Library..."
-	   read defaultPath
-	   sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
+   if [[ -n $defaultPath ]]; then 
+     echo "No default directory found..."
+      echo "Please enter the root directory for your Media Library..."
+      read defaultPath
+      sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
    else 
-	   echo "defaultPath is set to $defaultPath";
+      echo "defaultPath is set to $defaultPath"
    fi
    #Check if there is a recorded user/group for chown and chmod:
    if id "$defaultUser" &>/dev/null; then
-	   echo "defaultUser is set to $defaultUser"
+      echo "defaultUser is set to $defaultUser"
    else
-	   echo "No default user found..."
-	   echo "Please enter the owner for this directory..."
-	   read defaultUser
-	   sed -i -e "s|defaultUser=.*|defaultUser=$defaultUser|g" /opt/jellyfin/config/jellyman.conf
+      echo "No default user found..."
+      echo "Please enter the owner for this directory..."
+      read defaultUser
+      sed -i -e "s|defaultUser=.*|defaultUser=$defaultUser|g" /opt/jellyfin/config/jellyman.conf
    fi
 
-   chown -Rfv $defaultUser:$defaultUser $defaultPath
-   chmod 770 $defaultPath;
+   chown -Rfv $defaultUser:$defaultUser $directoryToFix
+   chmod 770 $directoryToFix;
 }
 
 Status()
@@ -329,36 +369,38 @@ Status()
 
 Update()
 {
-   customVersionLink=$1
    Has_sudo
+   source /opt/jellyfin/config/jellyman.conf
+   customVersionLink=
    customVersion=""
    fileType=""
    jellyfin_archive=""
    jellyfin=""
    new_jellyfin_version=""
    
-   if [[ $customVersionLink == *"://"* ]]; then 
+   if [[ $1 == *"://"* ]] ; then 
       echo "Fetching custom Jellyfin version..."
+      customVersionLink=$1
       customVersion=$(echo $customVersionLink | rev | cut -d/ -f1 | rev)
       fileType=$(echo $customVersion | cut -d_ -f3)
    
-      if [[ $fileType != "amd64.tar.gz" ]]; then
-         echo "Supplied URL does not point to a amd64.tar.gz.. EXITING..."
+      if [[ $fileType != "$architecture.tar.gz" ]]; then
+         echo "Supplied URL does not point to a $architecture.tar.gz.. EXITING..."
          exit
       fi
    
       mkdir /opt/jellyfin/update
       wget -P /opt/jellyfin/update/ $customVersionLink
       jellyfin_archive=$customVersion
-      jellyfin=$(echo $jellyfin_archive | sed -r 's/_amd64.tar.gz//g')
-      new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')   
+      jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
+      new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
    
    else
       echo "Fetching newest Jellyfin version..."
       mkdir /opt/jellyfin/update
       wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/stable/combined/
-      jellyfin_archive=$(grep 'amd64.tar.gz"' /opt/jellyfin/update/index.html | cut -d '"' -f 2)
-      jellyfin=$(echo $jellyfin_archive | sed -r 's/_amd64.tar.gz//g')
+      jellyfin_archive=$(grep "$architecture.tar.gz" /opt/jellyfin/update/index.html | cut -d '"' -f 2 | sed -r "s|.sha256sum||g" | head -1)
+      jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
       new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
       rm -f /opt/jellyfin/update/index.html
       Check_Version
@@ -383,6 +425,7 @@ Update()
 Update_beta()
 {
    Has_sudo
+   source /opt/jellyfin/config/jellyman.conf
    jellyfin_archive=""
    jellyfin=""
    new_jellyfin_version=""
@@ -390,8 +433,8 @@ Update_beta()
    echo "Fetching newest beta Jellyfin version..."
    mkdir /opt/jellyfin/update
    wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/stable-pre/
-   jellyfin_archive=$(grep 'amd64.tar.gz' /opt/jellyfin/update/index.html | grep 'combined' | cut -d '/' -f5 | cut -d '<' -f1 | head -n 1)
-   jellyfin=$(echo $jellyfin_archive | sed -r 's/_amd64.tar.gz//g')
+   jellyfin_archive=$(grep "$architecture.tar.gz" /opt/jellyfin/update/index.html | grep 'combined' | cut -d '/' -f5 | cut -d '<' -f1 | head -n 1 | sed -r "s|.sha256sum||g")
+   jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
    new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
    if [[ ! -n $jellyfin_archive ]] || [[ ! -n $jellyfin ]]; then
       echo "Sorry there appears to be no Jellyfin Betas right now..."
@@ -419,34 +462,56 @@ Update_beta()
 Recertify_https()
 {
    Has_sudo
-   echo "creating OpenSSL self signed certificate for https. Valid for the next 365 days."
+   echo "|------------------------------------------------------|"
+   echo "|  Creating OpenSSL self signed certificate for https. |"
+   echo "|             Valid for the next 365 days.             |"
+   echo "|       This only works if you have completed          |" 
+   echo "|           first time setup in Jellyfin               |"
+   echo "|------------------------------------------------------|"
    source /opt/jellyfin/config/jellyman.conf
-
-   rm -fv /opt/jellyfin/cert/*
-   openssl req -x509 -newkey rsa:4096 -keyout /opt/jellyfin/cert/privkey.pem -out /opt/jellyfin/cert/cert.pem -days 365 -nodes -subj '/CN=jellyfin.lan'
-   openssl pkcs12 -export -out /opt/jellyfin/cert/jellyfin.pfx -inkey /opt/jellyfin/cert/privkey.pem -in /opt/jellyfin/cert/cert.pem -passout pass:
-   chown -Rf $defaultUser /opt/jellyfin/cert
-   chmod -Rf 770 /opt/jellyfin/cert
-   jellyman -r
+   if [ -f "/opt/jellyfin/config/network.xml" ]; then
+      rm -fv /opt/jellyfin/cert/*
+      openssl req -x509 -newkey rsa:4096 -keyout /opt/jellyfin/cert/privkey.pem -out /opt/jellyfin/cert/cert.pem -days 365 -nodes -subj '/CN=jellyfin.lan'
+      openssl pkcs12 -export -out /opt/jellyfin/cert/jellyfin.pfx -inkey /opt/jellyfin/cert/privkey.pem -in /opt/jellyfin/cert/cert.pem -passout pass:
+      echo "Enabling https..."
+      sed -i -e "s|<EnableHttps>*</EnableHttps>|<EnableHttps>true</EnableHttps>|g" /opt/jellyfin/config/network.xml
+      sed -i -e "s|<CertificatePath>*</CertificatePath>|<CertificatePath>/opt/jellyfin/cert/jellyfin.pfx</CertificatePath>|g" /opt/jellyfin/config/network.xml
+      chown -Rf $defaultUser:$defaultUser /opt/jellyfin/cert
+      chmod -Rf 770 /opt/jellyfin/cert
+      jellyman -r
+   else
+      echo "|--------------------------------------------------------------|"
+      echo "|                        ***WARNING***                         |"
+      echo "|             JELLYFIN DID NOT GET SET UP PROPERLY!            |"
+      echo "|        NO /opt/jellyfin/config/network.xml FILE FOUND        |"
+      echo "|                           EXITING                            |"
+      echo "|--------------------------------------------------------------|"
+      exit
+   fi
 }
 
 Rename_tv()
 {
    clear
-   echo "***WARNING***"
-   echo "TV SHOW FILE NAMES MUST CONTAIN 'SXXEXX' X=number"
+   echo "|--------------------------------------------------------------|"
+   echo "|                        ***WARNING***                         |"
+   echo "|       TV SHOW FILE NAMES MUST CONTAIN 'SXXEXX' X=number      |"
+   echo "|                                                              |"
+   echo "|            Please enter the directory to correct             |"
+   echo "|                        For example:                          |"
+   echo "|  /jfin/TV/*/*/* <- For every Episode(May Crash Be Careful!)  |"
+   echo "|                            OR:                               |"
+   echo "|  /jfin/TV/Breaking*Bad/*/* <- For Every Episode in a show    |"
+   echo "|                            OR:                               |"
+   echo "|  /jfin/TV/Breaking*Bad/Season*2/* <- For Every Episode in    |"
+   echo "|                    a season of a show                        |"
+   echo "|                                                              |"
+   echo "|      BE ADVISED, IF YOU'RE RE-NAMING MULTIPLE SHOWS,         |"
+   echo "|             MAKE SURE ALL THE SHOW DIRECTORY                 |"
+   echo "|      NAMES ARE IN THE SAME LOCATION IN THE DIRECTORY         |"
+   echo "|--------------------------------------------------------------|"
    echo
-   echo "Please enter the directory to correct"
-   echo "For example:"
-   echo "/jfin/TV/*/*/* <- For every Episode(May Crash Be Careful!)"
-   echo "OR:"
-   echo "/jfin/TV/Breaking\ Bad/*/* <- For Every Episode in a show"
-   echo "OR:"
-   echo "/jfin/TV/Breaking\ Bad/Season\ 2/* <- For Every Episode in a season of a show"
-   echo
-   read directoryToCorrect
-   # Problematic code:
-   #directoryToCorrect=$(echo $directoryToCorrect2 | sed -r 's/ /*/g')
+   read -p "Please enter a directory : " directoryToCorrect
    clear
    nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
    name2=$(echo $nameOfTestFile | cut -d "/" -f 2)
@@ -460,8 +525,6 @@ Rename_tv()
    echo "5:$name5"
    echo "6:$name6"
    echo
-   echo "BE ADVISED, IF YOU'RE RE-NAMING MULTIPLE SHOWS, MAKE SURE ALL THE SHOW DIRECTORY"
-   echo "NAMES ARE IN THE SAME LOCATION IN THE DIRECTORY"
    echo
    echo "Please enter the number that corresponds with the show's name above"
    read directoryNumber
@@ -492,24 +555,44 @@ Rename_tv()
             echo
          fi
    done
+   jellyman -p $directoryToCorrect
 }
 
 Uninstall()
 {
    Has_sudo
-   echo "******WARNING******"
-   echo "******CAUTION******"
-   echo "Are you completely sure?"
-   echo "This will delete all files relating to Jellyfin and Jellyman, except"
-   echo "the Media Library and jellyfin-backup.tar"
+   echo "|-------------------------------------------------------------------|"
+   echo "|                        ******WARNING******                        |"
+   echo "|                        ******CAUTION******                        |"
+   echo "|                     Are you completely sure?                      |"
+   echo "|          This will delete all files relating to Jellyfin          |"
+   echo "|   and Jellyman, exceptthe Media Library and jellyfin-backup.tar   |"
+   echo "|-------------------------------------------------------------------|"
+   echo
    read -p "CONTINUE?: [yes/No]" toUninstallOrNotToUninstall
    if [[ $toUninstallOrNotToUninstall == [yY][eE][sS] ]]; then
       echo "Goodbye..."
       sleep 1
       source /opt/jellyfin/config/jellyman.conf
+         echo "Blocking port 8096 and 8920..."
+      if [ -x "$(command -v ufw)" ]; then
+         ufw deny 8096/tcp
+         ufw deny 8920/tcp
+         ufw reload
+      elif [ -x "$(command -v firewall-cmd)" ]; then
+         firewall-cmd --permanent --zone=public --remove-port=8096/tcp
+         firewall-cmd --permanent --zone=public --remove-port=8920/tcp
+         firewall-cmd --reload
+      else
+         echo "|-------------------------------------------------------------------|"
+         echo "|                        ******WARNING******                        |"
+         echo "|                        ******CAUTION******                        |"
+         echo "|                  FAILED TO CLOSE PORT 8096/8920!                  |"
+         echo "|          ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!          |"
+         echo "|-------------------------------------------------------------------|"
+      fi
+      rm -fv /usr/lib/systemd/system/jellyfin.service /etc/jellyfin.conf /bin/jellyman
       rm -rfv /opt/jellyfin
-      rm -fv /etc/jellyfin.conf
-      rm -fv /bin/jellyman
       userdel -f $defaultUser
    else
       echo "Phew! That was a close one!"
@@ -521,38 +604,20 @@ Update-jellyman()
    Has_sudo
    echo "Updating Jellyman - The Jellyfin Manager"
    git clone https://github.com/Smiley-McSmiles/jellyman
-   cp -f jellyman/scripts/jellyman /usr/bin/
-   if [ -x "$(command -v apt)" ]; then
-      cp jellyman/jellyman.1 /usr/share/man/man1/
-   elif [ -x "$(command -v dnf)" ]; then 
-      cp jellyman/jellyman.1 /usr/local/share/man/man1/
-   elif [ -x "$(command -v pacman)" ]; then 
-      cp jellyman/jellyman.1 /usr/share/man/man1/
-   elif [ -x "$(command -v zypper)" ]; then 
-      cp jellyman/jellyman.1 /usr/local/share/man/man1/
-   fi
-   
-   if ( ! grep -q apiKey= "/opt/jellyfin/config/jellyman.conf" ); then
-      echo "apiKey="* >> /opt/jellyfin/config/jellyman.conf
-   fi
-
-   if ( ! grep -q networkPort= "/opt/jellyfin/config/jellyman.conf" ) && ( ! grep -q httpPort= "/opt/jellyfin/config/jellyman.conf" ); then
-      echo "networkPort=8096" >> /opt/jellyfin/config/jellyman.conf
-   elif ( ! grep -q httpPort= "/opt/jellyfin/config/jellyman.conf" ) || ( ! grep -q httpsPort= "/opt/jellyfin/config/jellyman.conf" ); then
-      sed -i -e "s|networkPort=.*|httpPort=8096|g" /opt/jellyfin/config/jellyman.conf
-      echo "httpsPort=8920" >> /opt/jellyfin/config/jellyman.conf
-   fi
-
-   rm -rf jellyman
-   echo "...complete"
+   cd jellyman
+   chmod ug+x setup.sh
+   sudo ./setup.sh -U
 }
 
 Change_Media_Directory()
 {
    Has_sudo
-   echo "Please enter all media directories separated by a space"
-   echo "example:"
-   echo "/media/hdd1/Movies /media/hdd2/TV"
+   echo "|---------------------------------------------------------|"
+   echo "| Please enter all media directories separated by a space |"
+   echo "|                       example:                          |"
+   echo "|          /media/hdd1/Movies /media/hdd2/TV              |"
+   echo "|---------------------------------------------------------|"
+   echo
    read mediaPath
    sed -i -e "s|defaultPath=.*|defaultPath=$mediaPath|g" /opt/jellyfin/config/jellyman.conf
 }
@@ -591,7 +656,12 @@ if [ -n "$1" ]; then
          -h) Help ;;
          -i) Import $2
              shift ;;
-         -p) Permissions ;;
+         -p) if [[ "$2" == "-"* ]]; then
+                Permissions 
+             else
+                Permissions $2
+                shift 
+             fi  ;;
          -r) systemctl restart jellyfin.service ;;
          -s) systemctl start jellyfin.service ;;
          -S) systemctl stop jellyfin.service ;;
@@ -605,6 +675,7 @@ if [ -n "$1" ]; then
          -U) Update-jellyman ;;
          -ub) Update_beta ;;
          -v) Get_version ;;
+         -vd) Download_version ;;
          -vs) Version_switch ;;
          -rv) Remove_version ;;
          -rc) Recertify_https ;;
@@ -621,9 +692,9 @@ if [ -n "$1" ]; then
       shift
    done
 else
-	echo "No commands found."
-	Help
-	exit
+   echo "No commands found."
+   Help
+   exit
 fi
 
 ###############################################################################
