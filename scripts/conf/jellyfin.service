@@ -1,0 +1,13 @@
+[Unit]
+Description=Jellyfin Server is a personal media server.
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/jellyfin.conf
+WorkingDirectory=/opt/jellyfin
+ExecStart=/opt/jellyfin/jellyfin.sh
+RestartForceExitStatus=3
+User=jellyfin
+
+[Install]
+WantedBy=multi-user.target

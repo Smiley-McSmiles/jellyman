@@ -326,41 +326,37 @@ Permissions()
 {
    Has_sudo
    source /opt/jellyfin/config/jellyman.conf
-   checkForDefaultPath="yes"
    directoryToFix=
    if [[ "$1" == "/"* ]]; then
       directoryToFix=$1
-   elif [[ "$1" == *"/" ]]; then
-      echo "$1 is not a directory. Please enter a absolute path to your media"
+   elif [[ ! -n "$1" ]]; then
+      echo "$1 is not a directory. Please enter a full path to your media"
       echo "EXITING..."
       exit
    else
-      #Check if there is a recorded media library path for chown and chmod:
-      if [[ ! -n $defaultPath ]] ; then 
-         echo "No default directory found..."
-         echo "Please enter the root directory for your Media Library..."
-         read defaultPath
-         sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
-      else 
-         #echo "defaultPath is set to $defaultPath"
-         null=
-      fi
-      #Check if there is a recorded user/group for chown and chmod:
-      if id "$defaultUser" &>/dev/null; then
-         #echo "defaultUser is set to $defaultUser"
-         null=
-      else
-         echo "No default user found..."
-         echo "Please enter the owner for this directory..."
-         read defaultUser
-         sed -i -e "s|defaultUser=.*|defaultUser=$defaultUser|g" /opt/jellyfin/config/jellyman.conf
-      fi
-      chown -Rfv $defaultUser:$defaultUser $defaultPath
-      chmod -Rfv 770 $defaultPath
+      directoryToFix=$defaultPath 
+   fi
+   #Check if there is a recorded media library path for chown and chmod:
+   if [[ -n $defaultPath ]]; then 
+     echo "No default directory found..."
+      echo "Please enter the root directory for your Media Library..."
+      read defaultPath
+      sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
+   else 
+      echo "defaultPath is set to $defaultPath"
+   fi
+   #Check if there is a recorded user/group for chown and chmod:
+   if id "$defaultUser" &>/dev/null; then
+      echo "defaultUser is set to $defaultUser"
+   else
+      echo "No default user found..."
+      echo "Please enter the owner for this directory..."
+      read defaultUser
+      sed -i -e "s|defaultUser=.*|defaultUser=$defaultUser|g" /opt/jellyfin/config/jellyman.conf
    fi
 
-   chown -Rfv $defaultUser:$defaultUser "$directoryToFix"
-   chmod -Rfv 770 "$directoryToFix"
+   chown -Rfv $defaultUser:$defaultUser $directoryToFix
+   chmod 770 $directoryToFix;
 }
 
 Status()
@@ -559,9 +555,8 @@ Rename_tv()
             #echo "$extensionOfFile"
             echo "New Name:"
             echo "$nameOfDirectory/$nameOfShow $episodeNumber.$extensionOfFile"
-            chown -fv $defaultUser:$defaultUser "$item"
-            chmod -fv 770 "$item"
             echo
+            jellyman -p $item
          fi
    done
 }
