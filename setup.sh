@@ -264,7 +264,8 @@ Update_jellyman()
    Has_sudo
    source /opt/jellyfin/config/jellyman.conf
    echo "Updating Jellyman - The Jellyfin Manager"
-   cp -f scripts/jellyman /usr/bin/
+   cp -f scripts/jellyman /bin/jellyman
+   chmod +x /bin/jellyman
    if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
       cp jellyman.1 /usr/share/man/man1/
    elif [ -x "$(command -v dnf)" ] || [ -x "$(command -v zypper)" ]; then 
