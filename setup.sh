@@ -167,12 +167,12 @@ Setup()
    touch /opt/jellyfin/config/jellyman.conf
    mv $jellyfin_archive /opt/jellyfin/
    
-   if [ -d /usr/lib/systemd ]; then
+   if [ -d /usr/lib/systemd/system ]; then
       cp conf/jellyfin.service /usr/lib/systemd/system/
-      echo "jellyfinServiceLocation=/usr/lib/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
+      echo "jellyfinServiceLocation=/usr/lib/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf
    else
       cp conf/jellyfin.service /etc/systemd/system/
-      echo "jellyfinServiceLocation=/etc/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
+      echo "jellyfinServiceLocation=/etc/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf
    fi
    
    cp conf/jellyfin.conf /etc/
@@ -281,7 +281,7 @@ Update_jellyman()
       echo "httpsPort=8920" >> /opt/jellyfin/config/jellyman.conf
    fi
    
-   if [ -d /usr/lib/systemd ] && [ ! -n $jellyfinServiceLocation ]; then
+   if [ -d /usr/lib/systemd ] && [[ ! -n $jellyfinServiceLocation ]]; then
       echo "jellyfinServiceLocation=/usr/lib/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
    elif [ ! -n $jellyfinServiceLocation ]; then
       echo "jellyfinServiceLocation=/etc/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
