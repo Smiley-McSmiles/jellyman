@@ -82,12 +82,12 @@ Download_version()
    source /opt/jellyfin/config/jellyman.conf
    mkdir /opt/jellyfin/update
    wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/
-   cat /opt/jellyfin/update/index.html | grep "-" | sed -e 's/<a href="//g' | sed -e "s|/.*||g" | cat -n
+   cat /opt/jellyfin/update/index.html | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | cat -n
    echo
    echo "Please enter the number corresponding with"
    read -p "the version you want to install : " versionToSwitchNumber
-   newVersion=$(cat /opt/jellyfin/update/index.html | grep "-" | sed -e 's/<a href="//g' | sed -e "s|/.*||g" | head -n $versionToSwitchNumber | tail -n 1)
-   maxNumber=$(cat /opt/jellyfin/update/index.html | grep "-" | sed -e 's/<a href="//g' | sed -e "s|/.*||g" | wc -l)
+   newVersion=$(cat /opt/jellyfin/update/index.html | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | head -n $versionToSwitchNumber | tail -n 1)
+   maxNumber=$(cat /opt/jellyfin/update/index.html | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | wc -l)
     if [[ $versionToSwitchNumber == *['!'@#\$%^\&*()_+.]* ]] || [[ $versionToSwitchNumber =~ [a-zA-Z]+$ ]] || (( $versionToSwitchNumber > $maxNumber )) || (( $versionToSwitchNumber < 1 )); then
       echo "The new version you chose doesn't exist, please run this command again and pick a LISTED NUMBER"
      exit
@@ -713,7 +713,8 @@ if [ -n "$1" ]; then
                 Update $2
                 shift
              fi ;;
-         -U) Update-jellyman ;;
+         -U) Update-jellyman 
+             exit ;;
          -ub) Update_beta ;;
          -v) Get_version ;;
          -vd) Download_version ;;
