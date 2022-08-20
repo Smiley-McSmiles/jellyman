@@ -99,7 +99,6 @@ Get_Architecture()
             *)        echo "ERROR UNKNOWN CPU ARCHITECTURE.. EXITING."
                       exit ;;
       esac
-   return $architecture
 }
 
 Install_dependancies()
