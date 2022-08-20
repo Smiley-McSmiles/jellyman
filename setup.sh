@@ -165,7 +165,15 @@ Setup()
    cp scripts/jellyman /bin/
    cp scripts/jellyfin.sh /opt/jellyfin/
    mv $jellyfin_archive /opt/jellyfin/
-   cp conf/jellyfin.service /usr/lib/systemd/system/
+   
+   if [ -d /usr/lib/systemd ]; then
+      cp conf/jellyfin.service /usr/lib/systemd/system/
+      echo "jellyfinServiceLocation=" >> /usr/lib/systemd/system/
+   else
+      cp conf/jellyfin.service /etc/systemd/system/
+      echo "jellyfinServiceLocation=" >> /etc/systemd/system/
+   fi
+   
    cp conf/jellyfin.conf /etc/
    cd /opt/jellyfin
    tar xvzf $jellyfin_archive
@@ -243,7 +251,7 @@ Pre_setup()
    echo "|  -i [jellyfin-backup.tar] Import .tar to pick up where you left   |" 
    echo "|                    off on another machine                         |"
    echo "|                                                                   |"
-   echo "|                  -U Update Jellyman only.                         |"
+   echo "|                    -U Update Jellyman only.                       |"
    echo "|-------------------------------------------------------------------|"
    echo
    echo "Press ENTER to continue with first time setup or CTRL+C to exit..."
@@ -253,6 +261,7 @@ Pre_setup()
 Update_jellyman()
 {
    Has_sudo
+   source /opt/jellyfin/config/jellyman.conf
    echo "Updating Jellyman - The Jellyfin Manager"
    cp -f scripts/jellyman /usr/bin/
    if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
@@ -271,6 +280,13 @@ Update_jellyman()
       sed -i -e "s|networkPort=.*|httpPort=8096|g" /opt/jellyfin/config/jellyman.conf
       echo "httpsPort=8920" >> /opt/jellyfin/config/jellyman.conf
    fi
+   
+   if [ -d /usr/lib/systemd ] && [ ! -n $jellyfinServiceLocation ]; then
+      echo "jellyfinServiceLocation=" >> /usr/lib/systemd/system/
+   else
+      echo "jellyfinServiceLocation=" >> /etc/systemd/system/
+   fi
+
    echo "...complete"
 }
 
