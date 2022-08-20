@@ -166,13 +166,14 @@ Setup()
    cp scripts/jellyfin.sh /opt/jellyfin/
    touch /opt/jellyfin/config/jellyman.conf
    mv $jellyfin_archive /opt/jellyfin/
+   jellyfinServiceLocation=
    
    if [ -d /usr/lib/systemd/system ]; then
       cp conf/jellyfin.service /usr/lib/systemd/system/
-      echo "jellyfinServiceLocation=/usr/lib/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf
+      jellyfinServiceLocation="/usr/lib/systemd/system/jellyfin.service"
    else
       cp conf/jellyfin.service /etc/systemd/system/
-      echo "jellyfinServiceLocation=/etc/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf
+      jellyfinServiceLocation="/etc/systemd/system/jellyfin.service"
    fi
    
    cp conf/jellyfin.conf /etc/
@@ -188,6 +189,7 @@ Setup()
    echo "httpsPort=8920" >> config/jellyman.conf
    echo "currentVersion=$jellyfin" >> config/jellyman.conf
    echo "defaultUser=$defaultUser" >> config/jellyman.conf
+   echo "jellyfinServiceLocation=$jellyfinServiceLocation" >> config/jellyman.conf
 
    Install_dependancies
 
@@ -282,9 +284,9 @@ Update_jellyman()
    fi
    
    if [ -d /usr/lib/systemd ] && [[ ! -n $jellyfinServiceLocation ]]; then
-      echo "jellyfinServiceLocation=/usr/lib/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
-   elif [ ! -n $jellyfinServiceLocation ]; then
-      echo "jellyfinServiceLocation=/etc/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
+      bash -c 'echo "jellyfinServiceLocation=/usr/lib/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf'
+   elif [[ ! -n $jellyfinServiceLocation ]]; then
+      bash -c 'echo "jellyfinServiceLocation=/etc/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf'
    fi
 
    echo "...complete"
