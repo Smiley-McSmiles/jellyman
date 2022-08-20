@@ -164,15 +164,23 @@ Setup()
 
    cp scripts/jellyman /bin/
    cp scripts/jellyfin.sh /opt/jellyfin/
+   touch /opt/jellyfin/config/jellyman.conf
    mv $jellyfin_archive /opt/jellyfin/
-   cp conf/jellyfin.service /usr/lib/systemd/system/
+   
+   if [ -d /usr/lib/systemd ]; then
+      cp conf/jellyfin.service /usr/lib/systemd/system/
+      echo "jellyfinServiceLocation=/usr/lib/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
+   else
+      cp conf/jellyfin.service /etc/systemd/system/
+      echo "jellyfinServiceLocation=/etc/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
+   fi
+   
    cp conf/jellyfin.conf /etc/
    cd /opt/jellyfin
    tar xvzf $jellyfin_archive
    rm -f $jellyfin_archive
    ln -s $jellyfin jellyfin
    mkdir data cache config log cert
-   touch config/jellyman.conf
    echo "architecture=$architecture" >> config/jellyman.conf
    echo "defaultPath=" >> config/jellyman.conf
    echo "apiKey=" >> config/jellyman.conf
@@ -200,7 +208,7 @@ Setup()
    else
       echo "|-------------------------------------------------------------------|"
       echo "|                        ******WARNING******                        |"
-      echo "|                        ******CAUTION******                        |"
+      echo "|                         ******ERROR******                         |"
       echo "|                  FAILED TO OPEN PORT 8096/8920!                   |"
       echo "|          ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!          |"
       echo "|-------------------------------------------------------------------|"
@@ -218,7 +226,7 @@ Setup()
    echo "DONE"
    echo
    echo "|-------------------------------------------------------------------|"
-   echo "|   Navigate to http://localhost:8096/ or https://localhost:8920/   |"
+   echo "|               Navigate to http://localhost:8096/                  |"
    echo "|        in your Web Browser to claim your Jellyfin server          |"
    echo "|-------------------------------------------------------------------|"
    echo
@@ -243,7 +251,7 @@ Pre_setup()
    echo "|  -i [jellyfin-backup.tar] Import .tar to pick up where you left   |" 
    echo "|                    off on another machine                         |"
    echo "|                                                                   |"
-   echo "|                  -U Update Jellyman only.                         |"
+   echo "|                    -U Update Jellyman only.                       |"
    echo "|-------------------------------------------------------------------|"
    echo
    echo "Press ENTER to continue with first time setup or CTRL+C to exit..."
@@ -253,6 +261,7 @@ Pre_setup()
 Update_jellyman()
 {
    Has_sudo
+   source /opt/jellyfin/config/jellyman.conf
    echo "Updating Jellyman - The Jellyfin Manager"
    cp -f scripts/jellyman /usr/bin/
    if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
@@ -271,6 +280,13 @@ Update_jellyman()
       sed -i -e "s|networkPort=.*|httpPort=8096|g" /opt/jellyfin/config/jellyman.conf
       echo "httpsPort=8920" >> /opt/jellyfin/config/jellyman.conf
    fi
+   
+   if [ -d /usr/lib/systemd ] && [ ! -n $jellyfinServiceLocation ]; then
+      echo "jellyfinServiceLocation=/usr/lib/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
+   elif [ ! -n $jellyfinServiceLocation ]; then
+      echo "jellyfinServiceLocation=/etc/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
+   fi
+
    echo "...complete"
 }
 

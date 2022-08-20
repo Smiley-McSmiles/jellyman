@@ -32,7 +32,7 @@ Backup()
    echo "Size: $tarSize"
    echo
    echo "|--------------------------------------------------------|"
-   echo "|      To Import on your next setup, simply run:         |"
+   echo "|        To Import on your next setup, simply run:       |"
    echo "|  git clone https://github.com/Smiley-McSmiles/jellyman |"
    echo "|                       cd jellyman                      |"
    echo "|                   chmod ug+x setup.sh                  |"
@@ -58,13 +58,14 @@ Check_disk_free()
 {
    source /opt/jellyfin/config/jellyman.conf
    if [[ $defaultPath != /* ]]; then 
-	   echo "No default directory found..."
-	   echo "Please enter the root directory for your Media Library..."
-	   read defaultPath
-	   sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
-	   df -h $defaultPath
+      echo "No default directory found..."
+      echo "Please enter the root directory for your Media Library..."
+      echo "DO NOT ENTER YOUR USER DIRECTORY AS IT WILL RESET PERMISSIONS OF THE ENTERED DIRECTORY TO YOUR JELLYFIN USER"
+      read defaultPath
+      sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
+      df -h $defaultPath
    else 
-	   df -h $defaultPath
+      df -h $defaultPath
    fi
 }
 
@@ -146,7 +147,7 @@ Remove_version()
 Help()
 {
    # Display Help
-   echo "Jellyman - The Jellyfin Manager v1.5.1"
+   echo "Jellyman - The Jellyfin Manager v1.5.2"
    echo "-Created by Smiley McSmiles"
    echo 
    echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
@@ -287,40 +288,47 @@ Http_port_change()
    source /opt/jellyfin/config/jellyman.conf
    echo
    echo "Default http port is 8096"
-   read -p "Please enter the new http network port for Jellyfin: " port
-   sed -i -e "s|httpPort=.*|httpPort=$port|g" /opt/jellyfin/config/jellyman.conf
-   sed -i -e "s|<HttpServerPortNumber>*</HttpServerPortNumber>|<HttpServerPortNumber>$port</HttpServerPortNumber>|g" /opt/jellyfin/config/network.xml
-   sed -i -e "s|<PublicPort>*</PublicPort>|<PublicPort>$port</PublicPort>|g" /opt/jellyfin/config/network.xml
-   echo "Unblocking port $port..."
-   if [ -x "$(command -v ufw)" ]; then
-	   ufw allow $port
-	   ufw reload
-   elif [ -x "$(command -v firewall-cmd)" ]; then 
-	   firewall-cmd --permanent --zone=public --add-port=$port/tcp
-	   firewall-cmd --reload
-   else echo "FAILED TO OPEN PORT $port! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
-   fi   
+   if Is_jellyfin_setup; then
+      read -p "Please enter the new http network port for Jellyfin: " port
+      sed -i -e "s|httpPort=.*|httpPort=$port|g" /opt/jellyfin/config/jellyman.conf
+      sed -i -e "s|<HttpServerPortNumber>*</HttpServerPortNumber>|<HttpServerPortNumber>$port</HttpServerPortNumber>|g" /opt/jellyfin/config/network.xml
+      sed -i -e "s|<PublicPort>*</PublicPort>|<PublicPort>$port</PublicPort>|g" /opt/jellyfin/config/network.xml
+      echo "Unblocking port $port..."
+      if [ -x "$(command -v ufw)" ]; then
+         ufw allow $port
+         ufw reload
+      elif [ -x "$(command -v firewall-cmd)" ]; then 
+         firewall-cmd --permanent --zone=public --add-port=$port/tcp
+         firewall-cmd --reload
+      else echo "FAILED TO OPEN PORT $port! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
+      fi
+   else
+      exit
+   fi
 }
 
 Https_port_change()
 {
    Has_sudo
    source /opt/jellyfin/config/jellyman.conf
-   echo
-   echo "Default https port is 8920"
-   read -p "Please enter the new https network port for Jellyfin: " port
-   sed -i -e "s|httpsPort=.*|httpsPort=$port|g" /opt/jellyfin/config/jellyman.conf
-   sed -i -e "s|<HttpsServerPortNumber>*</HttpsServerPortNumber>|<HttpsServerPortNumber>$port</HttpsServerPortNumber>|g" /opt/jellyfin/config/network.xml
-   sed -i -e "s|<PublicHttpsPort>*</PublicHttpsPort>|<PublicHttpsPort>$port</PublicHttpsPort>|g" /opt/jellyfin/config/network.xml
-   echo "Unblocking port $port..."
-   if [ -x "$(command -v ufw)" ]; then
-	   ufw allow $port
-	   ufw reload
-   elif [ -x "$(command -v firewall-cmd)" ]; then 
-	   firewall-cmd --permanent --zone=public --add-port=$port/tcp
-	   firewall-cmd --reload
-   else echo "FAILED TO OPEN PORT $port! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
-   fi   
+   if Is_jellyfin_setup; then
+      echo "Default https port is 8920"
+      read -p "Please enter the new https network port for Jellyfin: " port
+      sed -i -e "s|httpsPort=.*|httpsPort=$port|g" /opt/jellyfin/config/jellyman.conf
+      sed -i -e "s|<HttpsServerPortNumber>*</HttpsServerPortNumber>|<HttpsServerPortNumber>$port</HttpsServerPortNumber>|g" /opt/jellyfin/config/network.xml
+      sed -i -e "s|<PublicHttpsPort>*</PublicHttpsPort>|<PublicHttpsPort>$port</PublicHttpsPort>|g" /opt/jellyfin/config/network.xml
+      echo "Unblocking port $port..."
+      if [ -x "$(command -v ufw)" ]; then
+         ufw allow $port
+         ufw reload
+      elif [ -x "$(command -v firewall-cmd)" ]; then 
+         firewall-cmd --permanent --zone=public --add-port=$port/tcp
+         firewall-cmd --reload
+      else echo "FAILED TO OPEN PORT $port! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
+      fi
+   else
+      exit
+   fi
 }
 
 
@@ -477,6 +485,23 @@ Update_beta()
    fi
 }
 
+Is_jellyfin_setup()
+{
+   if [ -f "/opt/jellyfin/config/network.xml" ]; then
+      return 0
+   else
+      echo "|--------------------------------------------------------------|"
+      echo "|                        ***WARNING***                         |"
+      echo "|             JELLYFIN DID NOT GET SET UP PROPERLY!            |"
+      echo "|        NO /opt/jellyfin/config/network.xml FILE FOUND        |"
+      echo "|  This is likely due to not completing the first time setup.  |"
+      echo "|     Navigate to http://localhost:8096/ to complete setup     |"
+      echo "|--------------------------------------------------------------|"
+      return 1
+   fi
+
+}
+
 Recertify_https()
 {
    Has_sudo
@@ -487,7 +512,7 @@ Recertify_https()
    echo "|           first time setup in Jellyfin               |"
    echo "|------------------------------------------------------|"
    source /opt/jellyfin/config/jellyman.conf
-   if [ -f "/opt/jellyfin/config/network.xml" ]; then
+   if Is_jellyfin_setup; then
       rm -fv /opt/jellyfin/cert/*
       openssl req -x509 -newkey rsa:4096 -keyout /opt/jellyfin/cert/privkey.pem -out /opt/jellyfin/cert/cert.pem -days 365 -nodes -subj '/CN=jellyfin.lan'
       openssl pkcs12 -export -out /opt/jellyfin/cert/jellyfin.pfx -inkey /opt/jellyfin/cert/privkey.pem -in /opt/jellyfin/cert/cert.pem -passout pass:
@@ -498,12 +523,6 @@ Recertify_https()
       chmod -Rf 770 /opt/jellyfin/cert
       jellyman -r
    else
-      echo "|--------------------------------------------------------------|"
-      echo "|                        ***WARNING***                         |"
-      echo "|             JELLYFIN DID NOT GET SET UP PROPERLY!            |"
-      echo "|        NO /opt/jellyfin/config/network.xml FILE FOUND        |"
-      echo "|                           EXITING                            |"
-      echo "|--------------------------------------------------------------|"
       exit
    fi
 }
@@ -613,7 +632,7 @@ Uninstall()
          echo "|          ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!          |"
          echo "|-------------------------------------------------------------------|"
       fi
-      rm -fv /usr/lib/systemd/system/jellyfin.service /etc/jellyfin.conf /bin/jellyman
+      rm -fv /etc/jellyfin.conf /bin/jellyman $jellyfinServiceLocation
       rm -rfv /opt/jellyfin
       userdel -f $defaultUser
    else
