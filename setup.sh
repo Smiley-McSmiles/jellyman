@@ -99,6 +99,7 @@ Get_Architecture()
             *)        echo "ERROR UNKNOWN CPU ARCHITECTURE.. EXITING."
                       exit ;;
       esac
+   return $architecture
 }
 
 Install_dependancies()
@@ -289,6 +290,8 @@ Update_jellyman()
    fi
 
    if [[ ! -n $architecture ]]; then
+      architecture=
+      Get_Architecture
       echo "architecture=$architecture" >> /opt/jellyfin/config/jellyman.conf
    fi
 
