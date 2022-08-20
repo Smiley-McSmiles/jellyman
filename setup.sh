@@ -288,7 +288,7 @@ Update_jellyman()
       bash -c 'echo "jellyfinServiceLocation=/etc/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf'
    fi
 
-   if [[ ! n $architecture ]]; then
+   if [[ ! -n $architecture ]]; then
       bash -c 'echo "architecture=$architecture" >> /opt/jellyfin/config/jellyman.conf'
    fi
 
