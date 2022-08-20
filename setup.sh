@@ -164,14 +164,15 @@ Setup()
 
    cp scripts/jellyman /bin/
    cp scripts/jellyfin.sh /opt/jellyfin/
+   touch /opt/jellyfin/config/jellyman.conf
    mv $jellyfin_archive /opt/jellyfin/
    
    if [ -d /usr/lib/systemd ]; then
       cp conf/jellyfin.service /usr/lib/systemd/system/
-      echo "jellyfinServiceLocation=" >> /usr/lib/systemd/system/
+      echo "jellyfinServiceLocation=/usr/lib/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
    else
       cp conf/jellyfin.service /etc/systemd/system/
-      echo "jellyfinServiceLocation=" >> /etc/systemd/system/
+      echo "jellyfinServiceLocation=/etc/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
    fi
    
    cp conf/jellyfin.conf /etc/
@@ -180,7 +181,6 @@ Setup()
    rm -f $jellyfin_archive
    ln -s $jellyfin jellyfin
    mkdir data cache config log cert
-   touch config/jellyman.conf
    echo "architecture=$architecture" >> config/jellyman.conf
    echo "defaultPath=" >> config/jellyman.conf
    echo "apiKey=" >> config/jellyman.conf
@@ -282,9 +282,9 @@ Update_jellyman()
    fi
    
    if [ -d /usr/lib/systemd ] && [ ! -n $jellyfinServiceLocation ]; then
-      echo "jellyfinServiceLocation=" >> /usr/lib/systemd/system/
+      echo "jellyfinServiceLocation=/usr/lib/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
    else
-      echo "jellyfinServiceLocation=" >> /etc/systemd/system/
+      echo "jellyfinServiceLocation=/etc/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
    fi
 
    echo "...complete"
