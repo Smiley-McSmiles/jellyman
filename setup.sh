@@ -283,7 +283,7 @@ Update_jellyman()
    
    if [ -d /usr/lib/systemd ] && [ ! -n $jellyfinServiceLocation ]; then
       echo "jellyfinServiceLocation=/usr/lib/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
-   else
+   elif [ ! -n $jellyfinServiceLocation ]; then
       echo "jellyfinServiceLocation=/etc/systemd/system/" >> /opt/jellyfin/config/jellyman.conf
    fi
 
