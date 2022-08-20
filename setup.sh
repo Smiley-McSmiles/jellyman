@@ -92,7 +92,6 @@ Import()
 Get_Architecture()
 {
    cpuArchitectureFull=$(uname -m)
-   architecture=
       case "$cpuArchitectureFull" in
             x86_64)   architecture="amd64" ;;
             aarch64)  architecture="arm64" ;;
@@ -287,6 +286,10 @@ Update_jellyman()
       bash -c 'echo "jellyfinServiceLocation=/usr/lib/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf'
    elif [[ ! -n $jellyfinServiceLocation ]]; then
       bash -c 'echo "jellyfinServiceLocation=/etc/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf'
+   fi
+
+   if [[ ! n $architecture ]]; then
+      bash -c 'echo "architecture=$architecture" >> /opt/jellyfin/config/jellyman.conf'
    fi
 
    echo "...complete"
