@@ -200,7 +200,7 @@ Setup()
    else
       echo "|-------------------------------------------------------------------|"
       echo "|                        ******WARNING******                        |"
-      echo "|                        ******CAUTION******                        |"
+      echo "|                         ******ERROR******                         |"
       echo "|                  FAILED TO OPEN PORT 8096/8920!                   |"
       echo "|          ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!          |"
       echo "|-------------------------------------------------------------------|"
@@ -218,7 +218,7 @@ Setup()
    echo "DONE"
    echo
    echo "|-------------------------------------------------------------------|"
-   echo "|   Navigate to http://localhost:8096/ or https://localhost:8920/   |"
+   echo "|               Navigate to http://localhost:8096/                  |"
    echo "|        in your Web Browser to claim your Jellyfin server          |"
    echo "|-------------------------------------------------------------------|"
    echo

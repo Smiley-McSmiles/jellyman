@@ -146,7 +146,7 @@ Remove_version()
 Help()
 {
    # Display Help
-   echo "Jellyman - The Jellyfin Manager v1.5.1"
+   echo "Jellyman - The Jellyfin Manager v1.5.2"
    echo "-Created by Smiley McSmiles"
    echo 
    echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
@@ -502,7 +502,8 @@ Recertify_https()
       echo "|                        ***WARNING***                         |"
       echo "|             JELLYFIN DID NOT GET SET UP PROPERLY!            |"
       echo "|        NO /opt/jellyfin/config/network.xml FILE FOUND        |"
-      echo "|                           EXITING                            |"
+      echo "|  This is likely due to not completing the first time setup.  |"
+      echo "|     Navigate to http://localhost:8096/ to complete setup     |"
       echo "|--------------------------------------------------------------|"
       exit
    fi
