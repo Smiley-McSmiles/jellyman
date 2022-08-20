@@ -289,7 +289,7 @@ Update_jellyman()
    fi
 
    if [[ ! -n $architecture ]]; then
-      bash -c 'echo "architecture=$architecture" >> /opt/jellyfin/config/jellyman.conf'
+      echo "architecture=$architecture" >> /opt/jellyfin/config/jellyman.conf
    fi
 
    echo "...complete"
