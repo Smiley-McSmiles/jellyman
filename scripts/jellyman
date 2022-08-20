@@ -40,15 +40,17 @@ Backup()
    echo "|--------------------------------------------------------|"
 }
 
-Check_Version()
+isCurrentVersion()
 {
-   source /opt/jellyfin/config/jellyman.conf
-   if [ $jellyfin == $currentVersion ];then
+   jellyfinVersionToDownload=$1
+   currentVersionInstalled=$2
+   if [[ $jellyfinVersionToDownload == $currentVersionInstalled ]]; then
       echo "The installed version of Jellyfin matches the newest version available."
-      echo "$currentVersion"
-      exit
+      echo "$currentVersionInstalled"
+      return 1
    else
       echo "Newer Jellyfin version found..."
+      return 0
    fi
 }
 
@@ -400,15 +402,22 @@ Update()
       new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
    
    else
-      echo "Fetching newest Jellyfin version..."
+      echo "Getting current version from repository..."
       mkdir /opt/jellyfin/update
       wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/stable/combined/
-      jellyfin_archive=$(grep "$architecture.tar.gz" /opt/jellyfin/update/index.html | cut -d '"' -f 2 | sed -r "s|.sha256sum||g" | head -1)
+      jellyfin_archive=$(grep "$architecture.tar.gz" /opt/jellyfin/update/index.html | cut -d '"' -f 2 | head -1 | sed -r "s|.sha256sum||g" | sed -r "s|-musl||g")
       jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
       new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
       rm -f /opt/jellyfin/update/index.html
-      Check_Version
-      wget -O /opt/jellyfin/update/$jellyfin_archive https://repo.jellyfin.org/releases/server/linux/stable/combined/$jellyfin_archive
+      
+      echo "jellyfin_archive = $jellyfin_archive"
+      echo "jellyfin = $jellyfin"
+      echo "currentVersion = $currentVersion"
+      if isCurrentVersion $jellyfin $currentVersion; then
+         wget -O /opt/jellyfin/update/$jellyfin_archive https://repo.jellyfin.org/releases/server/linux/stable/combined/$jellyfin_archive
+      else
+         exit
+      fi
    fi
    
    echo "Unpacking $jellyfin_archive to /opt/jellyfin/..."
@@ -445,8 +454,13 @@ Update_beta()
       exit
    else
       rm -f /opt/jellyfin/update/index.html
-      Check_Version
-      wget -O /opt/jellyfin/update/$jellyfin_archive https://repo.jellyfin.org/releases/server/linux/stable-pre/$new_jellyfin_version/combined/$jellyfin_archive
+
+      if isCurrentVersion $jellyfin $currentVersion; then
+         wget -O /opt/jellyfin/update/$jellyfin_archive https://repo.jellyfin.org/releases/server/linux/stable-pre/$new_jellyfin_version/combined/$jellyfin_archive
+      else
+         exit
+      fi
+
 
       echo "Unpacking $jellyfin_archive to /opt/jellyfin/..."
       tar xvzf /opt/jellyfin/update/$jellyfin_archive -C /opt/jellyfin/

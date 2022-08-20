@@ -91,7 +91,7 @@ Import()
 
 Get_Architecture()
 {
-   cpuArchitectureFull=$(uname -p)
+   cpuArchitectureFull=$(uname -m)
    architecture=
       case "$cpuArchitectureFull" in
             x86_64)   architecture="amd64" ;;
