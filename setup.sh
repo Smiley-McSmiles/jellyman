@@ -129,11 +129,16 @@ Install_dependancies()
                         dnf config-manager --set-enabled crb
                         dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
                         dnf install $packagesNeededRHEL ;;
+            rhel)       dnf install epel-release
+                        dnf config-manager --set-enabled crb
+                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
+                        dnf install $packagesNeededRHEL ;;
             debian)     apt install $packagesNeededDebian -y ;;
             ubuntu)     apt install $packagesNeededDebian -y ;;
             linuxmint)  apt install $packagesNeededDebian -y ;;
             elementary) apt install $packagesNeededDebian -y ;;
             arch)       pacman -Syu $packagesNeededArch  ;;
+            manjaro)    pacman -Syu $packagesNeededArch  ;;
             opensuse*)  zypper install $packagesNeededOpenSuse ;;
          esac
    else
