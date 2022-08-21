@@ -103,33 +103,47 @@ Get_Architecture()
 
 Install_dependancies()
 {
-   echo "Preparing to install needed dependancies for Jellyfin..."
-   echo
-
    packagesNeededDebian='ffmpeg git net-tools openssl'
-   packagesNeededFedora='ffmpeg ffmpeg-devel ffmpeg-libs git openssl'
+   packagesNeededRHEL='ffmpeg ffmpeg-devel ffmpeg-libs git openssl'
    packagesNeededArch='ffmpeg git openssl'
    packagesNeededOpenSuse='ffmpeg-4 git openssl'
-   if [ -x "$(command -v apt)" ]; then
-      add-apt-repository universe -y
-      apt update -y
-      apt install $packagesNeededDebian -y
-   elif [ -x "$(command -v dnf)" ]; then 
-      dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-      dnf install $packagesNeededFedora -y
-   elif [ -x "$(command -v pacman)" ]; then
-       pacman -Syu $packagesNeededArch
-   elif [ -x "$(command -v zypper)" ]; then
-       zypper install $packagesNeededOpenSuse
-   else 
-      echo "|----------------------------------------------------------------------------------------------------|"
-      echo "|                                       ******WARNING******                                          |"
-      echo "|                                       *******ERROR*******                                          |"
-      echo "|        FAILED TO INSTALL PACKAGES: Package manager not found. You must manually install:           |"
-      echo "|                                    ffmpeg, git, and openssl                                        |"
-      echo "|----------------------------------------------------------------------------------------------------|"
-   fi
+   echo "Preparing to install needed dependancies for Jellyfin..."
 
+   if [ -f /etc/os-release ]; then
+      source /etc/os-release
+      echo "ID=$ID"
+         case "$ID" in
+            fedora)     dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+                        dnf install $packagesNeededRHEL -y ;;
+            centos)     dnf install epel-release
+                        dnf config-manager --set-enabled crb
+                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm
+                        dnf install $packagesNeededRHEL -y ;;
+            rocky)      dnf install epel-release -y
+                        dnf config-manager --set-enabled crb
+                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm
+                        dnf install $packagesNeededRHEL -y ;;
+            alma)       dnf install epel-release
+                        dnf config-manager --set-enabled crb
+                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
+                        dnf install $packagesNeededRHEL ;;
+            debian)     apt install $packagesNeededDebian -y ;;
+            ubuntu)     apt install $packagesNeededDebian -y ;;
+            linuxmint)  apt install $packagesNeededDebian -y ;;
+            elementary) apt install $packagesNeededDebian -y ;;
+            arch)       pacman -Syu $packagesNeededArch  ;;
+            opensuse*)  zypper install $packagesNeededOpenSuse ;;
+         esac
+   else
+      echo "|-------------------------------------------------------------------|"
+      echo "|                        ******WARNING******                        |"
+      echo "|                         ******ERROR******                         |"
+      echo "|                  FAILED TO FIND /etc/os-release FILE.             |"
+      echo "|                PLEASE MANUALLY INSTALL THESE PACKAGES:            |"
+      echo "|                       ffmpeg git AND openssl                      |"
+      echo "|-------------------------------------------------------------------|"
+   
+   fi
 }
 
 Setup()
