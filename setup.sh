@@ -2,6 +2,7 @@
 DIRECTORY=$(cd `dirname $0` && pwd)
 has_sudo_access=
 architecture=
+os_detected=
 
 Has_sudo()
 {
@@ -111,6 +112,7 @@ Install_dependancies()
 
    if [ -f /etc/os-release ]; then
       source /etc/os-release
+      os_detected=yes
       echo "ID=$ID"
          case "$ID" in
             fedora)     dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
@@ -135,6 +137,7 @@ Install_dependancies()
             opensuse*)  zypper install $packagesNeededOpenSuse ;;
          esac
    else
+      os_detected=false
       echo "|-------------------------------------------------------------------|"
       echo "|                        ******WARNING******                        |"
       echo "|                         ******ERROR******                         |"
@@ -142,7 +145,8 @@ Install_dependancies()
       echo "|                PLEASE MANUALLY INSTALL THESE PACKAGES:            |"
       echo "|                       ffmpeg git AND openssl                      |"
       echo "|-------------------------------------------------------------------|"
-   
+      
+      read -p "Press ENTER to continue" ENTER
    fi
 }
 
@@ -250,8 +254,20 @@ Setup()
    echo "|             To manage Jellyfin use 'jellyman -h'                  |"
    echo "|-------------------------------------------------------------------|"
    echo
-   read -p " Press ENTER to continue" ENTER
-   jellyman -h -e -s
+   if $os_detected; then
+      read -p " Press ENTER to continue" ENTER
+      jellyman -h -e -s
+   else
+      jellyman -h 
+      echo "|-------------------------------------------------------------------|"
+      echo "|                        ******WARNING******                        |"
+      echo "|             JELLYFIN MEDIA SERVER NOT ENABLED OR STARTED          |"
+      echo "|                  FAILED TO FIND /etc/os-release FILE.             |"
+      echo "|                PLEASE MANUALLY INSTALL THESE PACKAGES:            |"
+      echo "|                       ffmpeg git AND openssl                      |"
+      echo "|        THEN RUN: jellyman -e -s TO ENABLE AND START JELLYFIN      |"
+      echo "|-------------------------------------------------------------------|"
+   fi
    echo
    read -p " Press ENTER to continue" ENTER
    jellyman -t
