@@ -240,7 +240,6 @@ Setup()
    echo "Removing git cloned directory:$DIRECTORY..."
    rm -rf $DIRECTORY
    echo
-
    echo
    echo "DONE"
    echo
@@ -251,6 +250,8 @@ Setup()
    echo
    echo "|-------------------------------------------------------------------|"
    echo "|         To enable https please enter 'sudo jellyman -rc'          |"
+   echo "|       (After you have navigated to the Jellyfin Dashboard)        |"
+   echo "|                                                                   |"
    echo "|             To manage Jellyfin use 'jellyman -h'                  |"
    echo "|-------------------------------------------------------------------|"
    echo
