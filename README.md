@@ -90,6 +90,15 @@ EXAMPLE:
 'sudo jellyman -S -d -b /home/$USER/ -s'
 ```
 
+### In case Jellyman wont upgrade itself
+
+```shell
+git clone https://github.com/Smiley-McSmiles/jellyman
+cd jellyman
+chmod ug+x setup.sh
+sudo ./setup.sh -U
+```
+
 ### License
 
    This project is licensed under the [GPL V3.0 License](https://github.com/Smiley-McSmiles/jellyman/blob/main/LICENSE).
