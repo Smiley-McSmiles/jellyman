@@ -159,12 +159,20 @@ Setup()
 {
    echo "Fetching newest stable Jellyfin version..."
    Get_Architecture
-   wget https://repo.jellyfin.org/releases/server/linux/stable/combined/
-   jellyfin_archive=$(grep "$architecture.tar.gz" index.html | cut -d '"' -f 2 | sed -r "s|.sha256sum||g" | head -1)
-   rm index.html
-   wget https://repo.jellyfin.org/releases/server/linux/stable/combined/$jellyfin_archive
-   jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
-
+   jellyfin=
+   jellyfin_archive=
+   
+   if [ ! -f *"tar.gz" ]; then
+      wget https://repo.jellyfin.org/releases/server/linux/stable/combined/
+      jellyfin_archive=$(grep "$architecture.tar.gz" index.html | cut -d '"' -f 2 | sed -r "s|.sha256sum||g" | head -1)
+      rm index.html
+      wget https://repo.jellyfin.org/releases/server/linux/stable/combined/$jellyfin_archive
+      jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
+   else
+      jellyfin_archive=$(ls *.tar.gz)
+      jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
+   fi
+   
    mkdir /opt/jellyfin
    clear
 
@@ -188,7 +196,7 @@ Setup()
    cp scripts/jellyman /bin/
    cp scripts/jellyfin.sh /opt/jellyfin/
    touch /opt/jellyfin/config/jellyman.conf
-   mv $jellyfin_archive /opt/jellyfin/
+   cp $jellyfin_archive /opt/jellyfin/
    jellyfinServiceLocation=
    
    if [ -d /usr/lib/systemd/system ]; then
@@ -239,8 +247,6 @@ Setup()
       echo "|-------------------------------------------------------------------|"
    fi
 
-   echo "Removing git cloned directory:$DIRECTORY..."
-   rm -rf $DIRECTORY
    echo
    echo
    echo "DONE"
@@ -274,6 +280,14 @@ Setup()
    echo
    read -p " Press ENTER to continue" ENTER
    jellyman -t
+   echo
+   read -p "Would you like to remove the git cloned directory $DIRECTORY? [Y/n] :" deleteOrNot
+   if [[ $deleteOrNot == [yY]* ]]; then
+      echo "Removing git cloned directory:$DIRECTORY..."
+   else
+      echo "Okay, keeping $DIRECTORY"
+   rm -rf $DIRECTORY
+
 }
 
 Pre_setup()
