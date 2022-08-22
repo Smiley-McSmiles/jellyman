@@ -184,6 +184,7 @@ Setup()
       cp jellyman.1 /usr/local/share/man/man1/
    fi
 
+   mkdir /opt/jellyfin/data /opt/jellyfin/cache /opt/jellyfin/config /opt/jellyfin/log /opt/jellyfin/cert
    cp scripts/jellyman /bin/
    cp scripts/jellyfin.sh /opt/jellyfin/
    touch /opt/jellyfin/config/jellyman.conf
@@ -204,7 +205,6 @@ Setup()
    tar xvzf $jellyfin_archive
    rm -f $jellyfin_archive
    ln -s $jellyfin jellyfin
-   mkdir data cache config log cert
    echo "architecture=$architecture" >> config/jellyman.conf
    echo "defaultPath=" >> config/jellyman.conf
    echo "apiKey=" >> config/jellyman.conf
