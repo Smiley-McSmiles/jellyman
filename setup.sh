@@ -112,27 +112,27 @@ Install_dependancies()
 
    if [ -f /etc/os-release ]; then
       source /etc/os-release
-      os_detected=yes
+      os_detected=true
       echo "ID=$ID"
          case "$ID" in
-            fedora)     dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+            fedora)     dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
                         dnf install $packagesNeededRHEL -y ;;
-            centos)     dnf install epel-release
+            centos)     dnf install epel-release -y
                         dnf config-manager --set-enabled crb
-                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm
+                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
                         dnf install $packagesNeededRHEL -y ;;
             rocky)      dnf install epel-release -y
                         dnf config-manager --set-enabled crb
-                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm
+                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
                         dnf install $packagesNeededRHEL -y ;;
-            alma)       dnf install epel-release
+            alma)       dnf install epel-release -y
                         dnf config-manager --set-enabled crb
                         dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
-                        dnf install $packagesNeededRHEL ;;
-            rhel)       dnf install epel-release
+                        dnf install $packagesNeededRHEL -y ;;
+            rhel)       dnf install epel-release -y
                         dnf config-manager --set-enabled crb
                         dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
-                        dnf install $packagesNeededRHEL ;;
+                        dnf install $packagesNeededRHEL -y ;;
             debian)     apt install $packagesNeededDebian -y ;;
             ubuntu)     apt install $packagesNeededDebian -y ;;
             linuxmint)  apt install $packagesNeededDebian -y ;;
@@ -198,6 +198,7 @@ Setup()
       jellyfinServiceLocation="/etc/systemd/system/jellyfin.service"
    fi
    
+   sed -i -e "s|User=jellyfin|User=$defaultUser|g" $jellyfinServiceLocation
    cp conf/jellyfin.conf /etc/
    cd /opt/jellyfin
    tar xvzf $jellyfin_archive
@@ -238,10 +239,6 @@ Setup()
       echo "|-------------------------------------------------------------------|"
    fi
 
-   echo "Enabling jellyfin.service..."
-   sed -i -e "s|User=jellyfin|User=$defaultUser|g" /usr/lib/systemd/system/jellyfin.service
-   echo
-
    echo "Removing git cloned directory:$DIRECTORY..."
    rm -rf $DIRECTORY
    echo
@@ -261,7 +258,7 @@ Setup()
    echo "|-------------------------------------------------------------------|"
    echo
    if $os_detected; then
-      read -p " Press ENTER to continue" ENTER
+      read -p "Press ENTER to continue" ENTER
       jellyman -h -e -s
    else
       jellyman -h 
