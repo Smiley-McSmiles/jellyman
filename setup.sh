@@ -138,6 +138,7 @@ Install_dependancies()
             linuxmint)  apt install $packagesNeededDebian -y ;;
             elementary) apt install $packagesNeededDebian -y ;;
             arch)       pacman -Syu $packagesNeededArch  ;;
+            endeavouros) pacman -Syu $packagesNeededArch  ;;
             manjaro)    pacman -Syu $packagesNeededArch  ;;
             opensuse*)  zypper install $packagesNeededOpenSuse ;;
          esac
