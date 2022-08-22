@@ -2,6 +2,7 @@
 DIRECTORY=$(cd `dirname $0` && pwd)
 has_sudo_access=
 architecture=
+os_detected=
 
 Has_sudo()
 {
@@ -103,33 +104,55 @@ Get_Architecture()
 
 Install_dependancies()
 {
-   echo "Preparing to install needed dependancies for Jellyfin..."
-   echo
-
    packagesNeededDebian='ffmpeg git net-tools openssl'
-   packagesNeededFedora='ffmpeg ffmpeg-devel ffmpeg-libs git openssl'
+   packagesNeededRHEL='ffmpeg ffmpeg-devel ffmpeg-libs git openssl'
    packagesNeededArch='ffmpeg git openssl'
    packagesNeededOpenSuse='ffmpeg-4 git openssl'
-   if [ -x "$(command -v apt)" ]; then
-      add-apt-repository universe -y
-      apt update -y
-      apt install $packagesNeededDebian -y
-   elif [ -x "$(command -v dnf)" ]; then 
-      dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-      dnf install $packagesNeededFedora -y
-   elif [ -x "$(command -v pacman)" ]; then
-       pacman -Syu $packagesNeededArch
-   elif [ -x "$(command -v zypper)" ]; then
-       zypper install $packagesNeededOpenSuse
-   else 
-      echo "|----------------------------------------------------------------------------------------------------|"
-      echo "|                                       ******WARNING******                                          |"
-      echo "|                                       *******ERROR*******                                          |"
-      echo "|        FAILED TO INSTALL PACKAGES: Package manager not found. You must manually install:           |"
-      echo "|                                    ffmpeg, git, and openssl                                        |"
-      echo "|----------------------------------------------------------------------------------------------------|"
-   fi
+   echo "Preparing to install needed dependancies for Jellyfin..."
 
+   if [ -f /etc/os-release ]; then
+      source /etc/os-release
+      os_detected=true
+      echo "ID=$ID"
+         case "$ID" in
+            fedora)     dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
+                        dnf install $packagesNeededRHEL -y ;;
+            centos)     dnf install epel-release -y
+                        dnf config-manager --set-enabled crb
+                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
+                        dnf install $packagesNeededRHEL -y ;;
+            rocky)      dnf install epel-release -y
+                        dnf config-manager --set-enabled crb
+                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
+                        dnf install $packagesNeededRHEL -y ;;
+            alma)       dnf install epel-release -y
+                        dnf config-manager --set-enabled crb
+                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
+                        dnf install $packagesNeededRHEL -y ;;
+            rhel)       dnf install epel-release -y
+                        dnf config-manager --set-enabled crb
+                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
+                        dnf install $packagesNeededRHEL -y ;;
+            debian)     apt install $packagesNeededDebian -y ;;
+            ubuntu)     apt install $packagesNeededDebian -y ;;
+            linuxmint)  apt install $packagesNeededDebian -y ;;
+            elementary) apt install $packagesNeededDebian -y ;;
+            arch)       pacman -Syu $packagesNeededArch  ;;
+            manjaro)    pacman -Syu $packagesNeededArch  ;;
+            opensuse*)  zypper install $packagesNeededOpenSuse ;;
+         esac
+   else
+      os_detected=false
+      echo "|-------------------------------------------------------------------|"
+      echo "|                        ******WARNING******                        |"
+      echo "|                         ******ERROR******                         |"
+      echo "|                  FAILED TO FIND /etc/os-release FILE.             |"
+      echo "|                PLEASE MANUALLY INSTALL THESE PACKAGES:            |"
+      echo "|                       ffmpeg git AND openssl                      |"
+      echo "|-------------------------------------------------------------------|"
+      
+      read -p "Press ENTER to continue" ENTER
+   fi
 }
 
 Setup()
@@ -161,6 +184,7 @@ Setup()
       cp jellyman.1 /usr/local/share/man/man1/
    fi
 
+   mkdir /opt/jellyfin/data /opt/jellyfin/cache /opt/jellyfin/config /opt/jellyfin/log /opt/jellyfin/cert
    cp scripts/jellyman /bin/
    cp scripts/jellyfin.sh /opt/jellyfin/
    touch /opt/jellyfin/config/jellyman.conf
@@ -175,12 +199,12 @@ Setup()
       jellyfinServiceLocation="/etc/systemd/system/jellyfin.service"
    fi
    
+   sed -i -e "s|User=jellyfin|User=$defaultUser|g" $jellyfinServiceLocation
    cp conf/jellyfin.conf /etc/
    cd /opt/jellyfin
    tar xvzf $jellyfin_archive
    rm -f $jellyfin_archive
    ln -s $jellyfin jellyfin
-   mkdir data cache config log cert
    echo "architecture=$architecture" >> config/jellyman.conf
    echo "defaultPath=" >> config/jellyman.conf
    echo "apiKey=" >> config/jellyman.conf
@@ -215,14 +239,9 @@ Setup()
       echo "|-------------------------------------------------------------------|"
    fi
 
-   echo "Enabling jellyfin.service..."
-   sed -i -e "s|User=jellyfin|User=$defaultUser|g" /usr/lib/systemd/system/jellyfin.service
-   echo
-
    echo "Removing git cloned directory:$DIRECTORY..."
    rm -rf $DIRECTORY
    echo
-
    echo
    echo "DONE"
    echo
@@ -233,11 +252,25 @@ Setup()
    echo
    echo "|-------------------------------------------------------------------|"
    echo "|         To enable https please enter 'sudo jellyman -rc'          |"
+   echo "|       (After you have navigated to the Jellyfin Dashboard)        |"
+   echo "|                                                                   |"
    echo "|             To manage Jellyfin use 'jellyman -h'                  |"
    echo "|-------------------------------------------------------------------|"
    echo
-   read -p " Press ENTER to continue" ENTER
-   jellyman -h -e -s
+   if $os_detected; then
+      read -p "Press ENTER to continue" ENTER
+      jellyman -h -e -s
+   else
+      jellyman -h 
+      echo "|-------------------------------------------------------------------|"
+      echo "|                        ******WARNING******                        |"
+      echo "|             JELLYFIN MEDIA SERVER NOT ENABLED OR STARTED          |"
+      echo "|                  FAILED TO FIND /etc/os-release FILE.             |"
+      echo "|                PLEASE MANUALLY INSTALL THESE PACKAGES:            |"
+      echo "|                       ffmpeg git AND openssl                      |"
+      echo "|        THEN RUN: jellyman -e -s TO ENABLE AND START JELLYFIN      |"
+      echo "|-------------------------------------------------------------------|"
+   fi
    echo
    read -p " Press ENTER to continue" ENTER
    jellyman -t
