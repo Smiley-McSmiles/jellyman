@@ -287,7 +287,7 @@ Setup()
    else
       echo "Okay, keeping $DIRECTORY"
    rm -rf $DIRECTORY
-
+   fi
 }
 
 Pre_setup()
