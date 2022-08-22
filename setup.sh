@@ -284,9 +284,9 @@ Setup()
    read -p "Would you like to remove the git cloned directory $DIRECTORY? [Y/n] :" deleteOrNot
    if [[ $deleteOrNot == [yY]* ]]; then
       echo "Removing git cloned directory:$DIRECTORY..."
+      rm -rf $DIRECTORY
    else
       echo "Okay, keeping $DIRECTORY"
-   rm -rf $DIRECTORY
    fi
 }
 
