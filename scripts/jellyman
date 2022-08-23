@@ -550,9 +550,9 @@ Rename_tv()
    echo "|                        For example:                          |"
    echo "|  /jfin/TV/*/*/* <- For every Episode(May Crash Be Careful!)  |"
    echo "|                            OR:                               |"
-   echo "|  /jfin/TV/Breaking Bad/*/* <- For Every Episode in a show    |"
+   echo "|  /jfin/TV/Breaking*Bad/*/* <- For Every Episode in a show    |"
    echo "|                            OR:                               |"
-   echo "|  /jfin/TV/Breaking Bad/Season 2/* <- For Every Episode in    |"
+   echo "|  /jfin/TV/Breaking*Bad/Season*2/* <- For Every Episode in    |"
    echo "|                    a season of a show                        |"
    echo "|                                                              |"
    echo "|      BE ADVISED, IF YOU'RE RE-NAMING MULTIPLE SHOWS,         |"
@@ -561,7 +561,7 @@ Rename_tv()
    echo "|--------------------------------------------------------------|"
    echo
    read -p "Please enter a directory : " directoryToCorrect
-   directoryToCorrect=$(echo $directoryToCorrect | sed -r "s| |*|g")
+   # This is apparently a problem with the next command after clear. --> directoryToCorrect=$(echo $directoryToCorrect | sed -r "s| |*|g")
    clear
    nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
    
