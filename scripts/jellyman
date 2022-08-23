@@ -1,6 +1,6 @@
 #!/bin/bash
 
-jellymanVersion="1.5.5"
+jellymanVersion="v1.5.6"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -81,7 +81,7 @@ Get_version()
    Has_sudo
    source /opt/jellyfin/config/jellyman.conf
    echo "$currentVersion"
-   echo "Jellyman v$jellymanVersion"
+   echo "Jellyman $jellymanVersion"
 }
 
 Download_version()
@@ -155,7 +155,7 @@ Remove_version()
 Help()
 {
    # Display Help
-   echo "Jellyman - The Jellyfin Manager v$jellymanVersion"
+   echo "Jellyman - The Jellyfin Manager $jellymanVersion"
    echo "-Created by Smiley McSmiles"
    echo 
    echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
@@ -550,9 +550,9 @@ Rename_tv()
    echo "|                        For example:                          |"
    echo "|  /jfin/TV/*/*/* <- For every Episode(May Crash Be Careful!)  |"
    echo "|                            OR:                               |"
-   echo "|  /jfin/TV/Breaking*Bad/*/* <- For Every Episode in a show    |"
+   echo "|  /jfin/TV/Breaking Bad/*/* <- For Every Episode in a show    |"
    echo "|                            OR:                               |"
-   echo "|  /jfin/TV/Breaking*Bad/Season*2/* <- For Every Episode in    |"
+   echo "|  /jfin/TV/Breaking Bad/Season 2/* <- For Every Episode in    |"
    echo "|                    a season of a show                        |"
    echo "|                                                              |"
    echo "|      BE ADVISED, IF YOU'RE RE-NAMING MULTIPLE SHOWS,         |"
@@ -561,10 +561,11 @@ Rename_tv()
    echo "|--------------------------------------------------------------|"
    echo
    read -p "Please enter a directory : " directoryToCorrect
+   directoryToCorrect=$(echo $directoryToCorrect | sed -r "s| |*|g")
    clear
    nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
    
-   testDirCount=$(echo $directoryToCorrect | grep -o "/" | wc -w)
+   testDirCount=$(echo $nameOfTestFile | grep -o "/" | wc -w)
    echo $testDirCount
 
    if [[ $directoryToCorrect != *"/" ]]; then
@@ -575,7 +576,7 @@ Rename_tv()
    number=1
 
    while [ $number -lt $testDirCount ]; do
-      testName=$(echo $directoryToCorrect | cut -d "/" -f $iteration)
+      testName=$(echo $nameOfTestFile | cut -d "/" -f $iteration)
       echo "$number : $testName"
       iteration=$(($iteration + 1))
       
@@ -663,7 +664,7 @@ Update-jellyman()
    wget -O /opt/jellyfin/config/jellyman_version https://raw.githubusercontent.com/Smiley-McSmiles/jellyman/main/jellyman.1
    currentJellymanVersion=$(cat /opt/jellyfin/config/jellyman_version | grep " - v" | cut -d "v" -f2)
    rm -f /opt/jellyfin/config/jellyman_version
-   if [[ $currentJellymanVersion == $jellymanVersion ]]; then
+   if [[ "v$currentJellymanVersion" == $jellymanVersion ]]; then
       echo "Jellyman is up to date. No new versions available."
       exit
    else
