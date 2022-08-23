@@ -565,7 +565,7 @@ Rename_tv()
    clear
    nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
    
-   testDirCount=$(echo $directoryToCorrect | grep -o "/" | wc -w)
+   testDirCount=$(echo $nameOfTestFile | grep -o "/" | wc -w)
    echo $testDirCount
 
    if [[ $directoryToCorrect != *"/" ]]; then
@@ -576,7 +576,7 @@ Rename_tv()
    number=1
 
    while [ $number -lt $testDirCount ]; do
-      testName=$(echo $directoryToCorrect | cut -d "/" -f $iteration)
+      testName=$(echo $nameOfTestFile | cut -d "/" -f $iteration)
       echo "$number : $testName"
       iteration=$(($iteration + 1))
       
