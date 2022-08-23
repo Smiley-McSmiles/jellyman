@@ -598,6 +598,7 @@ Rename_tv()
             nameOfShow=$(dirname "$item" | cut -d "/" -f $directoryNumber)
             episodeNumber=$(echo "$item" | grep -oE '[sS][0-9][0-9][eE][0-9][0-9]')
             mv "$item" "$nameOfDirectory/$nameOfShow $episodeNumber.$extensionOfFile"
+            newItemName="$nameOfDirectory/$nameOfShow $episodeNumber.$extensionOfFile"
             echo "item:"
             echo "$item"
             #echo "Directory:"
@@ -609,9 +610,9 @@ Rename_tv()
             #echo "extensionOfFile:"
             #echo "$extensionOfFile"
             echo "New Name:"
-            echo "$nameOfDirectory/$nameOfShow $episodeNumber.$extensionOfFile"
-            chown -fv $defaultUser:$defaultUser "$item"
-            chmod -fv 770 "$item"
+            echo "$newItemName"
+            chown -fv $defaultUser:$defaultUser "$newItemName"
+            chmod -fv 770 "$newItemName"
             echo
          fi
    done
