@@ -1,5 +1,7 @@
 #!/bin/bash
 
+jellymanVersion="1.5.5"
+
 ###############################################################################
 # FUNCTIONS                                                                   #
 ###############################################################################
@@ -58,9 +60,14 @@ Check_disk_free()
 {
    source /opt/jellyfin/config/jellyman.conf
    if [[ $defaultPath != /* ]]; then 
-      echo "No default directory found..."
-      echo "Please enter the root directory for your Media Library..."
-      echo "DO NOT ENTER YOUR USER DIRECTORY AS IT WILL RESET PERMISSIONS OF THE ENTERED DIRECTORY TO YOUR JELLYFIN USER"
+      echo "|-----------------------------------------------|"
+      echo "|          No default directory found...        |"
+      echo "|     Please enter the root directory for       |"
+      echo "|              your Media Library               |"
+      echo "|    DO NOT ENTER YOUR USER DIRECTORY AS IT     |"
+      echo "|    WILL RESET PERMISSIONS OF THE ENTERED      |"
+      echo "|       DIRECTORY TO YOUR JELLYFIN USER         |"
+      echo "|-----------------------------------------------|"
       read defaultPath
       sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
       df -h $defaultPath
@@ -74,6 +81,7 @@ Get_version()
    Has_sudo
    source /opt/jellyfin/config/jellyman.conf
    echo "$currentVersion"
+   echo "Jellyman v$jellymanVersion"
 }
 
 Download_version()
@@ -147,7 +155,7 @@ Remove_version()
 Help()
 {
    # Display Help
-   echo "Jellyman - The Jellyfin Manager v1.5.5"
+   echo "Jellyman - The Jellyfin Manager v$jellymanVersion"
    echo "-Created by Smiley McSmiles"
    echo 
    echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
@@ -180,7 +188,7 @@ Help()
    echo
    echo "To browse Jellyfin versions please use this link."
    echo "***WARNING*** ONLY USE COMBINED(Web & Server) PACKAGES"
-   echo https://repo.jellyfin.org/releases/server/linux/versions/
+   echo "https://repo.jellyfin.org/releases/server/linux/versions/"
 }
 
 Import()
@@ -300,7 +308,8 @@ Http_port_change()
       elif [ -x "$(command -v firewall-cmd)" ]; then 
          firewall-cmd --permanent --zone=public --add-port=$port/tcp
          firewall-cmd --reload
-      else echo "FAILED TO OPEN PORT $port! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
+      else
+         echo "FAILED TO OPEN PORT $port! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
       fi
    else
       exit
@@ -324,7 +333,8 @@ Https_port_change()
       elif [ -x "$(command -v firewall-cmd)" ]; then 
          firewall-cmd --permanent --zone=public --add-port=$port/tcp
          firewall-cmd --reload
-      else echo "FAILED TO OPEN PORT $port! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
+      else
+         echo "FAILED TO OPEN PORT $port! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
       fi
    else
       exit
@@ -554,20 +564,27 @@ Rename_tv()
    clear
    nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
    
-   name2=$(echo $nameOfTestFile | cut -d "/" -f 2)
-   name3=$(echo $nameOfTestFile | cut -d "/" -f 3)
-   name4=$(echo $nameOfTestFile | cut -d "/" -f 4)
-   name5=$(echo $nameOfTestFile | cut -d "/" -f 5)
-   name6=$(echo $nameOfTestFile | cut -d "/" -f 6)
-   echo "2:$name2"
-   echo "3:$name3"
-   echo "4:$name4"
-   echo "5:$name5"
-   echo "6:$name6"
-   echo
-   echo
+   testDirCount=$(echo $directoryToCorrect | grep -o "/" | wc -w)
+   echo $testDirCount
+
+   if [[ $directoryToCorrect != *"/" ]]; then
+      testDirCount=$(($testDirCount + 1))
+   fi
+
+   iteration=2
+   number=1
+
+   while [ $number -lt $testDirCount ]; do
+      testName=$(echo $directoryToCorrect | cut -d "/" -f $iteration)
+      echo "$number : $testName"
+      iteration=$(($iteration + 1))
+      
+      number=$(($number + 1))   
+   done
+   
    echo "Please enter the number that corresponds with the show's name above"
    read directoryNumber
+   directoryNumber=$(($directoryNumber + 1))
    nameOfShow=$(dirname "$directoryToCorrect" | cut -d "/" -f $directoryNumber)
    echo "You chose $nameOfShow"
 
@@ -643,11 +660,19 @@ Uninstall()
 Update-jellyman()
 {
    Has_sudo
-   echo "Updating Jellyman - The Jellyfin Manager"
-   git clone https://github.com/Smiley-McSmiles/jellyman
-   cd jellyman
-   chmod ug+x setup.sh
-   sudo ./setup.sh -U
+   wget -O /opt/jellyfin/config/jellyman_version https://raw.githubusercontent.com/Smiley-McSmiles/jellyman/main/jellyman.1
+   currentJellymanVersion=$(cat /opt/jellyfin/config/jellyman_version | grep " - v" | cut -d "v" -f2)
+   rm -f /opt/jellyfin/config/jellyman_version
+   if [[ $currentJellymanVersion == $jellymanVersion ]]; then
+      echo "Jellyman is up to date. No new versions available."
+      exit
+   else
+      echo "Updating Jellyman - The Jellyfin Manager from $jellymanVersion to v$currentJellymanVersion"
+      git clone https://github.com/Smiley-McSmiles/jellyman
+      cd jellyman
+      chmod ug+x setup.sh
+      sudo ./setup.sh -U
+   fi
 }
 
 Change_Media_Directory()

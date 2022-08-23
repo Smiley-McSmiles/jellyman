@@ -1,5 +1,5 @@
 [Unit]
-Description=Jellyfin Server is a personal media server.
+Description=Jellyfin Media Server - Installed by Jellyman
 After=network.target
 
 [Service]
