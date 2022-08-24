@@ -48,7 +48,7 @@ chmod ug+x setup.sh
 sudo ./setup.sh
 ```
 
-# Example Install
+### Example Install
 ```
 |-------------------------------------------------------------------|
 |                     No commands recognized                        |
