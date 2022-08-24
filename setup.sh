@@ -224,8 +224,6 @@ Previous_install()
    cd /opt/jellyfin
    tar xvf $tarPath -C ./
    
-   else
-      exit
    fi
 }
 
@@ -354,9 +352,11 @@ Setup()
    fi
    echo
    read -p " Press ENTER to continue" ENTER
+   echo "Press 'q' to exit next screen"
+   read -p " Press ENTER to continue" ENTER
    jellyman -t
    echo
-   read -p "Would you like to remove the git cloned directory $DIRECTORY? [Y/n] :" deleteOrNot
+   read -p "Would you like to remove the git cloned directory $DIRECTORY? [Y/n] : " deleteOrNot
    if [[ $deleteOrNot == [nN]* ]]; then
       echo "Okay, keeping $DIRECTORY"
    else

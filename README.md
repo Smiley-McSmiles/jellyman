@@ -14,6 +14,7 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
 ### Features
 
 * **Setup** - Sets up the initial install.
+* **Import Metadata and Configuration** - During setup, import your currently install Jellyfin configs and metadata.
 * **Update** - [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
 * **Update-Jellyman** - Updates this Jellyman CLI Tool.
 * **Update Beta** Downloads and updates to the current Jellyfin Beta version.
@@ -45,6 +46,79 @@ git clone https://github.com/Smiley-McSmiles/jellyman
 cd jellyman
 chmod ug+x setup.sh
 sudo ./setup.sh
+```
+
+# Example Install
+```shell
+|-------------------------------------------------------------------|
+|                     No commands recognized                        |
+|                      setup.sh options are:                        |
+|                                                                   |
+|  -i [jellyfin-backup.tar] Import .tar to pick up where you left   |
+|                    off on another machine                         |
+|                                                                   |
+|                    -U Update Jellyman only.                       |
+|-------------------------------------------------------------------|
+
+Press ENTER to continue with first time setup or CTRL+C to exit...
+[Pressed ENTER]
+
+Fetching newest stable Jellyfin version...
+Is there a current install of Jellyfin on this system? [y/N] : N
+
+Please enter the default user for Jellyfin: jellyfin
+
+Preparing to install needed dependancies for Jellyfin...
+ID=fedora
+Complete!
+Last metadata expiration check: 1:03:15 ago on Wed 24 Aug 2022 01:50:56 PM CDT.
+Package ffmpeg-5.0.1-3.fc36.x86_64 is already installed.
+Package ffmpeg-devel-5.0.1-3.fc36.x86_64 is already installed.
+Package ffmpeg-libs-5.0.1-3.fc36.x86_64 is already installed.
+Package git-2.37.2-1.fc36.x86_64 is already installed.
+Package openssl-1:3.0.5-1.fc36.x86_64 is already installed.
+Dependencies resolved.
+Nothing to do.
+Complete!
+Setting Permissions for Jellyfin...
+Unblocking port 8096 and 8920...
+
+|-------------------------------------------------------------------|
+|               Navigate to http://localhost:8096/                  |
+|        in your Web Browser to claim your Jellyfin server          |
+|-------------------------------------------------------------------|
+
+|-------------------------------------------------------------------|
+|         To enable https please enter 'sudo jellyman -rc'          |
+|       (After you have navigated to the Jellyfin Dashboard)        |
+|                                                                   |
+|             To manage Jellyfin use 'jellyman -h'                  |
+|-------------------------------------------------------------------|
+
+
+|-----------------------------------------------|
+|          No default directory found...        |
+|     Please enter the root directory for       |
+|              your Media Library               |
+|    DO NOT ENTER YOUR USER DIRECTORY AS IT     |
+|    WILL RESET PERMISSIONS OF THE ENTERED      |
+|       DIRECTORY TO YOUR JELLYFIN USER         |
+|-----------------------------------------------|
+/testMediaDirectory
+
+● jellyfin.service - Jellyfin Media Server - Installed by Jellyman
+     Loaded: loaded (/usr/lib/systemd/system/jellyfin.service; enabled; vendor preset: disabled)
+     Active: active (running) since Tue 2022-08-23 21:18:41 CDT; 17h ago
+   Main PID: 944 (jellyfin.sh)
+      Tasks: 18 (limit: 8736)
+     Memory: 254.3M
+        CPU: 22.173s
+     CGroup: /system.slice/jellyfin.service
+             ├─ 944 /bin/bash /opt/jellyfin/jellyfin.sh
+             └─ 947 /opt/jellyfin/jellyfin/jellyfin -d /opt/jellyfin/data -C /opt/jellyfin/cache -c /opt/jellyfin/config -l /opt/jellyfin/log --ffmpeg /usr/share/ffmpeg/ffmpeg
+
+Would you like to remove the git cloned directory $DIRECTORY? [Y/n] : Y
+Removing git cloned directory:/home/smiley/jellyman
 ```
 
 ### Usage
