@@ -1,6 +1,6 @@
 #!/bin/bash
 
-jellymanVersion="v1.5.6"
+jellymanVersion="v1.5.7"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -380,7 +380,7 @@ Permissions()
    fi
 
    chown -Rfv $defaultUser:$defaultUser "$directoryToFix"
-   chmod -Rfv 770 "$directoryToFix"
+   chmod -Rfv 660 "$directoryToFix"
 }
 
 Status()
@@ -612,7 +612,7 @@ Rename_tv()
             echo "New Name:"
             echo "$newItemName"
             chown -fv $defaultUser:$defaultUser "$newItemName"
-            chmod -fv 770 "$newItemName"
+            chmod -fv 660 "$newItemName"
             echo
          fi
    done

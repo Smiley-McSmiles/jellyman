@@ -3,6 +3,8 @@ DIRECTORY=$(cd `dirname $0` && pwd)
 has_sudo_access=
 architecture=
 os_detected=
+currentJellyfinDirectory=null
+tarPath=
 
 Has_sudo()
 {
@@ -156,6 +158,77 @@ Install_dependancies()
    fi
 }
 
+Backup()
+{
+   backupDirectory=$1
+   fileName=current-jellyfin-data.tar
+   if [[ $(echo "${backupDirectory: -1}") == "/" ]]; then
+      tarPath=$backupDirectory$fileName
+      echo "Saving your current metadata to --> $tarPath"
+   else
+      tarPath=$backupDirectory/$fileName
+      echo "Saving your current metadata to --> $tarPath"
+   fi
+   
+   cd $currentJellyfinDirectory
+   time tar cvf $tarPath data config
+   USER=$(stat -c '%U' $backupDirectory)
+   chown -f $USER:$USER $tarPath
+   chmod -f 660 $tarPath
+}
+
+
+Previous_install()
+{
+   read -p "Is there a current install of Jellyfin on this system? [y/N] : " currentlyInstalled
+
+   if [[ $currentlyInstalled == [yY]* ]]; then
+      isDataThere=false
+      isConfigThere=false
+      newDirectory=false
+      
+      while [ ! -d $currentJellyfinDirectory ]; do
+         read -p "Where is Jellyfins intalled directory? : " currentJellyfinDirectory
+                  
+         if [ ! -d "$currentJellyfinDirectory/data/metadata" ]; then
+            echo "$currentJellyfinDirectory/data/metadata does not exist"
+            isDataThere=false
+         else
+            isDataThere=true
+            echo "Found metadata!"
+         fi
+
+         if [ ! -d "$currentJellyfinDirectory/config" ]; then
+            echo "$currentJellyfinDirectory/config does not exist"
+            isConfigThere=false
+         else
+            isConfigThere=true
+            echo "Found config!"
+         fi
+
+         
+         if ! $isDataThere || ! $isConfigThere; then
+            echo "***ERROR*** - one or more directories not found..."
+            read -p "Would you like to try a different directory? [Y/n] : " newDirectory
+            
+            if [[ $newDirectory == [nN] ]]; then
+               exit
+            else
+               currentJellyfinDirectory=null
+            fi
+         fi
+         
+      done
+   
+   Backup $HOME
+   cd /opt/jellyfin
+   tar xvf $tarPath -C ./
+   
+   else
+      exit
+   fi
+}
+
 Setup()
 {
    echo "Fetching newest stable Jellyfin version..."
@@ -176,6 +249,7 @@ Setup()
    
    mkdir /opt/jellyfin
    clear
+   Previous_install
 
    read -p "Please enter the default user for Jellyfin: " defaultUser
    while id "$defaultUser" &>/dev/null; do
@@ -188,31 +262,31 @@ Setup()
    mkdir /opt/jellyfin/old /opt/jellyfin/backup
 
    if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
-      cp jellyman.1 /usr/share/man/man1/
+      cp $DIRECTORY/jellyman.1 /usr/share/man/man1/
    elif [ -x "$(command -v dnf)" ] || [ -x "$(command -v zypper)" ]; then 
-      cp jellyman.1 /usr/local/share/man/man1/
+      cp $DIRECTORY/jellyman.1 /usr/local/share/man/man1/
    fi
 
    mkdir /opt/jellyfin/data /opt/jellyfin/cache /opt/jellyfin/config /opt/jellyfin/log /opt/jellyfin/cert
-   cp scripts/jellyman /bin/
-   cp scripts/jellyfin.sh /opt/jellyfin/
+   cp $DIRECTORY/scripts/jellyman /bin/
+   cp $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/
    touch /opt/jellyfin/config/jellyman.conf
    cp $jellyfin_archive /opt/jellyfin/
    jellyfinServiceLocation=
    
    if [ -d /usr/lib/systemd/system ]; then
-      cp conf/jellyfin.service /usr/lib/systemd/system/
+      cp $DIRECTORY/conf/jellyfin.service /usr/lib/systemd/system/
       jellyfinServiceLocation="/usr/lib/systemd/system/jellyfin.service"
    else
-      cp conf/jellyfin.service /etc/systemd/system/
+      cp $DIRECTORY/conf/jellyfin.service /etc/systemd/system/
       jellyfinServiceLocation="/etc/systemd/system/jellyfin.service"
    fi
    
    sed -i -e "s|User=jellyfin|User=$defaultUser|g" $jellyfinServiceLocation
-   cp conf/jellyfin.conf /etc/
+   cp $DIRECTORY/conf/jellyfin.conf /etc/
    cd /opt/jellyfin
-   tar xvzf $jellyfin_archive
-   rm -f $jellyfin_archive
+   tar xvzf $DIRECTORY/$jellyfin_archive
+   rm -f $DIRECTORY/$jellyfin_archive
    ln -s $jellyfin jellyfin
    echo "architecture=$architecture" >> config/jellyman.conf
    echo "defaultPath=" >> config/jellyman.conf
