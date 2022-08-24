@@ -49,7 +49,7 @@ sudo ./setup.sh
 ```
 
 # Example Install
-```shell
+```
 |-------------------------------------------------------------------|
 |                     No commands recognized                        |
 |                      setup.sh options are:                        |
@@ -123,7 +123,7 @@ Removing git cloned directory:/home/smiley/jellyman
 
 ### Usage
 
-```shell
+```
 Jellyman - The Jellyfin Manager
 -Created by Smiley McSmiles
 
