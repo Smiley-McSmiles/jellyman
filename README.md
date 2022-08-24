@@ -14,7 +14,7 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
 ### Features
 
 * **Setup** - Sets up the initial install.
-* **Import Metadata and Configuration** - During setup, import your currently install Jellyfin configs and metadata.
+* **Import Metadata and Configuration** - During setup, import your currently installed Jellyfin configs and metadata.
 * **Update** - [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
 * **Update-Jellyman** - Updates this Jellyman CLI Tool.
 * **Update Beta** Downloads and updates to the current Jellyfin Beta version.
