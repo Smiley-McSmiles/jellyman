@@ -114,25 +114,28 @@ Install_dependancies()
 
    if [ -f /etc/os-release ]; then
       source /etc/os-release
+      crbOrPowertools=
       os_detected=true
       echo "ID=$ID"
+      
+      if [[ $ID_LIKE == *"rhel"* ]] || [[ $ID == "rhel" ]]; then
+         ID=rhel
+         
+         if [[ $VERSION_ID == *"."* ]]; then
+            VERSION_ID=$(echo $VERSION_ID | cut -d "." -f 1)
+         fi
+         
+         if (( $VERSION_ID < 9 )); then
+            crbOrPowertools="powertools"
+         else
+            crbOrPowertools="crb"
+      fi
+      
          case "$ID" in
             fedora)     dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
                         dnf install $packagesNeededRHEL -y ;;
-            centos)     dnf install epel-release -y
-                        dnf config-manager --set-enabled crb
-                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
-                        dnf install $packagesNeededRHEL -y ;;
-            rocky)      dnf install epel-release -y
-                        dnf config-manager --set-enabled crb
-                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
-                        dnf install $packagesNeededRHEL -y ;;
-            alma)       dnf install epel-release -y
-                        dnf config-manager --set-enabled crb
-                        dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
-                        dnf install $packagesNeededRHEL -y ;;
             rhel)       dnf install epel-release -y
-                        dnf config-manager --set-enabled crb
+                        dnf config-manager --set-enabled $crbOrPowertools
                         dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
                         dnf install $packagesNeededRHEL -y ;;
             debian)     apt install $packagesNeededDebian -y ;;
