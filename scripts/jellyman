@@ -376,11 +376,11 @@ Permissions()
          sed -i -e "s|defaultUser=.*|defaultUser=$defaultUser|g" /opt/jellyfin/config/jellyman.conf
       fi
       chown -Rfv $defaultUser:$defaultUser $defaultPath
-      chmod -Rfv 660 $defaultPath
+      chmod -Rfv 770 $defaultPath
    fi
 
    chown -Rfv $defaultUser:$defaultUser "$directoryToFix"
-   chmod -Rfv 660 "$directoryToFix"
+   chmod -Rfv 770 "$directoryToFix"
 }
 
 Status()
@@ -530,7 +530,7 @@ Recertify_https()
       sed -i -e "s|<EnableHttps>*</EnableHttps>|<EnableHttps>true</EnableHttps>|g" /opt/jellyfin/config/network.xml
       sed -i -e "s|<CertificatePath>*</CertificatePath>|<CertificatePath>/opt/jellyfin/cert/jellyfin.pfx</CertificatePath>|g" /opt/jellyfin/config/network.xml
       chown -Rf $defaultUser:$defaultUser /opt/jellyfin/cert
-      chmod -Rf 660 /opt/jellyfin/cert
+      chmod -Rf 770 /opt/jellyfin/cert
       jellyman -r
    else
       exit
@@ -612,7 +612,7 @@ Rename_tv()
             echo "New Name:"
             echo "$newItemName"
             chown -fv $defaultUser:$defaultUser "$newItemName"
-            chmod -fv 660 "$newItemName"
+            chmod -fv 770 "$newItemName"
             echo
          fi
    done
