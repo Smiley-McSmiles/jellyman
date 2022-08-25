@@ -129,6 +129,7 @@ Install_dependancies()
             crbOrPowertools="powertools"
          else
             crbOrPowertools="crb"
+         fi
       fi
       
          case "$ID" in
