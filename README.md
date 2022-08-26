@@ -1,22 +1,83 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
-======
+=======
 
 > v1.5.8 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
-> Tested on Fedora 34/35/36, Ubuntu 22.04, Manjaro 21.3.6, EndeavourOS Artemis Neo, Linux Mint 21, and Rocky Linux 9.0
+> Tested on Fedora 34/35/36, Ubuntu 22.04, Manjaro 21.3.6, EndeavourOS Artemis Neo, Linux Mint 21, and Rocky Linux 8.6/9.0
 
 > Should work on Any Debian, Arch, or RHEL Based Distribution
 
-### Description
+# Description
 
 Jellyman is a simple BASH program and CLI (Command Line Interface) tool for installing and managing Jellyfin. Most notably, The ability to download and install the Jellyfin Media Server and switch between already downloaded versions of Jellyfin on the fly. As well as create a full backup so you can move or import all your metadata and user information to another machine.
 
-### Features
+# Features
 
 * **Setup** - Sets up the initial install.
 * **Import Metadata and Configuration** - During setup, import your currently installed Jellyfin configs and metadata.
+```
+   ├── NOTE - If you installed Jellyfin with Docker
+   ├── this will likely not work
+   └── Assumes your directory structure is similar to a bare metal install.
+```
+**For example in your Jellyfin directory it should look like this:**
+```
+/path/jellyfin
+      ├── cache
+      │   ├── audiodb-album
+      │   ├── audiodb-artist
+      │   ├── extracted-audio-images
+      │   ├── images
+      │   ├── imagesbyname
+      │   ├── omdb
+      │   └── temp
+      ├── config
+      │   ├── branding.xml
+      │   ├── dlna
+      │   ├── encoding.xml
+      │   ├── jellyman.conf
+      │   ├── logging.default.json
+      │   ├── metadata.xml
+      │   ├── migrations.xml
+      │   ├── network.xml
+      │   ├── system.xml
+      │   └── users
+      └── data
+          ├── data
+          │   ├── authentication.db
+          │   ├── authentication.db-journal
+          │   ├── jellyfin.db
+          │   ├── jellyfin.db-shm
+          │   ├── jellyfin.db-wal
+          │   ├── library.db
+          │   ├── library.db-journal
+          │   └── ScheduledTasks
+          ├── metadata
+          ├── plugins
+          ├── root
+          │   └── default
+          │       ├── Movies
+          │       │   ├── Movies111.mblink
+          │       │   ├── Movies11.mblink
+          │       │   ├── movies.collection
+          │       │   └── options.xml
+          │       └── TV Shows
+          │           ├── options.xml
+          │           ├── TV1.mblink
+          │           ├── TV.mblink
+          │           └── tvshows.collection
+          │
+          └── transcodes
+   ```
 * **Update** - [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
+
+    └── _NOTE - Supplied URL has to end with_
+**jellyfin_x.x.x_<_ARCHITECTURE_>.tar.gz**
+
 * **Update-Jellyman** - Updates this Jellyman CLI Tool.
+
+    └── _Checks and downloads most recent version from GitHub._
+
 * **Update Beta** Downloads and updates to the current Jellyfin Beta version.
 * **Disable** - Disable the jellyfin.service.
 * **Enable** - Enable the jellyfin.service
@@ -26,20 +87,37 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
 * **Status** - Get status information on jellyfin.service.
 * **Backup** - Input a directroy to output the backup archive.
 * **Import** - Import a .tar file to pick up where you left off on another system.
+
+    └── _This will only work if on your new OS/setup you have your Media directories exactly the same as your old OS/setup._
+
 * **Fix Permissions** - [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
+
+    └── _Uses_ `chmod -R 770` _on your media directory._
+
 * **Get Version** - Get the current installed version of Jellyfin.
 * **Remove Version** - Remove a specific version of Jellyfin
+
+    └── _Provides a list of currently installed versions of Jellyfin for you to remove._
+
 * **Version Download** - Download an available Jellyfin version from the stable repository.
+
+    └── _Provides a list of currently installed versions of Jellyfin for you to download._
+
 * **Version Switch** - Switch Jellyfin version for another previously installed version.
-* **Recertify https** - Removes old https certifications and creates new ones for the next 365 days. 
+
+    └── _Provides a list of currently installed versions of Jellyfin for you to switch to._
+
+* **Recertify https** - Removes old https certifications and creates new **self signed** keys for the next 365 days. 
 * **Rename TV** - Batch renaming script for TV shows.
 * **Library Scan** - Tell Jellyfin to scan your media library.
 * **Change Port** - Change Jellyfins network port - Default = 8096.
 * **Change Media Directory** - Changes the Media Directory/Directories for Jellyman.
 * **Import API Key** - Import a new API key.
-* **Uninstall** - Uninstalls Jellyfin and Jellyman completely (Ignores the Media Directory).
+* **Uninstall** - Uninstalls Jellyfin and Jellyman completely 
 
-### Getting Started
+    └── _Ignores the Media Directory._
+
+# Getting Started
 
 ```shell
 git clone https://github.com/Smiley-McSmiles/jellyman
@@ -48,7 +126,7 @@ chmod ug+x setup.sh
 sudo ./setup.sh
 ```
 
-### Example Install
+# Example Install
 ```
 |-------------------------------------------------------------------|
 |                     No commands recognized                        |
@@ -117,11 +195,11 @@ Unblocking port 8096 and 8920...
              ├─ 944 /bin/bash /opt/jellyfin/jellyfin.sh
              └─ 947 /opt/jellyfin/jellyfin/jellyfin -d /opt/jellyfin/data -C /opt/jellyfin/cache -c /opt/jellyfin/config -l /opt/jellyfin/log --ffmpeg /usr/share/ffmpeg/ffmpeg
 
-Would you like to remove the git cloned directory $DIRECTORY? [Y/n] : Y
+Would you like to remove the git cloned directory /home/smiley/jellyman? [Y/n] : Y
 Removing git cloned directory:/home/smiley/jellyman
 ```
 
-### Usage
+# Usage
 
 ```
 Jellyman - The Jellyfin Manager
@@ -157,8 +235,8 @@ COMMANDS:
 -X     Uninstall Jellyfin and Jellyman Completely.
 
 EXAMPLE:
--To stop jellyfin, disable on startup, backup, and then start the jellyfin server:
-'sudo jellyman -S -d -b /home/$USER/ -s'
+- To stop jellyfin, disable on startup, backup, and then start the jellyfin server:
+└── "sudo jellyman -S -d -b /home/$USER/ -s"
 ```
 
 ### In case Jellyman wont upgrade itself
