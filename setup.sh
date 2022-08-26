@@ -193,7 +193,16 @@ Previous_install()
       
       while [ ! -d $currentJellyfinDirectory ]; do
          read -p "Where is Jellyfins intalled directory? : " currentJellyfinDirectory
-                  
+         
+         #systemFileXML=$(find $currentJellyfinDirectory -name "system.xml")
+         #configPath=$(echo $systemFileXML | sed -r "s|/system.xml||g")
+         #metadataPath=$(grep -o "<MetadataPath>.*" $systemFileXML | sed -r "s|<MetadataPath>||g" | sed -r "s|</MetadataPath>||g")
+         #if [[ $configPath != *"config" ]]; then
+         #   echo "'config' folder not found"
+         #else
+         #   
+         #fi
+         
          if [ ! -d "$currentJellyfinDirectory/data/metadata" ]; then
             echo "$currentJellyfinDirectory/data/metadata does not exist"
             isDataThere=false

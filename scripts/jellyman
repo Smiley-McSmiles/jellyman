@@ -1,6 +1,6 @@
 #!/bin/bash
 
-jellymanVersion="v1.5.8"
+jellymanVersion="v1.5.9"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -215,7 +215,7 @@ Import()
       mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
       if id "$defaultUser" &>/dev/null; then 
          chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-         chmod -Rfv 770 /opt/jellyfin
+         chmod -Rfv 740 /opt/jellyfin
          jellyman -s -t
       else
          clear
@@ -235,14 +235,14 @@ Import()
             echo "Great!"
             sleep .5
             chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-            chmod -Rfv 770 /opt/jellyfin
+            chmod -Rfv 740 /opt/jellyfin
             jellyman -s -t
          else
             read -p "No? Which user should own /opt/jellyfin?: " defaultUser
             echo "Well... I should've known $defaultUser would be the one..."
             sleep 1
             chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-            chmod -Rfv 770 /opt/jellyfin
+            chmod -Rfv 740 /opt/jellyfin
             jellyman -s -t
          fi
       fi
@@ -376,11 +376,11 @@ Permissions()
          sed -i -e "s|defaultUser=.*|defaultUser=$defaultUser|g" /opt/jellyfin/config/jellyman.conf
       fi
       chown -Rfv $defaultUser:$defaultUser $defaultPath
-      chmod -Rfv 770 $defaultPath
+      chmod -Rfv 740 $defaultPath
    fi
 
    chown -Rfv $defaultUser:$defaultUser "$directoryToFix"
-   chmod -Rfv 770 "$directoryToFix"
+   chmod -Rfv 740 "$directoryToFix"
 }
 
 Status()
@@ -530,7 +530,7 @@ Recertify_https()
       sed -i -e "s|<EnableHttps>*</EnableHttps>|<EnableHttps>true</EnableHttps>|g" /opt/jellyfin/config/network.xml
       sed -i -e "s|<CertificatePath>*</CertificatePath>|<CertificatePath>/opt/jellyfin/cert/jellyfin.pfx</CertificatePath>|g" /opt/jellyfin/config/network.xml
       chown -Rf $defaultUser:$defaultUser /opt/jellyfin/cert
-      chmod -Rf 770 /opt/jellyfin/cert
+      chmod -Rf 740 /opt/jellyfin/cert
       jellyman -r
    else
       exit
@@ -607,12 +607,12 @@ Rename_tv()
             #echo $nameOfShow
             #echo "Episode:"
             #echo "$episodeNumber"
-            #echo "extensionOfFile:"
+            #echo "extension of file:"
             #echo "$extensionOfFile"
             echo "New Name:"
             echo "$newItemName"
             chown -fv $defaultUser:$defaultUser "$newItemName"
-            chmod -fv 770 "$newItemName"
+            chmod -fv 740 "$newItemName"
             echo
          fi
    done

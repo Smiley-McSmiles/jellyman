@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
 =======
 
-> v1.5.8 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
+> v1.5.9 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
 > Tested on Fedora 34/35/36, Ubuntu 22.04, Manjaro 21.3.6, EndeavourOS Artemis Neo, Linux Mint 21, and Rocky Linux 8.6/9.0
 
@@ -92,7 +92,7 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
 
 * **Fix Permissions** - [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
 
-    └── _Uses_ `chmod -R 770` _on your media directory._
+    └── _Uses_ `chmod -R 740` _on your media directory._
 
 * **Get Version** - Get the current installed version of Jellyfin.
 * **Remove Version** - Remove a specific version of Jellyfin
