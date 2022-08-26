@@ -105,7 +105,7 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
 
 * **Version Switch** - Switch Jellyfin version for another previously installed version.
 
-    └──_Provides a list of currently installed versions of Jellyfin for you to switch to._
+    └── _Provides a list of currently installed versions of Jellyfin for you to switch to._
 
 * **Recertify https** - Removes old https certifications and creates new **self signed** keys for the next 365 days. 
 * **Rename TV** - Batch renaming script for TV shows.
