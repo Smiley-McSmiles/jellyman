@@ -31,8 +31,10 @@ is a set of scripts to install/manage and update the jellyfin-combined tar.gz ge
 .B -h     Print this Help.
 .TP
 .B -i     [FILE.tar] Input file to Import jellyfin-backup.tar.
+└── This will only work if on your new OS/setup you have your Media directories exactly the same as your old OS/setup.
 .TP
 .B -p     [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
+└── Uses 'chmod -R 740' on your media directory.
 .TP
 .B -r     Restart Jellyfin.
 .TP
@@ -43,18 +45,23 @@ is a set of scripts to install/manage and update the jellyfin-combined tar.gz ge
 .B -t     Status of Jellyfin.
 .TP
 .B -u     [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
+└── NOTE - Supplied URL has to end with jellyfin_x.x.x_<ARCHITECTURE>.tar.gz
 .TP
-.B -U     Update jellyman - The CLI Tool.
+.B -U     Update Jellyman - The CLI Tool.
+└── Checks and downloads most recent version from GitHub.
 .TP
 .B -ub    Update Jellyfin to the most recent Beta.
 .TP
 .B -v     Get the current installed version of Jellyfin.
 .TP
 .B -vd    Download an available Jellyfin version from the stable repository.
+└── Provides a list of currently installed versions of Jellyfin for you to download.
 .TP
 .B -vs    Switch Jellyfin version for another previously installed version.
+└── Provides a list of currently installed versions of Jellyfin for you to switch to.
 .TP
 .B -rv    Remove a Jellyfin version.
+└── Provides a list of currently installed versions of Jellyfin for you to remove.
 .TP
 .B -rc    Removes old https certifications and creates new ones for the next 365 days.
 .TP
@@ -70,7 +77,8 @@ is a set of scripts to install/manage and update the jellyfin-combined tar.gz ge
 .TP
 .B -md    Change the Media Directory for Jellyman.
 .TP
-.B -X     Uninstall Jellyfin and jellyman Completely.
+.B -X     Uninstall Jellyfin and Jellyman Completely.
+└── Ignores the Media Directory.
 
 .SH EXAMPLE
 .TP

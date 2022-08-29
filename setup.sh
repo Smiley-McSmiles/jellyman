@@ -369,11 +369,11 @@ Setup()
    read -p " Press ENTER to continue" ENTER
    jellyman -t
    echo
-   read -p "Would you like to remove the git cloned directory $DIRECTORY? [Y/n] : " deleteOrNot
+   read -p "Would you like to remove the cloned git directory $DIRECTORY? [Y/n] : " deleteOrNot
    if [[ $deleteOrNot == [nN]* ]]; then
       echo "Okay, keeping $DIRECTORY"
    else
-      echo "Removing git cloned directory:$DIRECTORY..."
+      echo "Removing cloned git directory:$DIRECTORY..."
       rm -rf $DIRECTORY
    fi
 }
