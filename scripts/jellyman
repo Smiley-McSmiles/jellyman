@@ -1,6 +1,5 @@
 #!/bin/bash
-
-jellymanVersion="v1.5.8"
+jellymanVersion="v1.5.9"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -44,15 +43,29 @@ Backup()
 
 isCurrentVersion()
 {
+   source /opt/jellyfin/config/jellyman.conf
    jellyfinVersionToDownload=$1
-   currentVersionInstalled=$2
-   if [[ $jellyfinVersionToDownload == $currentVersionInstalled ]]; then
+   if [[ $jellyfinVersionToDownload == $currentVersion ]]; then
       echo "The installed version of Jellyfin matches the newest version available."
-      echo "$currentVersionInstalled"
-      return 1
+      echo "Current Jellyfin version installed: $currentVersion"
+      return 0
    else
       echo "Newer Jellyfin version found..."
+      return 1
+   fi
+}
+
+isInstalledVersion()
+{
+   jellyfinVersionToDownload=$1
+   currentJellyfinVersions=$(ls /opt/jellyfin/ | grep "jellyfin_")
+   
+   if [[ $currentJellyfinVersions == *"$jellyfinVersionToDownload"* ]]; then
+      echo "The version to download matches an already installed version."
+      echo "Please use 'jellyman -vs' to switch Jellyfin versions."
       return 0
+   else
+      return 1
    fi
 }
 
@@ -76,11 +89,15 @@ Check_disk_free()
    fi
 }
 
-Get_version()
+Get_jellyfin_version()
 {
    Has_sudo
    source /opt/jellyfin/config/jellyman.conf
    echo "$currentVersion"
+}
+
+Get_jellyman_version()
+{
    echo "Jellyman $jellymanVersion"
 }
 
@@ -144,11 +161,16 @@ Remove_version()
    read -p "the version you want to erase : " versionToRemoveNumber
    maxNumber=$(ls /opt/jellyfin/ | grep "_" | wc -l)
    versionToRemove=$(ls /opt/jellyfin/ | grep "_" | head -n $versionToRemoveNumber | tail -n 1)
-    if [[ $versionToRemoveNumber == *['!'@#\$%^\&*()_+.]* ]] || [[ $versionToRemoveNumber =~ [a-zA-Z]+$ ]] || (( $versionToRemoveNumber > $maxNumber )) || (( $versionToRemoveNumber < 1 )); then
+   if [[ $versionToRemoveNumber == *['!'@#\$%^\&*()_+.]* ]] || [[ $versionToRemoveNumber =~ [a-zA-Z]+$ ]] || (( $versionToRemoveNumber > $maxNumber )) || (( $versionToRemoveNumber < 1 )); then
       echo "The new version you chose doesn't exist, please run this command again and pick a LISTED NUMBER"
-     exit
+      exit
+   elif isCurrentVersion $versionToRemove; then
+      echo "The version you chose is the currently running version."
+      echo "Please use 'jellyman -vs' and choose a different version,"
+      echo "before removing $versionToRemove"
+      exit
    else
-     rm -rfv /opt/jellyfin/$versionToRemove
+      rm -rfv /opt/jellyfin/$versionToRemove
    fi
 }
 
@@ -215,7 +237,7 @@ Import()
       mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
       if id "$defaultUser" &>/dev/null; then 
          chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-         chmod -Rfv 770 /opt/jellyfin
+         chmod -Rfv 740 /opt/jellyfin
          jellyman -s -t
       else
          clear
@@ -235,14 +257,14 @@ Import()
             echo "Great!"
             sleep .5
             chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-            chmod -Rfv 770 /opt/jellyfin
+            chmod -Rfv 740 /opt/jellyfin
             jellyman -s -t
          else
             read -p "No? Which user should own /opt/jellyfin?: " defaultUser
             echo "Well... I should've known $defaultUser would be the one..."
             sleep 1
             chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-            chmod -Rfv 770 /opt/jellyfin
+            chmod -Rfv 740 /opt/jellyfin
             jellyman -s -t
          fi
       fi
@@ -376,11 +398,11 @@ Permissions()
          sed -i -e "s|defaultUser=.*|defaultUser=$defaultUser|g" /opt/jellyfin/config/jellyman.conf
       fi
       chown -Rfv $defaultUser:$defaultUser $defaultPath
-      chmod -Rfv 770 $defaultPath
+      chmod -Rfv 740 $defaultPath
    fi
 
    chown -Rfv $defaultUser:$defaultUser "$directoryToFix"
-   chmod -Rfv 770 "$directoryToFix"
+   chmod -Rfv 740 "$directoryToFix"
 }
 
 Status()
@@ -406,8 +428,14 @@ Update()
       echo "Fetching custom Jellyfin version..."
       customVersionLink=$1
       customVersion=$(echo $customVersionLink | rev | cut -d/ -f1 | rev)
+      jellyfin_archive=$customVersion
+      jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
       fileType=$(echo $customVersion | cut -d_ -f3)
-   
+      
+      if ! isInstalledVersion $jellyfin; then
+         exit
+      fi
+      
       if [[ $fileType != "$architecture.tar.gz" ]]; then
          echo "Supplied URL does not point to a $architecture.tar.gz.. EXITING..."
          exit
@@ -415,9 +443,6 @@ Update()
    
       mkdir /opt/jellyfin/update
       wget -P /opt/jellyfin/update/ $customVersionLink
-      jellyfin_archive=$customVersion
-      jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
-      new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
    
    else
       echo "Getting current version from repository..."
@@ -425,19 +450,19 @@ Update()
       wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/stable/combined/
       jellyfin_archive=$(grep "$architecture.tar.gz" /opt/jellyfin/update/index.html | cut -d '"' -f 2 | head -1 | sed -r "s|.sha256sum||g" | sed -r "s|-musl||g")
       jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
-      new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
       rm -f /opt/jellyfin/update/index.html
       
       echo "jellyfin_archive = $jellyfin_archive"
       echo "jellyfin = $jellyfin"
       echo "currentVersion = $currentVersion"
-      if isCurrentVersion $jellyfin $currentVersion; then
+      if ! isCurrentVersion $jellyfin && ! isInstalledVersion $jellyfin; then
          wget -O /opt/jellyfin/update/$jellyfin_archive https://repo.jellyfin.org/releases/server/linux/stable/combined/$jellyfin_archive
       else
          exit
       fi
    fi
    
+   new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
    echo "Unpacking $jellyfin_archive to /opt/jellyfin/..."
    tar xvzf /opt/jellyfin/update/$jellyfin_archive -C /opt/jellyfin/
    jellyman -S
@@ -473,7 +498,7 @@ Update_beta()
    else
       rm -f /opt/jellyfin/update/index.html
 
-      if isCurrentVersion $jellyfin $currentVersion; then
+      if ! isCurrentVersion $jellyfin && ! isInstalledVersion $jellyfin; then
          wget -O /opt/jellyfin/update/$jellyfin_archive https://repo.jellyfin.org/releases/server/linux/stable-pre/$new_jellyfin_version/combined/$jellyfin_archive
       else
          exit
@@ -530,7 +555,7 @@ Recertify_https()
       sed -i -e "s|<EnableHttps>*</EnableHttps>|<EnableHttps>true</EnableHttps>|g" /opt/jellyfin/config/network.xml
       sed -i -e "s|<CertificatePath>*</CertificatePath>|<CertificatePath>/opt/jellyfin/cert/jellyfin.pfx</CertificatePath>|g" /opt/jellyfin/config/network.xml
       chown -Rf $defaultUser:$defaultUser /opt/jellyfin/cert
-      chmod -Rf 770 /opt/jellyfin/cert
+      chmod -Rf 740 /opt/jellyfin/cert
       jellyman -r
    else
       exit
@@ -607,12 +632,12 @@ Rename_tv()
             #echo $nameOfShow
             #echo "Episode:"
             #echo "$episodeNumber"
-            #echo "extensionOfFile:"
+            #echo "extension of file:"
             #echo "$extensionOfFile"
             echo "New Name:"
             echo "$newItemName"
             chown -fv $defaultUser:$defaultUser "$newItemName"
-            chmod -fv 770 "$newItemName"
+            chmod -fv 740 "$newItemName"
             echo
          fi
    done
@@ -743,7 +768,8 @@ if [ -n "$1" ]; then
          -U) Update-jellyman 
              exit ;;
          -ub) Update_beta ;;
-         -v) Get_version ;;
+         -v) Get_jellyfin_version
+             Get_jellyman_version ;;
          -vd) Download_version ;;
          -vs) Version_switch ;;
          -rv) Remove_version ;;
