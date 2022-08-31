@@ -49,11 +49,7 @@ Change_variable()
       echo "Function Change_variable requires 2 parameters: varToChange newVarContent"
       exit
    else
-      sed -i -e "s|$varToChange=.*|$varToChange=$newVarContent|g" /opt/jellyfin/config/jellyman.conf
-   fi
-   
-   if [[ $3 == "array" ]]; then
-      sed -i -e "s|$varToChange=.*|$varToChange=($newVarContent)|g" /opt/jellyfin/config/jellyman.conf
+      sed -i -e 's/'"$varToChange"'.*/'"$varToChange"'='${newVarContent}'/g' /opt/jellyfin/config/jellyman.conf
    fi
 }
 
@@ -731,7 +727,8 @@ Change_Media_Directory()
    echo "|---------------------------------------------------------|"
    echo
    read mediaPath
-   Change_variable defaultPath $mediaPath "array"
+   mediaPath=($mediaPath)
+   Change_variable defaultPath $mediaPath
 }
 
 Has_sudo()
