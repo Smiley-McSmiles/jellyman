@@ -49,7 +49,7 @@ Change_variable()
       echo "Function Change_variable requires 2 parameters: varToChange newVarContent"
       exit
    else
-      sed -i -e "s|$varToChange.*|$varToChange=${newVarContent}|g"/opt/jellyfin/config/jellyman.conf
+      sed -i -e "s|$varToChange=.*|$varToChange=${newVarContent}|g"/opt/jellyfin/config/jellyman.conf
    fi
 }
 
