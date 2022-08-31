@@ -49,7 +49,7 @@ Change_variable()
       echo "Function Change_variable requires 2 parameters: varToChange newVarContent"
       exit
    else
-      sed -i -e "s|$varToChange=.*|$varToChange=${newVarContent}|g" /opt/jellyfin/config/jellyman.conf
+      sed -i -e "s|$varToChange=.*|$varToChange=$newVarContent|g" /opt/jellyfin/config/jellyman.conf
    fi
 }
 
@@ -396,22 +396,20 @@ Permissions()
          echo "Please enter the root directory for your Media Library..."
          echo "If multiple paths please enter all paths separated by a space"
          read defaultPath
-         defaultPath=($defaultPath)
-         Change_variable defaultPath $defaultPath
+         Change_variable defaultPath "$defaultPath"
       else 
-         #echo "defaultPath is set to $defaultPath"
-         null=
+         echo "defaultPath is set to $defaultPath"
       fi
       #Check if there is a recorded user/group for chown and chmod:
       if id "$defaultUser" &>/dev/null; then
-         #echo "defaultUser is set to $defaultUser"
-         null=
+         echo "defaultUser is set to $defaultUser"
       else
          echo "No default user found..."
          echo "Please enter the owner for this directory..."
          read defaultUser
          Change_variable defaultUser $defaultUser
       fi
+      defaultPath=($defaultPath)
       chown -Rfv $defaultUser:$defaultUser ${defaultPath[*]}
       chmod -Rfv 770 ${defaultPath[*]}
    fi
@@ -727,8 +725,7 @@ Change_Media_Directory()
    echo "|---------------------------------------------------------|"
    echo
    read mediaPath
-   mediaPath=($mediaPath)
-   Change_variable defaultPath $mediaPath
+   Change_variable defaultPath "$mediaPath"
 }
 
 Has_sudo()
