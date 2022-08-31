@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.6.0"
+jellymanVersion="v1.6.1"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -39,6 +39,18 @@ Backup()
    echo "|                   chmod ug+x setup.sh                  |"
    echo "|     sudo ./setup.sh -i [Path to jellyfin-backup.tar]   |"
    echo "|--------------------------------------------------------|"
+}
+
+Change_variable()
+{
+   varToChange=$1
+   newVarContent=$2
+   if [[ ! -n $varToChange ]] || [[ ! -n $newVarContent ]]; then
+      echo "Function Change_variable requires 2 parameters: varToChange newVarContent"
+      exit
+   else
+      sed -i -e "s|$varToChange=.*|$varToChange=$newVarContent|g" /opt/jellyfin/config/jellyman.conf
+   fi
 }
 
 isCurrentVersion()
@@ -82,7 +94,7 @@ Check_disk_free()
       echo "|       DIRECTORY TO YOUR JELLYFIN USER         |"
       echo "|-----------------------------------------------|"
       read defaultPath
-      sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
+      Change_variable defaultPath $defaultPath
       df -h $defaultPath
    else 
       df -h $defaultPath
@@ -144,7 +156,7 @@ Version_switch()
       unlink /opt/jellyfin/jellyfin
       ln -s /opt/jellyfin/$newVersion /opt/jellyfin/jellyfin
       chown -Rfv $defaultUser:$defaultUser /opt/jellyfin/jellyfin
-      sed -i -e "s|currentVersion=.*|currentVersion=$newVersion|g" /opt/jellyfin/config/jellyman.conf
+      Change_variable currentVersion $newVersion
       jellyman -s
    fi
 }
@@ -291,7 +303,7 @@ Import_api_key()
    read -p "Please paste your API Key : " newAPIKey
    if [[ -n $newAPIKey ]]; then
       echo "Logging new api key."
-      sed -i -e "s|apiKey=.*|apiKey=$newAPIKey|g" /opt/jellyfin/config/jellyman.conf
+      Change_variable apiKey $newAPIKey
    else
       echo "Warning no input detected, please re-enter the command and paste an API key"
       exit
@@ -320,7 +332,7 @@ Http_port_change()
    echo "Default http port is 8096"
    if Is_jellyfin_setup; then
       read -p "Please enter the new http network port for Jellyfin: " port
-      sed -i -e "s|httpPort=.*|httpPort=$port|g" /opt/jellyfin/config/jellyman.conf
+      Change_variable httpPort $port
       sed -i -e "s|<HttpServerPortNumber>*</HttpServerPortNumber>|<HttpServerPortNumber>$port</HttpServerPortNumber>|g" /opt/jellyfin/config/network.xml
       sed -i -e "s|<PublicPort>*</PublicPort>|<PublicPort>$port</PublicPort>|g" /opt/jellyfin/config/network.xml
       echo "Unblocking port $port..."
@@ -345,7 +357,7 @@ Https_port_change()
    if Is_jellyfin_setup; then
       echo "Default https port is 8920"
       read -p "Please enter the new https network port for Jellyfin: " port
-      sed -i -e "s|httpsPort=.*|httpsPort=$port|g" /opt/jellyfin/config/jellyman.conf
+      Change_variable httpsPort $port
       sed -i -e "s|<HttpsServerPortNumber>*</HttpsServerPortNumber>|<HttpsServerPortNumber>$port</HttpsServerPortNumber>|g" /opt/jellyfin/config/network.xml
       sed -i -e "s|<PublicHttpsPort>*</PublicHttpsPort>|<PublicHttpsPort>$port</PublicHttpsPort>|g" /opt/jellyfin/config/network.xml
       echo "Unblocking port $port..."
@@ -382,7 +394,7 @@ Permissions()
          echo "No default directory found..."
          echo "Please enter the root directory for your Media Library..."
          read defaultPath
-         sed -i -e "s|defaultPath=.*|defaultPath=$defaultPath|g" /opt/jellyfin/config/jellyman.conf
+         Change_variable defaultPath $defaultPath
       else 
          #echo "defaultPath is set to $defaultPath"
          null=
@@ -395,7 +407,7 @@ Permissions()
          echo "No default user found..."
          echo "Please enter the owner for this directory..."
          read defaultUser
-         sed -i -e "s|defaultUser=.*|defaultUser=$defaultUser|g" /opt/jellyfin/config/jellyman.conf
+         Change_variable defaultUser $defaultUser
       fi
       chown -Rfv $defaultUser:$defaultUser $defaultPath
       chmod -Rfv 770 $defaultPath
@@ -473,7 +485,7 @@ Update()
 
    chown -R $defaultUser:$defaultUser /opt/jellyfin
    echo "Jellyfin updated to version $new_jellyfin_version"
-   sed -i -e "s|currentVersion=.*|currentVersion=$jellyfin|g" /opt/jellyfin/config/jellyman.conf
+   Change_variable currentVersion $jellyfin
    jellyman -s -t
 }
 
@@ -515,7 +527,7 @@ Update_beta()
 
       chown -R $defaultUser:$defaultUser /opt/jellyfin
       echo "Jellyfin updated to version $new_jellyfin_version"
-      sed -i -e "s|currentVersion=.*|currentVersion=$jellyfin|g" /opt/jellyfin/config/jellyman.conf
+      Change_variable currentVersion $jellyfin
       jellyman -s -t
    fi
 }
@@ -712,7 +724,7 @@ Change_Media_Directory()
    echo "|---------------------------------------------------------|"
    echo
    read mediaPath
-   sed -i -e "s|defaultPath=.*|defaultPath=$mediaPath|g" /opt/jellyfin/config/jellyman.conf
+   Change_variable defaultPath $mediaPath
 }
 
 Has_sudo()
