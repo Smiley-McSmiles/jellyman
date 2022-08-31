@@ -728,6 +728,7 @@ Change_Media_Directory()
    echo
    read mediaPath
    mediaPath=($mediaPath)
+   Change_variable defaultPath $mediaPath
 }
 
 Has_sudo()
