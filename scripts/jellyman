@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.5.9"
+jellymanVersion="v1.6.0"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -432,7 +432,7 @@ Update()
       jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
       fileType=$(echo $customVersion | cut -d_ -f3)
       
-      if ! isInstalledVersion $jellyfin; then
+      if isInstalledVersion $jellyfin; then
          exit
       fi
       
