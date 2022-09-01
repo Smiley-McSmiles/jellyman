@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.6.1"
+jellymanVersion="v1.6.2"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -45,11 +45,21 @@ Change_variable()
 {
    varToChange=$1
    newVarContent=$2
+   varType=$3
+   if [[ $varType == "array" ]]; then
+      newVarContent='"'"$newVarContent"'"'
+   fi
+   
    if [[ ! -n $varToChange ]] || [[ ! -n $newVarContent ]]; then
       echo "Function Change_variable requires 2 parameters: varToChange newVarContent"
       exit
    else
       sed -i -e "s|$varToChange=.*|$varToChange=$newVarContent|g" /opt/jellyfin/config/jellyman.conf
+   fi
+   
+   if [[ $varType == "array" ]]; then
+      newArrayVar=$(grep "$varToChange" /opt/jellyfin/config/jellyman.conf | sed -r 's/="/=(/g' | sed -r 's/"/)/g')
+      sed -i -e "s|$varToChange=.*|$newArrayVar|g" /opt/jellyfin/config/jellyman.conf
    fi
 }
 
@@ -396,9 +406,9 @@ Permissions()
          echo "Please enter the root directory for your Media Library..."
          echo "If multiple paths please enter all paths separated by a space"
          read defaultPath
-         Change_variable defaultPath "$defaultPath"
+         Change_variable defaultPath "$defaultPath" "array"
       else 
-         echo "defaultPath is set to $defaultPath"
+         echo "defaultPath is set to ${defaultPath[*]}"
       fi
       #Check if there is a recorded user/group for chown and chmod:
       if id "$defaultUser" &>/dev/null; then
@@ -409,7 +419,6 @@ Permissions()
          read defaultUser
          Change_variable defaultUser $defaultUser
       fi
-      defaultPath=($defaultPath)
       chown -Rfv $defaultUser:$defaultUser ${defaultPath[*]}
       chmod -Rfv 770 ${defaultPath[*]}
    fi
@@ -725,7 +734,7 @@ Change_Media_Directory()
    echo "|---------------------------------------------------------|"
    echo
    read mediaPath
-   Change_variable defaultPath '"'"$mediaPath"'"'
+   Change_variable defaultPath "$mediaPath" array
 }
 
 Has_sudo()
