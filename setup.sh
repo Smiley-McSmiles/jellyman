@@ -420,8 +420,6 @@ Update_jellyman()
    
    if [ -d /usr/lib/systemd ] && [[ ! -n $jellyfinServiceLocation ]]; then
       bash -c 'echo "jellyfinServiceLocation=/usr/lib/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf'
-   elif [[ ! -n $jellyfinServiceLocation ]]; then
-      bash -c 'echo "jellyfinServiceLocation=/etc/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf'
    fi
 
    if [[ ! -n $architecture ]]; then
