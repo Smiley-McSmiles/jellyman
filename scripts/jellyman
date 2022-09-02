@@ -756,7 +756,7 @@ Transcode()
    read -p "Please enter the path to the file/files : " _directoryToCorrect
    echo
    echo "Please enter the desired GB per hour of video"
-   read -p "EXAMPLE: 1 OR 1.5" _desiredGBperHour
+   read -p "EXAMPLE: 1 OR 1.5 : " _desiredGBperHour
    echo
    read -p "Would you like to delete the original file(s) after transcode? [N/y] : " deleteOrNot
    echo
@@ -767,7 +767,7 @@ Transcode()
       deleteOrNot=false
    fi
    
-   for item in "$_directoryToCorrect"
+   for item in $_directoryToCorrect
    do
       Transcode_file "$item" $_desiredGBperHour
       if $deleteOrNot; then
