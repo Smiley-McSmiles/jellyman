@@ -753,12 +753,28 @@ Transcode_file()
 
 Transcode()
 {
-   read -p "Please enter the path to the file/files : " _directoryToCorrect
+   echo "|--------------------------------------------------------------|"
+   echo "|                        ***WARNING***                         |"
+   echo "|          Please enter the directory to transcode             |"
+   echo "|                        For example:                          |"
+   echo "|  /jfin/TV/*/*/* <- For every Episode(May Crash Be Careful!)  |"
+   echo "|                            OR:                               |"
+   echo "|  /jfin/TV/Breaking*Bad/*/* <- For Every Episode in a show    |"
+   echo "|                            OR:                               |"
+   echo "|  /jfin/TV/Breaking*Bad/Season*2/* <- For Every Episode in    |"
+   echo "|                    a season of a show                        |"
+   echo "|                                                              |"
+   echo "|       BE ADVISED, IF YOU'RE TRANSCODING MULTIPLE FILES,      |"
+   echo "|       THIS IS GOING TO TAKE A WHILE, IT IS RECOMMENDED       |"
+   echo "|        TO RUN THIS COMMAND IN 'screen' THEN PRESSING         |"
+   echo "|                       CTRL + A THEN D                        |"
+   echo "|--------------------------------------------------------------|"
+   read -p 'Please enter the path to the file(s) : ' _directoryToCorrect
    echo
    echo "Please enter the desired GB per hour of video"
-   read -p "EXAMPLE: 1 OR 1.5 : " _desiredGBperHour
+   read -p "EXAMPLE: 1 OR 2.5 : " _desiredGBperHour
    echo
-   read -p "Would you like to delete the original file(s) after transcode? [N/y] : " deleteOrNot
+   read -p 'Would you like to delete the original file(s) after transcode? [N/y] : ' deleteOrNot
    echo
    
    if [[ $deleteOrNot == [yY]* ]]; then
@@ -771,12 +787,24 @@ Transcode()
    do
       Transcode_file "$item" $_desiredGBperHour
       if $deleteOrNot; then
+         echo "DELETING $item IN 10 SECONDS!"
+         Countdown 10
          rm -v "$item"
          _downsampled=$(echo $item | rev | cut -d "." -f 2 | rev)".downsampled.mp4"
          _newName=$(echo $_downsampled | sed -r "s|.downsampled||g")
          mv -v "$_downsampled" "$_newName"
       fi
    done
+}
+
+Countdown()
+{
+	_time=$1
+	while [ $_time -gt 0 ]; do
+		echo $_time
+		_time=$(($_time - 1))
+		sleep 1
+	done
 }
 
 Update-jellyman()
