@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.6.2"
+jellymanVersion="v1.6.3"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -614,7 +614,6 @@ Rename_tv()
    nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
    
    testDirCount=$(echo $nameOfTestFile | grep -o "/" | wc -w)
-   echo $testDirCount
 
    if [[ $directoryToCorrect != *"/" ]]; then
       testDirCount=$(($testDirCount + 1))
@@ -722,6 +721,7 @@ Transcode_file()
 {
    videoToEdit="$1"
    desiredGBperHour=$2
+   delteOrnot=$3
    videoSize=$(du -h "$videoToEdit" | cut -d "/" -f 1)
    videoDuration=$(ffprobe -i "$videoToEdit" -show_entries format=duration -v quiet -of csv="p=0" | cut -d "." -f 1)
    if isVideo "$videoToEdit"; then
@@ -742,6 +742,13 @@ Transcode_file()
          echo "_videoSizeGB = $_videoSizeGB"
          echo "_videoRatio = $_videoRatio"
          ffmpeg -i "$videoToEdit" -c:v libx265 -c:a copy -movflags +faststart -preset medium -crf 24 "$_newName.downsampled.mp4"
+         if $deleteOrNot; then
+           echo "DELETING $videoToEdit IN 10 SECONDS!"
+           Countdown 10
+           rm -v "$videoToEdit"
+           mv -v "$_newName.downsampled.mp4" "$_newName.mp4"
+        fi
+
       else
          echo "$videoToEdit is less than $desiredGBperHour GB/Hour, skipping..."
       fi
@@ -785,15 +792,7 @@ Transcode()
    
    for item in $_directoryToCorrect
    do
-      Transcode_file "$item" $_desiredGBperHour
-      if $deleteOrNot; then
-         echo "DELETING $item IN 10 SECONDS!"
-         Countdown 10
-         rm -v "$item"
-         _downsampled=$(echo $item | rev | cut -d "." -f 2 | rev)".downsampled.mp4"
-         _newName=$(echo $_downsampled | sed -r "s|.downsampled||g")
-         mv -v "$_downsampled" "$_newName"
-      fi
+      Transcode_file "$item" $_desiredGBperHour $deleteOrNot
    done
 }
 
