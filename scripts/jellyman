@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.6.2"
+jellymanVersion="v1.6.3"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -614,7 +614,6 @@ Rename_tv()
    nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
    
    testDirCount=$(echo $nameOfTestFile | grep -o "/" | wc -w)
-   echo $testDirCount
 
    if [[ $directoryToCorrect != *"/" ]]; then
       testDirCount=$(($testDirCount + 1))
