@@ -41,7 +41,13 @@ Import()
       source /opt/jellyfin/config/jellyman.conf
       mv -f /opt/jellyfin/backup/jellyman /bin/
       chmod +x /bin/jellyman
-      mv -f /opt/jellyfin/backup/jellyfin.service /usr/lib/systemd/system/
+      
+      if [ -d /usr/lib/systemd/system ]; then
+         mv -f /opt/jellyfin/backup/jellyfin.service /usr/lib/systemd/system/
+      else
+         mv -f /opt/jellyfin/backup/jellyfin.service /etc/systemd/system
+      fi
+      
       mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
       if id "$defaultUser" &>/dev/null; then 
          chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
@@ -420,6 +426,8 @@ Update_jellyman()
    
    if [ -d /usr/lib/systemd ] && [[ ! -n $jellyfinServiceLocation ]]; then
       bash -c 'echo "jellyfinServiceLocation=/usr/lib/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf'
+   elif [[ ! -n $jellyfinServiceLocation ]]; then
+      bash -c 'echo "jellyfinServiceLocation=/etc/systemd/system/jellyfin.service" >> /opt/jellyfin/config/jellyman.conf'
    fi
 
    if [[ ! -n $architecture ]]; then

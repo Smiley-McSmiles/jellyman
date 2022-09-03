@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.6.1"
+jellymanVersion="v1.6.2"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -229,6 +229,7 @@ Help()
    echo "-cps   Change Jellyfins https network port - Default = 8920."
    echo "-ik    Import an API key"
    echo "-md    Change the Media Directory for Jellyman."
+   echo "-tc    Transcode a file/directory with a GB per hour filter (1.5GB is recommended)"
    echo "-X     Uninstall Jellyfin and Jellyman Completely."
    echo
    echo "To browse Jellyfin versions please use this link."
@@ -706,6 +707,106 @@ Uninstall()
    fi
 }
 
+
+isVideo()
+{
+   _video=$1
+   if [[ $_video == *"."[mMaA][kKvVpP][iIvV4] ]]; then
+      return 0
+   else
+      return 1
+   fi
+}
+
+Transcode_file()
+{
+   videoToEdit="$1"
+   desiredGBperHour=$2
+   videoSize=$(du -h "$videoToEdit" | cut -d "/" -f 1)
+   videoDuration=$(ffprobe -i "$videoToEdit" -show_entries format=duration -v quiet -of csv="p=0" | cut -d "." -f 1)
+   if isVideo "$videoToEdit"; then
+      _videoSizeGB=null
+      _videoTimeHours=$(bc -l <<< "$videoDuration/3600")
+      if [[ $videoSize == *"M"* ]]; then
+         _videoSizeMB=$(echo $videoSize | sed -r "s|M||g" | cut -d "	" -f 1)
+         _videoSizeGB=$(bc -l <<< "$_videoSizeMB/1024")
+      else
+         _videoSizeGB=$(echo $videoSize | sed -r "s|G||g")
+      fi
+      _videoRatio=$(bc -l <<< "$_videoSizeGB/$_videoTimeHours")
+      if [ 1 -eq "$(echo "$_videoRatio > $desiredGBperHour" | bc)" ]; then
+         #TRANSCODE FILE
+         echo "Transcoding $videoToEdit ..."
+         _newName=$(echo $videoToEdit | rev | cut -d "." -f 2 | rev)
+         echo "_videoTimeHours = $_videoTimeHours"
+         echo "_videoSizeGB = $_videoSizeGB"
+         echo "_videoRatio = $_videoRatio"
+         ffmpeg -i "$videoToEdit" -c:v libx265 -c:a copy -movflags +faststart -preset medium -crf 24 "$_newName.downsampled.mp4"
+      else
+         echo "$videoToEdit is less than $desiredGBperHour GB/Hour, skipping..."
+      fi
+   else
+      _file=$(echo $videoToEdit | rev | cut -d "/" -f 1 | rev)
+      echo "$_file is not a video, skipping..."
+   fi
+}
+
+Transcode()
+{
+   echo "|--------------------------------------------------------------|"
+   echo "|                        ***WARNING***                         |"
+   echo "|          Please enter the directory to transcode             |"
+   echo "|                        For example:                          |"
+   echo "|  /jfin/TV/*/*/* <- For every Episode(May Crash Be Careful!)  |"
+   echo "|                            OR:                               |"
+   echo "|  /jfin/TV/Breaking*Bad/*/* <- For Every Episode in a show    |"
+   echo "|                            OR:                               |"
+   echo "|  /jfin/TV/Breaking*Bad/Season*2/* <- For Every Episode in    |"
+   echo "|                    a season of a show                        |"
+   echo "|                                                              |"
+   echo "|       BE ADVISED, IF YOU'RE TRANSCODING MULTIPLE FILES,      |"
+   echo "|       THIS IS GOING TO TAKE A WHILE, IT IS RECOMMENDED       |"
+   echo "|        TO RUN THIS COMMAND IN 'screen' THEN PRESSING         |"
+   echo "|                       CTRL + A THEN D                        |"
+   echo "|--------------------------------------------------------------|"
+   read -p 'Please enter the path to the file(s) : ' _directoryToCorrect
+   echo
+   echo "Please enter the desired GB per hour of video"
+   read -p "EXAMPLE: 1 OR 2.5 : " _desiredGBperHour
+   echo
+   read -p 'Would you like to delete the original file(s) after transcode? [N/y] : ' deleteOrNot
+   echo
+   
+   if [[ $deleteOrNot == [yY]* ]]; then
+      deleteOrNot=true
+   else
+      deleteOrNot=false
+   fi
+   
+   for item in $_directoryToCorrect
+   do
+      Transcode_file "$item" $_desiredGBperHour
+      if $deleteOrNot; then
+         echo "DELETING $item IN 10 SECONDS!"
+         Countdown 10
+         rm -v "$item"
+         _downsampled=$(echo $item | rev | cut -d "." -f 2 | rev)".downsampled.mp4"
+         _newName=$(echo $_downsampled | sed -r "s|.downsampled||g")
+         mv -v "$_downsampled" "$_newName"
+      fi
+   done
+}
+
+Countdown()
+{
+	_time=$1
+	while [ $_time -gt 0 ]; do
+		echo $_time
+		_time=$(($_time - 1))
+		sleep 1
+	done
+}
+
 Update-jellyman()
 {
    Has_sudo
@@ -802,6 +903,7 @@ if [ -n "$1" ]; then
          -cps) Https_port_change ;;
          -ik) Import_api_key ;;
          -md) Change_Media_Directory ;;
+         -tc) Transcode ;;
          -X) Uninstall ;;
          *) echo "Option $1 not recognized" 
             Help ;;

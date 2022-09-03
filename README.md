@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
 =======
 
-> v1.6.1 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
+> v1.6.2 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
 > Tested on Fedora 34/35/36, Ubuntu 22.04, Manjaro 21.3.6, EndeavourOS Artemis Neo, Linux Mint 21, and Rocky Linux 8.6/9.0
 
@@ -113,6 +113,7 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
 * **Change Port** - Change Jellyfins network port - Default = 8096.
 * **Change Media Directory** - Changes the Media Directory/Directories for Jellyman.
 * **Import API Key** - Import a new API key.
+* **Transcode** - Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
 * **Uninstall** - Uninstalls Jellyfin and Jellyman completely 
 
     └── _Ignores the Media Directory._
@@ -232,6 +233,7 @@ COMMANDS:
 -cps   Change Jellyfins https network port - Default = 8920.
 -ik    Import an API key.
 -md    Change the Media Directory for Jellyman.
+-tc    Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
 -X     Uninstall Jellyfin and Jellyman Completely.
 
 EXAMPLE:
