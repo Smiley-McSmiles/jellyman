@@ -722,6 +722,9 @@ Transcode_file()
    videoToEdit="$1"
    desiredGBperHour=$2
    delteOrnot=$3
+   preset=$4
+   crf=$5
+   
    videoSize=$(du -h "$videoToEdit" | cut -d "/" -f 1)
    videoDuration=$(ffprobe -i "$videoToEdit" -show_entries format=duration -v quiet -of csv="p=0" | cut -d "." -f 1)
    if isVideo "$videoToEdit"; then
@@ -741,7 +744,7 @@ Transcode_file()
          echo "Video time in Hours: $_videoTimeHours"
          echo "Video size GB:  $_videoSizeGB"
          echo "Current GB/Hour: $_videoRatio"
-         time ffmpeg -i "$videoToEdit" -c:v libx265 -c:a copy -movflags +faststart -preset medium -crf 24 "$_newName.downsampled.mp4"
+         time ffmpeg -i "$videoToEdit" -c:v libx265 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
          _newVideoSize=$(du -h "$_newName.downsampled.mp4" | cut -d "/" -f 1)
          echo "Downsampled size: $_newVideoSize"
          if $deleteOrNot; then
@@ -781,7 +784,52 @@ Transcode()
    read -p 'Please enter the path to the file(s) : ' _directoryToCorrect
    echo
    echo "Please enter the desired GB per hour of video"
-   read -p "EXAMPLE: 1 OR 2.5 : " _desiredGBperHour
+   read -p "EXAMPLE: 1 OR 2.5 : " desiredGBperHour
+   
+   preset=0
+   while [ $preset -gt 9 ] || [ $preset -lt 1 ]; do
+     clear
+     echo
+     echo '* = recommended'
+     echo
+     echo "1: ultrafast"
+     echo "2: superfast"
+     echo "3: veryfast"
+     echo "4: faster"
+     echo "5: fast"
+     echo '6: medium *'
+     echo "7: slow"
+     echo "8: slower"
+     echo "9: veryslow"
+     echo
+     read -p "Please choose a transcode preset [1-9] : " preset
+     if [[ ! $preset == [1-9] ]]; then
+       preset=0
+     fi
+   done
+   echo
+   case "$cpuArchitectureFull" in
+      1)   preset="ultrafast" ;;
+      2)   preset="superfast" ;;
+      3)   preset="veryfast" ;;
+      4)   preset="faster" ;;
+      5)   preset="fast" ;;
+      6)   preset="medium" ;;
+      7)   preset="slow" ;;
+      8)   preset="slower" ;;
+      9)   preset="veryslow" ;;
+   esac
+   
+   crf=0
+   while [ $crf -gt 30 ] || [ $crf -lt 20 ]; do
+      clear
+      echo 'Please enter a Constant Rate Factor (CRF) [20-30]'
+      echo "22-26 is recommended"
+      read -p '20 is better quality and 30 is lower quality : ' crf
+      if [[ ! $crf == [0-9][0-9] ]]; then
+         crf=0
+      fi
+   done
    echo
    read -p 'Would you like to delete the original file(s) after transcode? [N/y] : ' deleteOrNot
    echo
@@ -794,7 +842,7 @@ Transcode()
    
    for item in $_directoryToCorrect
    do
-      Transcode_file "$item" $_desiredGBperHour $deleteOrNot
+      Transcode_file "$item" $desiredGBperHour $deleteOrNot $preset $crf
    done
 }
 
