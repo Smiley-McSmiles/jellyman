@@ -808,7 +808,7 @@ Transcode()
      fi
    done
    echo
-   case "$cpuArchitectureFull" in
+   case "$preset" in
       1)   preset="ultrafast" ;;
       2)   preset="superfast" ;;
       3)   preset="veryfast" ;;
