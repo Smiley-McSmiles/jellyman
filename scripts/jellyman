@@ -738,10 +738,12 @@ Transcode_file()
          #TRANSCODE FILE
          echo "Transcoding $videoToEdit ..."
          _newName=$(echo $videoToEdit | rev | cut -d "." -f 2 | rev)
-         echo "_videoTimeHours = $_videoTimeHours"
-         echo "_videoSizeGB = $_videoSizeGB"
-         echo "_videoRatio = $_videoRatio"
+         echo "Video time in Hours: $_videoTimeHours"
+         echo "Video size GB:  $_videoSizeGB"
+         echo "Current GB/Hour: $_videoRatio"
          time ffmpeg -i "$videoToEdit" -c:v libx265 -c:a copy -movflags +faststart -preset medium -crf 24 "$_newName.downsampled.mp4"
+         _newVideoSize=$(du -h "$_newName.downsampled.mp4" | cut -d "/" -f 1)
+         echo "Downsampled size: $_newVideoSize"
          if $deleteOrNot; then
            echo "DELETING $videoToEdit IN 10 SECONDS!"
            Countdown 10
