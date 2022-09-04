@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.6.3"
+jellymanVersion="v1.6.4"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -741,7 +741,7 @@ Transcode_file()
          echo "_videoTimeHours = $_videoTimeHours"
          echo "_videoSizeGB = $_videoSizeGB"
          echo "_videoRatio = $_videoRatio"
-         ffmpeg -i "$videoToEdit" -c:v libx265 -c:a copy -movflags +faststart -preset medium -crf 24 "$_newName.downsampled.mp4"
+         time ffmpeg -i "$videoToEdit" -c:v libx265 -c:a copy -movflags +faststart -preset medium -crf 24 "$_newName.downsampled.mp4"
          if $deleteOrNot; then
            echo "DELETING $videoToEdit IN 10 SECONDS!"
            Countdown 10
