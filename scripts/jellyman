@@ -129,13 +129,14 @@ Download_version()
 	Has_sudo
 	source /opt/jellyfin/config/jellyman.conf
 	mkdir /opt/jellyfin/update
-	wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/
-	cat /opt/jellyfin/update/index.html | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | cat -n
+	versionList=$(curl -sL https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/)
+	clear
+	echo $versionList | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | cat -n
 	echo
 	echo "Please enter the number corresponding with"
 	read -p "the version you want to install : " versionToSwitchNumber
-	newVersion=$(cat /opt/jellyfin/update/index.html | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | head -n $versionToSwitchNumber | tail -n 1)
-	maxNumber=$(cat /opt/jellyfin/update/index.html | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | wc -l)
+	newVersion=$(echo $versionList | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | head -n $versionToSwitchNumber | tail -n 1)
+	maxNumber=$(echo $versionList | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | wc -l)
 	 if [[ $versionToSwitchNumber == *['!'@#\$%^\&*()_+.]* ]] || [[ $versionToSwitchNumber =~ [a-zA-Z]+$ ]] || (( $versionToSwitchNumber > $maxNumber )) || (( $versionToSwitchNumber < 1 )); then
 		echo "The new version you chose doesn't exist, please run this command again and pick a LISTED NUMBER"
 	  exit
@@ -144,7 +145,6 @@ Download_version()
 		echo "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/$newVersion/jellyfin_$newVersionUnderscore$architecture.tar.gz"
 		jellyman -u "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/$newVersion/jellyfin_$newVersionUnderscore$architecture.tar.gz"
 	fi
-	rm -fv /opt/jellyfin/update/index.html
 }
 
 Version_switch()
@@ -470,10 +470,9 @@ Update()
 	else
 		echo "Getting current version from repository..."
 		mkdir /opt/jellyfin/update
-		wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/stable/combined/
-		jellyfin_archive=$(grep "$architecture.tar.gz" /opt/jellyfin/update/index.html | cut -d '"' -f 2 | head -1 | sed -r "s|.sha256sum||g" | sed -r "s|-musl||g")
+		stableReleases=$(curl -sL https://repo.jellyfin.org/releases/server/linux/stable/combined/)
+		jellyfin_archive=$(echo $stableReleases | grep -o "jellyfin_"[0-9][0-9].[0-9].[0-9]"_$architecture.tar.gz" | head -1)
 		jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
-		rm -f /opt/jellyfin/update/index.html
 		
 		echo "jellyfin_archive = $jellyfin_archive"
 		echo "jellyfin = $jellyfin"
@@ -511,16 +510,14 @@ Update_beta()
 	
 	echo "Fetching newest beta Jellyfin version..."
 	mkdir /opt/jellyfin/update
-	wget -O /opt/jellyfin/update/index.html https://repo.jellyfin.org/releases/server/linux/stable-pre/
-	jellyfin_archive=$(grep "$architecture.tar.gz" /opt/jellyfin/update/index.html | grep 'combined' | cut -d '/' -f5 | cut -d '<' -f1 | head -n 1 | sed -r "s|.sha256sum||g")
+	betasAvailable=$(curl -sL https://repo.jellyfin.org/releases/server/linux/stable-pre/) # needs testing when new beta is available
+	jellyfin_archive=$(echo $betasAvailable | grep "$architecture.tar.gz" | grep 'combined' | cut -d '/' -f5 | cut -d '<' -f1 | head -n 1 | sed -r "s|.sha256sum||g")
 	jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
 	new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
 	if [[ ! -n $jellyfin_archive ]] || [[ ! -n $jellyfin ]]; then
 		echo "Sorry there appears to be no Jellyfin Betas right now..."
 		exit
 	else
-		rm -f /opt/jellyfin/update/index.html
-
 		if ! isCurrentVersion $jellyfin && ! isInstalledVersion $jellyfin; then
 			wget -O /opt/jellyfin/update/$jellyfin_archive https://repo.jellyfin.org/releases/server/linux/stable-pre/$new_jellyfin_version/combined/$jellyfin_archive
 		else
@@ -859,9 +856,8 @@ Countdown()
 Update-jellyman()
 {
 	Has_sudo
-	wget -O /opt/jellyfin/config/jellyman_version https://raw.githubusercontent.com/Smiley-McSmiles/jellyman/main/jellyman.1
-	currentJellymanVersion=$(cat /opt/jellyfin/config/jellyman_version | grep " - v" | cut -d "v" -f2)
-	rm -f /opt/jellyfin/config/jellyman_version
+	jellymanManFile=$(curl -sL https://raw.githubusercontent.com/Smiley-McSmiles/jellyman/main/jellyman.1)
+	currentJellymanVersion=$(echo $jellymanManFile | grep " - v" | cut -d "v" -f2 | cut -d " " -f1)
 	if [[ "v$currentJellymanVersion" == $jellymanVersion ]]; then
 		echo "Jellyman is up to date. No new versions available."
 		exit
