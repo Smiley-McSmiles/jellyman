@@ -128,23 +128,34 @@ Download_version()
 {
 	Has_sudo
 	source /opt/jellyfin/config/jellyman.conf
-	mkdir /opt/jellyfin/update
-	versionList=$(curl -sL https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/)
-	clear
-	echo $versionList | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | cat -n
-	echo
-	echo "Please enter the number corresponding with"
-	read -p "the version you want to install : " versionToSwitchNumber
-	newVersion=$(echo $versionList | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | head -n $versionToSwitchNumber | tail -n 1)
-	maxNumber=$(echo $versionList | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | wc -l)
-	 if [[ $versionToSwitchNumber == *['!'@#\$%^\&*()_+.]* ]] || [[ $versionToSwitchNumber =~ [a-zA-Z]+$ ]] || (( $versionToSwitchNumber > $maxNumber )) || (( $versionToSwitchNumber < 1 )); then
-		echo "The new version you chose doesn't exist, please run this command again and pick a LISTED NUMBER"
-	  exit
-	else
-		newVersionUnderscore=$(echo "$newVersion"_)
-		echo "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/$newVersion/jellyfin_$newVersionUnderscore$architecture.tar.gz"
-		jellyman -u "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/$newVersion/jellyfin_$newVersionUnderscore$architecture.tar.gz"
-	fi
+	versionListVar=$(curl -sL https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/)
+	versionList=$(echo "$versionListVar" | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | cat -n)
+	maxNumber=$(echo "$versionList" | wc -l)
+	newVersionNumber=""
+	versionToSwitchNumber=0
+	warning=""
+
+	while (( $versionToSwitchNumber > $maxNumber )) || (( $versionToSwitchNumber < 1 )); do
+		clear
+		echo "Please select a stable version:"
+		echo $warning
+		echo "$versionList"
+		echo "Please enter the number corresponding with"
+		read -p "the version you want to install [1-$maxNumber] : " versionToSwitchNumber
+		newVersionNumber=$(echo "$versionList" | head -n $versionToSwitchNumber | tail -n 1)
+
+		if [[ ! $versionToSwitchNumber == [1-$maxNumber] ]]; then
+			versionToSwitchnumber=0
+			warning="Please select one of the numbers provided!"
+		elif isCurrentVersion jellyfin_$newVersionNumber || isInstalledVersion jellyfin_$newVersionNumber; then
+			versionToSwitchnumber=0
+			warning="That Jellyfin version is already installed!"
+		else
+			newVersionUnderscore=$(echo "$newVersionNumber"_)
+			echo "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/$newVersionNumber/jellyfin_$newVersionUnderscore$architecture.tar.gz"
+			jellyman -u "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/$newVersionNumber/jellyfin_$newVersionUnderscore$architecture.tar.gz"
+		fi
+	done
 }
 
 Version_switch()
@@ -500,45 +511,59 @@ Update()
 }
 
 
+# needs testing when new beta is available
 Update_beta()
 {
 	Has_sudo
 	source /opt/jellyfin/config/jellyman.conf
-	jellyfin_archive=""
-	jellyfin=""
-	new_jellyfin_version=""
+	betasAvailable=$(curl -sL https://repo.jellyfin.org/releases/server/linux/stable-pre/)
+	jellyfinArchives=$(echo "$betasAvailable" | grep "combined" | grep -o jellyfin_.*_$architecture.tar.gz'"' | cut -d '"' -f 1)
+	jellyfinNumbered=$(echo "$jellyfinArchives" | sed -r "s|_$architecture.tar.gz||g" | cat -n)
+	versionSelected=0
+	maxNumber=$(echo "$jellyfinNumbered" | wc -l)
+	newVersionName=
+	newVersionNumber=
+	newVersionArchive=
+	warning=""
 	
-	echo "Fetching newest beta Jellyfin version..."
-	mkdir /opt/jellyfin/update
-	betasAvailable=$(curl -sL https://repo.jellyfin.org/releases/server/linux/stable-pre/) # needs testing when new beta is available
-	jellyfin_archive=$(echo $betasAvailable | grep "$architecture.tar.gz" | grep 'combined' | cut -d '/' -f5 | cut -d '<' -f1 | head -n 1 | sed -r "s|.sha256sum||g")
-	jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
-	new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
-	if [[ ! -n $jellyfin_archive ]] || [[ ! -n $jellyfin ]]; then
-		echo "Sorry there appears to be no Jellyfin Betas right now..."
+	if [[ ! $betasAvailable == .*"tar.gz".* ]]; then
+		echo "Sorry, no pre-releases are available right now..."
 		exit
-	else
-		if ! isCurrentVersion $jellyfin && ! isInstalledVersion $jellyfin; then
-			wget -O /opt/jellyfin/update/$jellyfin_archive https://repo.jellyfin.org/releases/server/linux/stable-pre/$new_jellyfin_version/combined/$jellyfin_archive
-		else
-			exit
-		fi
-
-
-		echo "Unpacking $jellyfin_archive to /opt/jellyfin/..."
-		tar xvzf /opt/jellyfin/update/$jellyfin_archive -C /opt/jellyfin/
-		jellyman -S
-		unlink /opt/jellyfin/jellyfin
-		ln -s /opt/jellyfin/$jellyfin /opt/jellyfin/jellyfin
-		echo "Removing $jellyfin_archive"
-		rm -rfv /opt/jellyfin/update
-
-		chown -R $defaultUser:$defaultUser /opt/jellyfin
-		echo "Jellyfin updated to version $new_jellyfin_version"
-		Change_variable currentVersion $jellyfin
-		jellyman -s -t
 	fi
+
+	while (( $versionSelected > $maxNumber )) || (( $versionSelected < 1 )); do
+		clear
+		echo "Available pre-releases:"
+		echo $warning
+		echo "$jellyfinNumbered"
+		read -p "Select which version to install [1-$maxNumber] : " versionSelected
+		newVersionName=$(echo "$jellyfinArchives" | head -n $versionSelected | tail -n 1 | sed -r "s|_$architecture.tar.gz||g")
+		newVersionNumber=$(echo $newVersionName | sed -r 's/jellyfin_//g')
+		if [[ ! $versionSelected == [1-$maxNumber] ]]; then
+			versionSelected=0
+			warning="ERROR: Please select one of the numbers provided!"
+		elif isCurrentVersion $newVersionName || isInstalledVersion $newVersionName; then
+			warning="ERROR: That Jellyfin version is already installed!"
+		else
+			newVersionArchive=$(echo "$jellyfinArchives" | head -n $versionSelected | tail -n 1)
+			echo "Getting $newVersionArchive..."
+			wget -O /opt/jellyfin/update/$newVersionName https://repo.jellyfin.org/releases/server/linux/stable-pre/$newVersionNumber/combined/$newVersionArchive
+			echo "Unpacking $newVersionArchive to /opt/jellyfin/..."
+			tar xvzf /opt/jellyfin/update/$newVersionArchive -C /opt/jellyfin/
+			jellyman -S
+			unlink /opt/jellyfin/jellyfin
+			ln -s /opt/jellyfin/$newVersionName /opt/jellyfin/jellyfin
+			echo "Removing $newVersionArchive"
+			rm -rfv /opt/jellyfin/update
+
+			chown -R $defaultUser:$defaultUser /opt/jellyfin
+			echo "Jellyfin updated to version $newVersionNumber"
+			Change_variable currentVersion $newVersionName
+			jellyman -s -t
+		fi
+	done
 }
+
 
 Is_jellyfin_setup()
 {
