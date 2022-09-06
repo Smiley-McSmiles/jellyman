@@ -28,9 +28,6 @@ Backup()
 	USER=$(stat -c '%U' $backupDirectory)
 	chown -f $USER:$USER $tarPath
 	chmod -f 660 $tarPath
-	echo "Your backup is:"
-	tarSize=$(du -h $tarPath)
-	echo "Size: $tarSize"
 	echo
 	echo "|--------------------------------------------------------|"
 	echo "|        To Import on your next setup, simply run:       |"
@@ -39,6 +36,10 @@ Backup()
 	echo "|                   chmod ug+x setup.sh                  |"
 	echo "|     sudo ./setup.sh -i [Path to jellyfin-backup.tar]   |"
 	echo "|--------------------------------------------------------|"
+	echo
+	echo "Your backup is:"
+	tarSize=$(du -h $tarPath)
+	echo "Size: $tarSize"
 }
 
 Change_variable()
@@ -146,10 +147,12 @@ Download_version()
 
 		if [[ ! $versionToSwitchNumber == [1-$maxNumber] ]]; then
 			versionToSwitchnumber=0
-			warning="Please select one of the numbers provided!"
+			warning="ERROR: Please select one of the numbers provided!"
+			echo "Press CTRL+C to exit..."
 		elif isCurrentVersion jellyfin_$newVersionNumber || isInstalledVersion jellyfin_$newVersionNumber; then
 			versionToSwitchnumber=0
-			warning="That Jellyfin version is already installed!"
+			warning="ERROR: That Jellyfin version is already installed!"
+			echo "Press CTRL+C to exit..."
 		else
 			newVersionUnderscore=$(echo "$newVersionNumber"_)
 			echo "https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/$newVersionNumber/jellyfin_$newVersionUnderscore$architecture.tar.gz"
@@ -160,52 +163,69 @@ Download_version()
 
 Version_switch()
 {
-	echo "Current Jellyfin version installed"
-	Get_version
-	echo ""
-	echo "Jellyfin versions already downloaded:"
-	ls /opt/jellyfin/ | grep "_" | cat -n
-	echo
-	echo "Please enter the number corresponding with"
-	read -p "the version you want to install : " versionToSwitchNumber
-	newVersion=$(ls /opt/jellyfin/ | grep "_" | head -n $versionToSwitchNumber | tail -n 1)
-	maxNumber=$(ls /opt/jellyfin/ | grep "_" | wc -l)
-	 if [[ $versionToSwitchNumber == *['!'@#\$%^\&*()_+.]* ]] || [[ $versionToSwitchNumber =~ [a-zA-Z]+$ ]] || (( $versionToSwitchNumber > $maxNumber )) || (( $versionToSwitchNumber < 1 )); then
-		echo "The new version you chose doesn't exist, please run this command again and pick a LISTED NUMBER"
-	  exit
-	else
-		jellyman -S
-		unlink /opt/jellyfin/jellyfin
-		ln -s /opt/jellyfin/$newVersion /opt/jellyfin/jellyfin
-		chown -Rfv $defaultUser:$defaultUser /opt/jellyfin/jellyfin
-		Change_variable currentVersion $newVersion
-		jellyman -s
-	fi
+	Has_sudo
+	versionToSwitchNumber=0
+	installedVersions=$(ls /opt/jellyfin/ | grep "_")
+	maxNumber=$(echo $installedVersions | wc -l)
+	warning=
+
+	while [[ ! $versionToSwitchNumber == [1-$maxNumber] ]]; do
+		clear
+		echo "Current Jellyfin version installed"
+		Get_version
+		echo
+		echo "Jellyfin versions already downloaded:"
+		echo "$installedVersions" | cat -n
+		echo $warning
+		echo "Please enter the number corresponding with"
+		read -p "the version you want to install : " versionToSwitchNumber
+		newVersion=$(echo $installedVersions | head -n $versionToSwitchNumber | tail -n 1)
+
+		if [[ ! $versionToSwitchNumber == [1-$maxNumber] ]]; then
+			warning="ERROR: Please select one of the numbers provided!"
+			echo "Press CTRL+C to exit..."
+		else
+			jellyman -S
+			unlink /opt/jellyfin/jellyfin
+			ln -s /opt/jellyfin/$newVersion /opt/jellyfin/jellyfin
+			chown -Rfv $defaultUser:$defaultUser /opt/jellyfin/jellyfin
+			Change_variable currentVersion $newVersion
+			jellyman -s
+		fi
+	done
 }
 
 Remove_version()
 {
-	echo "Current Jellyfin version installed"
-	Get_version
-	echo ""
-	echo "Jellyfin versions already downloaded:"
-	ls /opt/jellyfin/ | grep "_" | cat -n
-	echo ""
-	echo "Please enter the number corresponding with"
-	read -p "the version you want to erase : " versionToRemoveNumber
-	maxNumber=$(ls /opt/jellyfin/ | grep "_" | wc -l)
-	versionToRemove=$(ls /opt/jellyfin/ | grep "_" | head -n $versionToRemoveNumber | tail -n 1)
-	if [[ $versionToRemoveNumber == *['!'@#\$%^\&*()_+.]* ]] || [[ $versionToRemoveNumber =~ [a-zA-Z]+$ ]] || (( $versionToRemoveNumber > $maxNumber )) || (( $versionToRemoveNumber < 1 )); then
-		echo "The new version you chose doesn't exist, please run this command again and pick a LISTED NUMBER"
-		exit
-	elif isCurrentVersion $versionToRemove; then
-		echo "The version you chose is the currently running version."
-		echo "Please use 'jellyman -vs' and choose a different version,"
-		echo "before removing $versionToRemove"
-		exit
-	else
+	Has_sudo
+	versionToSwitchNumber=0
+	versionToRemove=""
+	installedVersions=$(ls /opt/jellyfin/ | grep "_")
+	maxNumber=$(echo $installedVersions | wc -l)
+	warning=
+
+	while [[ ! $versionToSwitchNumber == [1-$maxNumber] ]]; do
+		clear
+		echo "Current Jellyfin version installed"
+		Get_version
+		echo
+		echo "Jellyfin versions already downloaded:"
+		echo "$installedVersions" | cat -n
+		echo
+		echo "$warning"
+		echo "Please enter the number corresponding with"
+		read -p "the version you want to ERASE : " versionToRemoveNumber
+		versionToRemove=$(ehco $installedVersions | head -n $versionToRemoveNumber | tail -n 1)
+		warning="ERROR: Please select one of the numbers provided!"
+		if isCurrentVersion $versionToRemove; then
+			warning="ERROR: v$versionToRemove is the currently running version.
+Please use 'jellyman -vs' and choose a different version,
+before removing v$versionToRemove"
+			versionToRemoveNumber=0
+		fi
+	done
+
 		rm -rfv /opt/jellyfin/$versionToRemove
-	fi
 }
 
 Help()
@@ -339,7 +359,7 @@ Check_api_key()
 	source /opt/jellyfin/config/jellyman.conf
 	if [[ ! -n $apiKey ]]; then
 		echo "***ERROR***"
-		echo "NO API KEY FOUND PLEASE RUN 'sudo jellyman -ik' TO IMPORT A NEW KEY!"
+		echo "NO API KEY FOUND, RUN 'sudo jellyman -ik' TO IMPORT A NEW KEY!"
 		return 1
 		exit
 	else
@@ -542,8 +562,10 @@ Update_beta()
 		if [[ ! $versionSelected == [1-$maxNumber] ]]; then
 			versionSelected=0
 			warning="ERROR: Please select one of the numbers provided!"
+			echo "Press CTRL+C to exit..."
 		elif isCurrentVersion $newVersionName || isInstalledVersion $newVersionName; then
 			warning="ERROR: That Jellyfin version is already installed!"
+			echo "Press CTRL+C to exit..."
 		else
 			newVersionArchive=$(echo "$jellyfinArchives" | head -n $versionSelected | tail -n 1)
 			echo "Getting $newVersionArchive..."
@@ -570,13 +592,13 @@ Is_jellyfin_setup()
 	if [ -f "/opt/jellyfin/config/network.xml" ]; then
 		return 0
 	else
-	echo "|--------------------------------------------------------------|"
-	echo "|                        ***WARNING***                         |"
-	echo "|             JELLYFIN DID NOT GET SET UP PROPERLY!            |"
-	echo "|        NO /opt/jellyfin/config/network.xml FILE FOUND        |"
-	echo "|  This is likely due to not completing the first time setup.  |"
-	echo "|     Navigate to http://localhost:8096/ to complete setup     |"
-	echo "|--------------------------------------------------------------|"
+		echo "|--------------------------------------------------------------|"
+		echo "|                        ***WARNING***                         |"
+		echo "|             JELLYFIN DID NOT GET SET UP PROPERLY!            |"
+		echo "|        NO /opt/jellyfin/config/network.xml FILE FOUND        |"
+		echo "|  This is likely due to not completing the first time setup.  |"
+		echo "|     Navigate to http://localhost:8096/ to complete setup     |"
+		echo "|--------------------------------------------------------------|"
 		return 1
 	fi
 
@@ -609,31 +631,34 @@ Recertify_https()
 
 Rename_tv()
 {
-	clear
 	Has_sudo
 	source /opt/jellyfin/config/jellyman.conf
-	echo "|--------------------------------------------------------------|"
-	echo "|                        ***WARNING***                         |"
-	echo "|       TV SHOW FILE NAMES MUST CONTAIN 'SXXEXX' X=number      |"
-	echo "|                                                              |"
-	echo "|            Please enter the directory to correct             |"
-	echo "|                        For example:                          |"
-	echo "|  /jfin/TV/*/*/* <- For every Episode(May Crash Be Careful!)  |"
-	echo "|                            OR:                               |"
-	echo "|  /jfin/TV/Breaking*Bad/*/* <- For Every Episode in a show    |"
-	echo "|                            OR:                               |"
-	echo "|  /jfin/TV/Breaking*Bad/Season*2/* <- For Every Episode in    |"
-	echo "|                    a season of a show                        |"
-	echo "|                                                              |"
-	echo "|      BE ADVISED, IF YOU'RE RE-NAMING MULTIPLE SHOWS,         |"
-	echo "|             MAKE SURE ALL THE SHOW DIRECTORY                 |"
-	echo "|      NAMES ARE IN THE SAME LOCATION IN THE DIRECTORY         |"
-	echo "|--------------------------------------------------------------|"
-	echo
-	read -p "Please enter a directory : " directoryToCorrect
-	# This is apparently a problem with the next command after clear. --> directoryToCorrect=$(echo $directoryToCorrect | sed -r "s| |*|g")
-	clear
-	nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
+	nameOfTestFile=""
+
+	while [ ! -f $nameOfTestFile ]; do
+		clear
+		echo "|--------------------------------------------------------------|"
+		echo "|                        ***WARNING***                         |"
+		echo "|       TV SHOW FILE NAMES MUST CONTAIN 'SXXEXX' X=number      |"
+		echo "|                                                              |"
+		echo "|            Please enter the directory to correct             |"
+		echo "|                        For example:                          |"
+		echo "|  /jfin/TV/*/*/* <- For every Episode(May Crash Be Careful!)  |"
+		echo "|                            OR:                               |"
+		echo "|  /jfin/TV/Breaking*Bad/*/* <- For Every Episode in a show    |"
+		echo "|                            OR:                               |"
+		echo "|  /jfin/TV/Breaking*Bad/Season*2/* <- For Every Episode in    |"
+		echo "|                    a season of a show                        |"
+		echo "|                                                              |"
+		echo "|      BE ADVISED, IF YOU'RE RE-NAMING MULTIPLE SHOWS,         |"
+		echo "|             MAKE SURE ALL THE SHOW DIRECTORY                 |"
+		echo "|      NAMES ARE IN THE SAME LOCATION IN THE DIRECTORY         |"
+		echo "|--------------------------------------------------------------|"
+		echo
+		read -p "Please enter a directory : " directoryToCorrect
+		clear
+		nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
+	done
 	
 	testDirCount=$(echo $nameOfTestFile | grep -o "/" | wc -w)
 
@@ -898,15 +923,50 @@ Update-jellyman()
 Change_Media_Directory()
 {
 	Has_sudo
-	echo "|---------------------------------------------------------|"
-	echo "| Please enter all media directories separated by a space |"
-	echo "|                       example:                          |"
-	echo "|          /media/hdd1/Movies /media/hdd2/TV              |"
-	echo "|---------------------------------------------------------|"
-	echo
-	read mediaPath
+	mediaPath=""
+	warning=""
+	continue=true
+
+	while $continue; do
+		clear
+		echo "|---------------------------------------------------------|"
+		echo "| Please enter all media directories separated by a space |"
+		echo "|                       example:                          |"
+		echo "|          /media/hdd1/Movies /media/hdd2/TV              |"
+		echo "|---------------------------------------------------------|"
+		echo
+		echo $warning
+		read -p "DIRECTORIES: " mediaPath
+		if areDirectories "$mediaPath"; then
+			continue=false
+		else
+			warning="ERROR: Make sure each input is a directory!"
+		fi
+	done
+
 	Change_variable defaultPath "$mediaPath" array
 }
+
+areDirectories()
+{
+	directoriesToCheck="$1"
+	isDirectory=true
+	for item in $directoriesToCheck
+	do
+		if [ ! -d $item ]; then
+			isDirectory=false
+			# echo "$item is not a directory"
+		fi
+	done
+	if $isDirectory; then
+		# echo "$directoriesToCheck are directories"
+		return 0
+	else
+		# echo "$directoriesToCheck are not directories"
+		return 1
+	fi
+}
+
 
 Has_sudo()
 {
