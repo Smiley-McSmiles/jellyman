@@ -145,7 +145,7 @@ Download_version()
 			versionToSwitchnumber=0
 			warning="ERROR: Please select one of the numbers provided!"
 			echo "Press CTRL+C to exit..."
-		elif isCurrentVersion jellyfin_$newVersionNumber || isInstalledVersion jellyfin_$newVersionNumber; then
+		elif isCurrentVersion "jellyfin_$newVersionNumber" || isInstalledVersion "jellyfin_$newVersionNumber"; then
 			versionToSwitchnumber=0
 			warning="ERROR: That Jellyfin version is already installed!"
 			echo "Press CTRL+C to exit..."
