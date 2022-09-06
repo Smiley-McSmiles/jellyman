@@ -124,7 +124,7 @@ Install_dependancies()
 		os_detected=true
 		echo "ID=$ID"
 		
-		if [[ $ID_LIKE == *"rhel"* ]] || [[ $ID == "rhel" ]]; then
+		if [[ $ID_LIKE == .*"rhel".* ]] || [[ $ID == "rhel" ]]; then
 			ID=rhel
 			
 			if [[ $VERSION_ID == *"."* ]]; then
@@ -254,9 +254,8 @@ Setup()
 	jellyfin_archive=
 	
 	if [ ! -f *"tar.gz" ]; then
-		wget https://repo.jellyfin.org/releases/server/linux/stable/combined/
-		jellyfin_archive=$(grep "$architecture.tar.gz" index.html | cut -d '"' -f 2 | sed -r "s|.sha256sum||g" | head -1)
-		rm index.html
+		jellyfinIndex=$(curl -sL https://repo.jellyfin.org/releases/server/linux/stable/combined/)
+		jellyfin_archive=$(echo "$jellyfinIndex" | grep -o jellyfin_[0-9][0-9].[0-9].[0-9].$architecture.tar.gz | head -1)
 		wget https://repo.jellyfin.org/releases/server/linux/stable/combined/$jellyfin_archive
 		jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
 	else
@@ -288,7 +287,6 @@ Setup()
 	cp $DIRECTORY/scripts/jellyman /bin/
 	cp $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/
 	touch /opt/jellyfin/config/jellyman.conf
-	cp $jellyfin_archive /opt/jellyfin/
 	jellyfinServiceLocation=
 	
 	if [ -d /usr/lib/systemd/system ]; then
@@ -303,7 +301,6 @@ Setup()
 	cp $DIRECTORY/conf/jellyfin.conf /etc/
 	cd /opt/jellyfin
 	tar xvzf $DIRECTORY/$jellyfin_archive
-	rm -f $DIRECTORY/$jellyfin_archive
 	ln -s $jellyfin jellyfin
 	echo "architecture=$architecture" >> config/jellyman.conf
 	echo "defaultPath=" >> config/jellyman.conf

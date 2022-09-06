@@ -117,6 +117,13 @@ Get_jellyman_version()
 	echo "Jellyman $jellymanVersion"
 }
 
+Get_jellyfin_version()
+{
+	Has_sudo
+	source /opt/jellyfin/config/jellyman.conf
+	echo $currentVersion
+}
+
 Download_version()
 {
 	Has_sudo
@@ -162,7 +169,7 @@ Version_switch()
 	Has_sudo
 	versionToSwitchNumber=0
 	installedVersions=$(ls /opt/jellyfin/ | grep "_")
-	maxNumber=$(echo $installedVersions | wc -l)
+	maxNumber=$(echo "$installedVersions" | wc -l)
 	warning=
 
 	while [[ ! $versionToSwitchNumber == [1-$maxNumber] ]]; do
@@ -175,7 +182,7 @@ Version_switch()
 		echo $warning
 		echo "Please enter the number corresponding with"
 		read -p "the version you want to install : " versionToSwitchNumber
-		newVersion=$(echo $installedVersions | head -n $versionToSwitchNumber | tail -n 1)
+		newVersion=$(echo "$installedVersions" | head -n $versionToSwitchNumber | tail -n 1)
 
 		if [[ ! $versionToSwitchNumber == [1-$maxNumber] ]]; then
 			warning="ERROR: Please select one of the numbers provided!"
@@ -194,14 +201,15 @@ Version_switch()
 Remove_version()
 {
 	Has_sudo
-	versionToSwitchNumber=0
+	versionToRemoveNumber=0
 	versionToRemove=""
 	installedVersions=$(ls /opt/jellyfin/ | grep "_")
-	maxNumber=$(echo $installedVersions | wc -l)
+	maxNumber=$(echo "$installedVersions" | wc -l)
 	warning=
 
-	while [[ ! $versionToSwitchNumber == [1-$maxNumber] ]]; do
+	while [[ ! $versionToRemoveNumber == [1-$maxNumber] ]]; do
 		clear
+		echo $maxNumber
 		echo "Current Jellyfin version installed"
 		echo "$currentVersion"
 		echo
@@ -211,16 +219,18 @@ Remove_version()
 		echo "$warning"
 		echo "Please enter the number corresponding with"
 		read -p "the version you want to ERASE : " versionToRemoveNumber
-		versionToRemove=$(ehco $installedVersions | head -n $versionToRemoveNumber | tail -n 1)
+		versionToRemove=$(echo "$installedVersions" | head -n $versionToRemoveNumber | tail -n 1)
 		warning="ERROR: Please select one of the numbers provided!"
 		if isCurrentVersion $versionToRemove; then
-			warning="ERROR: v$versionToRemove is the currently running version.
+			warning="ERROR: $versionToRemove is the currently running version.
 Please use 'jellyman -vs' and choose a different version,
-before removing v$versionToRemove"
+before removing $versionToRemove"
 			versionToRemoveNumber=0
 		fi
 	done
 
+		echo "Removing /opt/jellyfin/$versionToRemove"
+		Countdown 5
 		rm -rfv /opt/jellyfin/$versionToRemove
 }
 
@@ -722,7 +732,8 @@ Uninstall()
 	read -p "CONTINUE?: [yes/No]" toUninstallOrNotToUninstall
 	if [[ $toUninstallOrNotToUninstall == [yY][eE][sS] ]]; then
 		echo "Goodbye..."
-		sleep 1
+		echo "Removing Jellyfin and Jellyman in:"
+		Countdown 5
 		source /opt/jellyfin/config/jellyman.conf
 			echo "Blocking port 8096 and 8920..."
 		if [ -x "$(command -v ufw)" ]; then
@@ -1017,8 +1028,8 @@ if [ -n "$1" ]; then
 			-U) Update-jellyman 
 				 exit ;;
 			-ub) Update_beta ;;
-			-v) echo "$currentVersion"
-				 Get_jellyman_version ;;
+			-v) Get_jellyfin_version
+					Get_jellyman_version ;;
 			-vd) Download_version ;;
 			-vs) Version_switch ;;
 			-rv) Remove_version ;;
