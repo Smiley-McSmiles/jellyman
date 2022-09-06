@@ -81,9 +81,8 @@ isCurrentVersion()
 isInstalledVersion()
 {
 	jellyfinVersionToDownload=$1
-	currentJellyfinVersions=$(ls /opt/jellyfin/ | grep "jellyfin_")
 	
-	if [[ $currentJellyfinVersions == *"$jellyfinVersionToDownload"* ]]; then
+	if [ -d /opt/jellyfin/$jellyfinVersionToDownload ]; then
 		echo "The version to download matches an already installed version."
 		echo "Please use 'jellyman -vs' to switch Jellyfin versions."
 		return 0
@@ -113,13 +112,6 @@ Check_disk_free()
 	fi
 }
 
-Get_jellyfin_version()
-{
-	Has_sudo
-	source /opt/jellyfin/config/jellyman.conf
-	echo "$currentVersion"
-}
-
 Get_jellyman_version()
 {
 	echo "Jellyman $jellymanVersion"
@@ -130,7 +122,8 @@ Download_version()
 	Has_sudo
 	source /opt/jellyfin/config/jellyman.conf
 	versionListVar=$(curl -sL https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/)
-	versionList=$(echo "$versionListVar" | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g" | cat -n)
+	versionList=$(echo "$versionListVar" | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g")
+	versionListNumbered=$(echo "$versionList" | cat -n)
 	maxNumber=$(echo "$versionList" | wc -l)
 	newVersionNumber=""
 	versionToSwitchNumber=0
@@ -138,9 +131,12 @@ Download_version()
 
 	while (( $versionToSwitchNumber > $maxNumber )) || (( $versionToSwitchNumber < 1 )); do
 		clear
+		echo "Current Jellyfin version installed"
+		echo "$currentVersion"
+		echo
 		echo "Please select a stable version:"
 		echo $warning
-		echo "$versionList"
+		echo "$versionListNumbered"
 		echo "Please enter the number corresponding with"
 		read -p "the version you want to install [1-$maxNumber] : " versionToSwitchNumber
 		newVersionNumber=$(echo "$versionList" | head -n $versionToSwitchNumber | tail -n 1)
@@ -172,7 +168,7 @@ Version_switch()
 	while [[ ! $versionToSwitchNumber == [1-$maxNumber] ]]; do
 		clear
 		echo "Current Jellyfin version installed"
-		Get_version
+		echo "$currentVersion"
 		echo
 		echo "Jellyfin versions already downloaded:"
 		echo "$installedVersions" | cat -n
@@ -207,7 +203,7 @@ Remove_version()
 	while [[ ! $versionToSwitchNumber == [1-$maxNumber] ]]; do
 		clear
 		echo "Current Jellyfin version installed"
-		Get_version
+		echo "$currentVersion"
 		echo
 		echo "Jellyfin versions already downloaded:"
 		echo "$installedVersions" | cat -n
@@ -1021,7 +1017,7 @@ if [ -n "$1" ]; then
 			-U) Update-jellyman 
 				 exit ;;
 			-ub) Update_beta ;;
-			-v) Get_jellyfin_version
+			-v) echo "$currentVersion"
 				 Get_jellyman_version ;;
 			-vd) Download_version ;;
 			-vs) Version_switch ;;
