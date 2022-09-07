@@ -435,8 +435,11 @@ Permissions()
 	if [ -d "$1" ]; then
 		directoryToFix=$1
 		echo "Setting permissions for "$directoryToFix""
-		time $(chown -Rf $defaultUser:$defaultUser "$directoryToFix"
-		chmod -Rf 770 "$directoryToFix")
+		time $(
+			chown -R $defaultUser:$defaultUser "$directoryToFix"
+			chmod -R 660 "$directoryToFix"
+			chmod -R ug+X "$directoryToFix"
+		)
 		echo "...DONE"
 	elif [ ! -d "$1" ] && [ -n "$1" ]; then
 		echo "$1 is not a directory. Please enter a absolute path to your media"
@@ -453,8 +456,11 @@ Permissions()
 		fi
 
 		echo "Setting permissions for ${defaultPath[*]}"
-		time $(chown -Rf $defaultUser:$defaultUser ${defaultPath[*]}
-		chmod -Rf 770 ${defaultPath[*]})
+		time $(
+			chown -R $defaultUser:$defaultUser ${defaultPath[*]}
+			chmod -R 660 ${defaultPath[*]}
+			chmod -R ug+X ${defaultPath[*]}
+		)
 		echo "...DONE"
 	fi
 }
