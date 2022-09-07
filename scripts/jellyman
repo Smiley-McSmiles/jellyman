@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.6.4"
+jellymanVersion="v1.6.5"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -457,12 +457,16 @@ Permissions()
 			read defaultUser
 			Change_variable defaultUser $defaultUser
 		fi
-		chown -Rfv $defaultUser:$defaultUser ${defaultPath[*]}
-		chmod -Rfv 770 ${defaultPath[*]}
+		echo "Setting permissions for ${defaultPath}"
+		time $(chown -Rf $defaultUser:$defaultUser ${defaultPath[*]}
+		chmod -Rf 770 ${defaultPath[*]})
+			echo "...DONE"
 	fi
 
-	chown -Rfv $defaultUser:$defaultUser "$directoryToFix"
-	chmod -Rfv 770 "$directoryToFix"
+	echo "Setting permissions for ${defaultPath}"
+	time $(chown -Rf $defaultUser:$defaultUser "$directoryToFix"
+	chmod -Rf 770 "$directoryToFix")
+	echo "...DONE"
 }
 
 Status()
