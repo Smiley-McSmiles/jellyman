@@ -431,7 +431,7 @@ Permissions()
 	source /opt/jellyfin/config/jellyman.conf
 	checkForDefaultPath="yes"
 	directoryToFix=
-	if [[ "$1" == "/"* ]]; then
+	if [ -d "$1" ]; then
 		directoryToFix=$1
 	elif [[ "$1" == *"/" ]]; then
 		echo "$1 is not a directory. Please enter a absolute path to your media"
@@ -460,10 +460,10 @@ Permissions()
 		echo "Setting permissions for ${defaultPath}"
 		time $(chown -Rf $defaultUser:$defaultUser ${defaultPath[*]}
 		chmod -Rf 770 ${defaultPath[*]})
-			echo "...DONE"
+		echo "...DONE"
 	fi
 
-	echo "Setting permissions for ${defaultPath}"
+	echo "Setting permissions for "$directoryToFix"
 	time $(chown -Rf $defaultUser:$defaultUser "$directoryToFix"
 	chmod -Rf 770 "$directoryToFix")
 	echo "...DONE"
