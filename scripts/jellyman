@@ -437,7 +437,7 @@ Permissions()
 		time $(chown -Rf $defaultUser:$defaultUser "$directoryToFix"
 		chmod -Rf 770 "$directoryToFix")
 		echo "...DONE"
-	elif [ ! -d "$1" ]; then
+	elif [ ! -d "$1" ] && [ -n "$1" ]; then
 		echo "$1 is not a directory. Please enter a absolute path to your media"
 		echo "EXITING..."
 		exit
