@@ -433,7 +433,11 @@ Permissions()
 	directoryToFix=
 	if [ -d "$1" ]; then
 		directoryToFix=$1
-	elif [[ "$1" == *"/" ]]; then
+		echo "Setting permissions for "$directoryToFix""
+		time $(chown -Rf $defaultUser:$defaultUser "$directoryToFix"
+		chmod -Rf 770 "$directoryToFix")
+		echo "...DONE"
+	elif [ ! -d "$1" ]; then
 		echo "$1 is not a directory. Please enter a absolute path to your media"
 		echo "EXITING..."
 		exit
@@ -462,11 +466,6 @@ Permissions()
 		chmod -Rf 770 ${defaultPath[*]})
 		echo "...DONE"
 	fi
-
-	echo "Setting permissions for "$directoryToFix""
-	time $(chown -Rf $defaultUser:$defaultUser "$directoryToFix"
-	chmod -Rf 770 "$directoryToFix")
-	echo "...DONE"
 }
 
 Status()
