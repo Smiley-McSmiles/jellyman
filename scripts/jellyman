@@ -798,7 +798,7 @@ Transcode_file()
 			echo "Video time in Hours: $_videoTimeHours"
 			echo "Video size GB:  $_videoSizeGB"
 			echo "Current GB/Hour: $_videoRatio"
-			time ffmpeg -i "$videoToEdit" -c:v libx265 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
+			time nice ffmpeg -i "$videoToEdit" -c:v libx265 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
 			_newVideoSize=$(du -h "$_newName.downsampled.mp4" | cut -d "/" -f 1)
 			echo "Downsampled size: $_newVideoSize"
 			if $deleteOrNot; then
