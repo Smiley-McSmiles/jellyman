@@ -431,6 +431,7 @@ Permissions()
 	source /opt/jellyfin/config/jellyman.conf
 	checkForDefaultPath="yes"
 	directoryToFix=
+
 	if [ -d "$1" ]; then
 		directoryToFix=$1
 		echo "Setting permissions for "$directoryToFix""
@@ -442,26 +443,16 @@ Permissions()
 		echo "EXITING..."
 		exit
 	else
+
 		#Check if there is a recorded media library path for chown and chmod:
-		if [[ ! -n $defaultPath ]] ; then 
-			echo "No default directory found..."
-			echo "Please enter the root directory for your Media Library..."
-			echo "If multiple paths please enter all paths separated by a space"
-			read defaultPath
-			Change_variable defaultPath "$defaultPath" "array"
-		else 
-			echo "defaultPath is set to ${defaultPath[*]}"
+		if ! areDirectories "${defaultPath[*]}"; then
+			echo "No default media directory found..."
+			echo "Running sudo jellyman -md to change media directory in:"
+			Countdown 5
+			jellyman -md
 		fi
-		#Check if there is a recorded user/group for chown and chmod:
-		if id "$defaultUser" &>/dev/null; then
-			echo "defaultUser is set to $defaultUser"
-		else
-			echo "No default user found..."
-			echo "Please enter the owner for this directory..."
-			read defaultUser
-			Change_variable defaultUser $defaultUser
-		fi
-		echo "Setting permissions for ${defaultPath}"
+
+		echo "Setting permissions for ${defaultPath[*]}"
 		time $(chown -Rf $defaultUser:$defaultUser ${defaultPath[*]}
 		chmod -Rf 770 ${defaultPath[*]})
 		echo "...DONE"
