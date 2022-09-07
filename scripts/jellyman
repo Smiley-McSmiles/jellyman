@@ -463,7 +463,7 @@ Permissions()
 		echo "...DONE"
 	fi
 
-	echo "Setting permissions for "$directoryToFix"
+	echo "Setting permissions for "$directoryToFix""
 	time $(chown -Rf $defaultUser:$defaultUser "$directoryToFix"
 	chmod -Rf 770 "$directoryToFix")
 	echo "...DONE"
