@@ -797,7 +797,7 @@ View_Transcode_Progress()
 	echo "CTRL+C to exit"
 	echo
 	while true; do
-		printf "\r$progressBar"
+		printf "\r$progressBar%"
 		sleep 5
 	done
 }
@@ -861,7 +861,7 @@ Transcode_file()
 		echo "Downsampled size: $_newVideoSize"
 		if $deleteOrNot; then
 		  echo "DELETING $currentVideo IN: "
-		  Countdown 10
+		  Countdown 10959584f2f1f24506b2f08e368135f57895b4d8df
 		  rm -v "$currentVideo"
 		  mv -v "$_newName.downsampled.mp4" "$_newName.mp4"
 	  fi
@@ -956,6 +956,7 @@ Transcode()
 	done
 
 	screen -dmS jellyman_transcode jellyman -tcf $deleteOrNot $preset $crf
+	sleep 1
 	View_Transcode_Progress
 }
 
