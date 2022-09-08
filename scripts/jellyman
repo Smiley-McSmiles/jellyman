@@ -808,6 +808,7 @@ Qualify_Transcode()
 	desiredGBperHour=$2
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 
+	rm $qualifiedVideos
 	videoSize=$(du -h "$videoToEdit" | cut -d "/" -f 1)
 	videoDuration=$(ffprobe -i "$videoToEdit" -show_entries format=duration -v quiet -of csv="p=0" | cut -d "." -f 1)
 	if isVideo "$videoToEdit"; then
@@ -869,7 +870,6 @@ Transcode_file()
 
 	_progressFinal=$($totalVideos $totalVideos)
 	echo "$_progressFinal" > $progressBarFile
-	rm $qualifiedVideos
 	exit
 }
 
@@ -956,7 +956,7 @@ Transcode()
 		Qualify_Transcode "$item" $desiredGBperHour
 	done
 
-	screen -dmS jellyman_transcode Transcode_file $deleteOrNot $preset $crf
+	screen -dmS jellyman_transcode jellyman -tcf $deleteOrNot $preset $crf
 	View_Transcode_Progress
 }
 
@@ -1104,6 +1104,10 @@ if [ -n "$1" ]; then
 			-md) Change_Media_Directory ;;
 			-tc) Transcode ;;
 			-tcp) View_Transcode_Progress ;;
+			-tcf) Transcode_file $1 $2 $3
+						shift
+						shift
+						shift ;;
 			-X) Uninstall ;;
 			*) echo "Option $1 not recognized" 
 				Help ;;
