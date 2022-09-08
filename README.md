@@ -234,6 +234,7 @@ COMMANDS:
 -ik    Import an API key.
 -md    Change the Media Directory for Jellyman.
 -tc    Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
+-tcp   View progress of the current transcode.
 -X     Uninstall Jellyfin and Jellyman Completely.
 
 EXAMPLE:
