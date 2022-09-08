@@ -808,7 +808,6 @@ Qualify_Transcode()
 	desiredGBperHour=$2
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 
-	rm $qualifiedVideos
 	videoSize=$(du -h "$videoToEdit" | cut -d "/" -f 1)
 	videoDuration=$(ffprobe -i "$videoToEdit" -show_entries format=duration -v quiet -of csv="p=0" | cut -d "." -f 1)
 	if isVideo "$videoToEdit"; then
@@ -870,6 +869,7 @@ Transcode_file()
 
 	_progressFinal=$($totalVideos $totalVideos)
 	echo "$_progressFinal" > $progressBarFile
+	rm $qualifiedVideos
 	exit
 }
 
