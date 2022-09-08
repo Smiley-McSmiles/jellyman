@@ -1103,7 +1103,7 @@ if [ -n "$1" ]; then
 			-md) Change_Media_Directory ;;
 			-tc) Transcode ;;
 			-tcp) View_Transcode_Progress ;;
-			-tcf) Transcode_file $1 $2 $3
+			-tcf) Transcode_file $2 $3 $4
 						shift
 						shift
 						shift ;;
