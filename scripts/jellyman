@@ -838,7 +838,7 @@ Qualify_Transcode()
 
 Transcode_file()
 {
-	deleteOrnot=$1
+	deleteOrNot=$1
 	preset=$2
 	crf=$3
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
@@ -851,7 +851,7 @@ Transcode_file()
 		iteration=$(($iteration + 1))
 		currentVideo=$(cat "$qualifiedVideos" | head -n $iteration | tail -n 1)
 		_newName=$(echo $currentVideo | rev | cut -d "." -f 2 | rev)
-		_progressIteration=$((_iteration -1))
+		_progressIteration=$(($iteration - 1))
 		_progress=$(Progress_bar $progressIteration $totalVideos)
 		echo "$_progress" > $progressBarFile
 
