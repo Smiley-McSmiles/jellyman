@@ -852,7 +852,7 @@ Transcode_file()
 		currentVideo=$(cat "$qualifiedVideos" | head -n $iteration | tail -n 1)
 		_newName=$(echo $currentVideo | rev | cut -d "." -f 2 | rev)
 		_progressIteration=$(($iteration - 1))
-		_progress=$(Progress_bar $progressIteration $totalVideos)
+		_progress=$(Progress_bar $_progressIteration $totalVideos)
 		echo "$_progress" > $progressBarFile
 
 		echo "Transcoding $currentVideo"
