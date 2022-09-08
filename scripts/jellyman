@@ -855,10 +855,10 @@ Transcode_file()
 		_progress=$(Progress_bar $progressIteration $totalVideos)
 		echo "$_progress" > $progressBarFile
 
-		time nice ffmpeg -i "$currentVideo" -c:v libx265 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
+		echo "Transcoding $currentVideo"
+		nice ffmpeg -i "$currentVideo" -c:v libx265 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
 		_newVideoSize=$(du -h "$_newName.downsampled.mp4" | cut -d "/" -f 1)
 		echo "Downsampled size: $_newVideoSize"
-		echo "Transcoding $currentVideo"
 		if $deleteOrNot; then
 		  echo "DELETING $currentVideo IN: "
 		  Countdown 10
