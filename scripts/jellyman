@@ -751,12 +751,12 @@ isVideo()
 
 View_Transcode_Progress()
 {
-	progressBar=$(cat "/tmp/jellyman_progress.txt")
 
 	echo "CTRL+C to exit progress bar"
 	echo "'jellyman -tcp' to bring back Transcode Progress"
 	echo
 	while true; do
+		progressBar=$(cat "/tmp/jellyman_progress.txt")
 		printf "\r$progressBar%"
 		sleep 5
 	done
