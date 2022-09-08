@@ -234,47 +234,6 @@ before removing $versionToRemove"
 		rm -rfv /opt/jellyfin/$versionToRemove
 }
 
-Help()
-{
-	# Display Help
-	echo "Jellyman - The Jellyfin Manager $jellymanVersion"
-	echo "-Created by Smiley McSmiles"
-	echo 
-	echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
-	echo "COMMANDS:"
-	echo "-b     [DIRECTORY] Input directory to output backup archive."
-	echo "-d     Disable Jellyfin on System Start."
-	echo "-e     Enable Jellyfin on System Start."
-	echo "-h     Print this Help."
-	echo "-i     [FILE.tar] Input file to Import jellyfin-backup.tar."
-	echo "-p     [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory."
-	echo "-r     Restart Jellyfin."
-	echo "-s     Start Jellyfin."
-	echo "-S     Stop Jellyfin."
-	echo "-t     Status of Jellyfin."
-	echo "-u     [URL - optional] Downloads and updates the current stable or supplied Jellyfin version."
-	echo "-U     Update Jellyman - The Jellyfin Manager."
-	echo "-ub    Update Jellyfin to the most recent Beta."
-	echo "-v     Get the current installed version of Jellyfin."
-	echo "-vd    Download an available Jellyfin version from the stable repository."
-	echo "-vs    Switch Jellyfin version for another previously installed version."
-	echo "-rv    Remove a Jellyfin version."
-	echo "-rc    Removes old https certifications and creates new ones for the next 365 days."
-	echo "-rn    Batch renaming script for TV shows."
-	echo "-ls    Tell Jellyfin to scan your media library."
-	echo "-cp    Change Jellyfins http network port - Default = 8096"
-	echo "-cps   Change Jellyfins https network port - Default = 8920."
-	echo "-ik    Import an API key"
-	echo "-md    Change the Media Directory for Jellyman."
-	echo "-tc    Transcode a file/directory with a GB per hour filter (1.5GB is recommended)"
-	echo "-tcp   View progress of the Transcode"
-	echo "-X     Uninstall Jellyfin and Jellyman Completely."
-	echo
-	echo "To browse Jellyfin versions please use this link."
-	echo "***WARNING*** ONLY USE COMBINED(Web & Server) PACKAGES"
-	echo "https://repo.jellyfin.org/releases/server/linux/versions/"
-}
-
 Import()
 {
 	Has_sudo
@@ -836,6 +795,11 @@ Qualify_Transcode()
 	fi
 }
 
+Transcode_stop()
+{
+	screen -XS jellyman_transcode quit
+}
+
 Transcode_file()
 {
 	deleteOrNot=$1
@@ -1052,6 +1016,48 @@ Has_sudo()
 	fi
 }
 
+Help()
+{
+	# Display Help
+	echo "Jellyman - The Jellyfin Manager $jellymanVersion"
+	echo "-Created by Smiley McSmiles"
+	echo
+	echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
+	echo "COMMANDS:"
+	echo "-b     [DIRECTORY] Input directory to output backup archive."
+	echo "-d     Disable Jellyfin on System Start."
+	echo "-e     Enable Jellyfin on System Start."
+	echo "-h     Print this Help."
+	echo "-i     [FILE.tar] Input file to Import jellyfin-backup.tar."
+	echo "-p     [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory."
+	echo "-r     Restart Jellyfin."
+	echo "-s     Start Jellyfin."
+	echo "-S     Stop Jellyfin."
+	echo "-t     Status of Jellyfin."
+	echo "-u     [URL - optional] Downloads and updates the current stable or supplied Jellyfin version."
+	echo "-U     Update Jellyman - The Jellyfin Manager."
+	echo "-ub    Update Jellyfin to the most recent Beta."
+	echo "-v     Get the current installed version of Jellyfin."
+	echo "-vd    Download an available Jellyfin version from the stable repository."
+	echo "-vs    Switch Jellyfin version for another previously installed version."
+	echo "-rv    Remove a Jellyfin version."
+	echo "-rc    Removes old https certifications and creates new ones for the next 365 days."
+	echo "-rn    Batch renaming script for TV shows."
+	echo "-ls    Tell Jellyfin to scan your media library."
+	echo "-cp    Change Jellyfins http network port - Default = 8096"
+	echo "-cps   Change Jellyfins https network port - Default = 8920."
+	echo "-ik    Import an API key"
+	echo "-md    Change the Media Directory for Jellyman."
+	echo "-tc    Transcode a file/directory with a GB per hour filter (1.5GB is recommended)"
+	echo "-tcp   View progress of the Transcode"
+	echo "-tcs   Stop the current transcode process."
+	echo "-X     Uninstall Jellyfin and Jellyman Completely."
+	echo
+	echo "To browse Jellyfin versions please use this link."
+	echo "***WARNING*** ONLY USE COMBINED(Web & Server) PACKAGES"
+	echo "https://repo.jellyfin.org/releases/server/linux/versions/"
+}
+
 ###############################################################################
 # FUNCTIONS END                                                               #
 ###############################################################################
@@ -1108,6 +1114,7 @@ if [ -n "$1" ]; then
 						shift
 						shift
 						shift ;;
+			-tcs) Transcode_stop ;;
 			-X) Uninstall ;;
 			*) echo "Option $1 not recognized" 
 				Help ;;
