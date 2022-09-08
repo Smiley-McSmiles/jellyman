@@ -869,6 +869,7 @@ Transcode_file()
 
 	_progressFinal=$($totalVideos $totalVideos)
 	echo "$_progressFinal" > $progressBarFile
+	rm $qualifiedVideos
 	exit
 }
 
