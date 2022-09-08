@@ -849,8 +849,8 @@ Transcode_file()
 
 	while [ ! $iteration -eq $totalVideos ]; do
 		iteration=$(($iteration + 1))
-		currentVideo=$(echo "$qualifiedVideos" | head -n $iteration | tail -n 1)
-		_newName=$(echo $videoToEdit | rev | cut -d "." -f 2 | rev)
+		currentVideo=$(cat "$qualifiedVideos" | head -n $iteration | tail -n 1)
+		_newName=$(echo $currentVideo | rev | cut -d "." -f 2 | rev)
 		_progressIteration=$((_iteration -1))
 		_progress=$(Progress_bar $progressIteration $totalVideos)
 		echo "$_progress" > $progressBarFile
