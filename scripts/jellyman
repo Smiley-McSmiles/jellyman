@@ -838,12 +838,12 @@ Qualify_Transcode()
 
 Transcode_file()
 {
-	delteOrnot=$1
+	deleteOrnot=$1
 	preset=$2
 	crf=$3
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 	progressBarFile="/tmp/jellyman_progress.txt"
-	totalVideos=$(echo "$qualifiedVideos" | wc -l)
+	totalVideos=$(cat "$qualifiedVideos" | wc -l)
 	iteration=0
 	currentVideo=
 
@@ -875,7 +875,6 @@ Transcode_file()
 
 Transcode()
 {
-	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 	echo "|--------------------------------------------------------------|"
 	echo "|                        ***WARNING***                         |"
 	echo "|          Please enter the directory to transcode             |"
