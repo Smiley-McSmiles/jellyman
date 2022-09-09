@@ -828,7 +828,7 @@ Transcode_file()
 		echo "Downsampled size: $_newVideoSize"
 		if $deleteOrNot; then
 		  echo "DELETING $currentVideo IN: "
-		  Countdown 10959584f2f1f24506b2f08e368135f57895b4d8df
+		  Countdown 10
 		  rm -v "$currentVideo"
 		  mv -v "$_newName.downsampled.mp4" "$_newName.mp4"
 	  fi
