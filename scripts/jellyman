@@ -599,7 +599,7 @@ Rename_tv()
 {
 	Has_sudo
 	source /opt/jellyfin/config/jellyman.conf
-	nameOfTestFile=""
+	nameOfTestFile=
 
 	while [ ! -f $nameOfTestFile ]; do
 		clear
