@@ -599,32 +599,30 @@ Rename_tv()
 {
 	Has_sudo
 	source /opt/jellyfin/config/jellyman.conf
-	nameOfTestFile=
+	#nameOfTestFile=
 
-	while [ ! -f $nameOfTestFile ]; do
-		clear
-		echo "|--------------------------------------------------------------|"
-		echo "|                        ***WARNING***                         |"
-		echo "|       TV SHOW FILE NAMES MUST CONTAIN 'SXXEXX' X=number      |"
-		echo "|                                                              |"
-		echo "|            Please enter the directory to correct             |"
-		echo "|                        For example:                          |"
-		echo "|  /jfin/TV/*/*/* <- For every Episode(May Crash Be Careful!)  |"
-		echo "|                            OR:                               |"
-		echo "|  /jfin/TV/Breaking*Bad/*/* <- For Every Episode in a show    |"
-		echo "|                            OR:                               |"
-		echo "|  /jfin/TV/Breaking*Bad/Season*2/* <- For Every Episode in    |"
-		echo "|                    a season of a show                        |"
-		echo "|                                                              |"
-		echo "|      BE ADVISED, IF YOU'RE RE-NAMING MULTIPLE SHOWS,         |"
-		echo "|             MAKE SURE ALL THE SHOW DIRECTORY                 |"
-		echo "|      NAMES ARE IN THE SAME LOCATION IN THE DIRECTORY         |"
-		echo "|--------------------------------------------------------------|"
-		echo
-		read -p "Please enter a directory : " directoryToCorrect
-		clear
-		nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
-	done
+	clear
+	echo "|--------------------------------------------------------------|"
+	echo "|                        ***WARNING***                         |"
+	echo "|       TV SHOW FILE NAMES MUST CONTAIN 'SXXEXX' X=number      |"
+	echo "|                                                              |"
+	echo "|            Please enter the directory to correct             |"
+	echo "|                        For example:                          |"
+	echo "|  /jfin/TV/*/*/* <- For every Episode(May Crash Be Careful!)  |"
+	echo "|                            OR:                               |"
+	echo "|  /jfin/TV/Breaking*Bad/*/* <- For Every Episode in a show    |"
+	echo "|                            OR:                               |"
+	echo "|  /jfin/TV/Breaking*Bad/Season*2/* <- For Every Episode in    |"
+	echo "|                    a season of a show                        |"
+	echo "|                                                              |"
+	echo "|      BE ADVISED, IF YOU'RE RE-NAMING MULTIPLE SHOWS,         |"
+	echo "|             MAKE SURE ALL THE SHOW DIRECTORY                 |"
+	echo "|      NAMES ARE IN THE SAME LOCATION IN THE DIRECTORY         |"
+	echo "|--------------------------------------------------------------|"
+	echo
+	read -p "Please enter a directory : " directoryToCorrect
+	clear
+	nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
 	
 	testDirCount=$(echo $nameOfTestFile | grep -o "/" | wc -w)
 
