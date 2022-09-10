@@ -768,9 +768,9 @@ Progress_bar()
 		_empty=$(printf "%${_left}s")
 
 		printf "\rTranscoded : [$currentState/$totalState] [${_fill// /#}${_empty// /-}] ${_progress}%%"
-		printf "\nCurrent file : $previousVideo \n"
-		echo "Original Size : $previousVideoSizeMB MB"
-		echo "New Size : $currentVideoSizeMB MB"
+		printf "\nCurrent file     : $previousVideo \n"
+		echo "Original Size    : $previousVideoSizeMB MB"
+		echo "New Size         : $currentVideoSizeMB MB"
 		echo "Percentave Saved : $sizeSavingsPercent"
 
 		if [ $currentState -eq $totalState ]; then
