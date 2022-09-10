@@ -768,7 +768,7 @@ Progress_bar()
 		_empty=$(printf "%${_left}s")
 
 		printf "\rTranscoded : [$currentState/$totalState] [${_fill// /#}${_empty// /-}] ${_progress}%%"
-		printf "\nCurrent file     : $previousVideo \n"
+		printf "\nTranscoding File : $previousVideo \n"
 		echo "Original Size    : $previousVideoSizeMB MB"
 		echo "New Size         : $currentVideoSizeMB MB"
 		echo "Percentave Saved : $sizeSavingsPercent"
