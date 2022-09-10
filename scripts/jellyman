@@ -670,7 +670,7 @@ Rename_tv()
 				echo "New Name:"
 				echo "$newItemName"
 				chown -fv $defaultUser:$defaultUser "$newItemName"
-				chmod -fv 770 "$newItemName"
+				chmod -fv 660 "$newItemName"
 				echo
 			fi
 	done
@@ -762,8 +762,9 @@ Progress_bar()
 
 		printf "\rTranscoded : [$currentState/$totalState] [${_fill// /#}${_empty// /-}] ${_progress}%%"
 		printf "\nCurrent file : $previousVideo \n"
-		echo "Original Size      New Size      Percentage Saved"
-		echo "   $previousVideoSizeMB MB             $currentVideoSizeMB MB             $sizeSavingsPercent%"
+		echo "Original Size : $previousVideoSizeMB MB"
+		echo "New Size : $currentVideoSizeMB MB"
+		echo "Percentave Saved : $sizeSavingsPercent"
 
 		if [ $currentState -eq $totalState ]; then
 			printf '\nFinished!\n'
@@ -865,8 +866,8 @@ Transcode_file()
 	  fi
 	done
 
-#	_progressFinal=$($totalVideos $totalVideos)
-#	echo "$_progressFinal" > $progressBarFile
+	sed -i -e "s|startState=.*|startState=$totalVideos|g" "$progressBarConf"
+	sleep 10
 	rm $qualifiedVideos
   rm "$progressBarConf"
 	exit
