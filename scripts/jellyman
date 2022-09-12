@@ -427,10 +427,10 @@ Permissions()
 
 Status()
 {
-	Check_disk_free
-	echo
-	echo
 	systemctl status jellyfin.service
+	echo
+	echo
+	Check_disk_free
 }
 
 Update()
@@ -783,13 +783,11 @@ Progress_bar()
 
 View_Transcode_Progress()
 {
-
-	echo "CTRL+C to exit progress bar"
-	echo "'jellyman -tcp' to bring back Transcode Progress"
-	echo
 	while true; do
 		clear
 		Progress_bar
+		echo "CTRL+C to exit progress bar"
+		echo "'jellyman -tcp' to bring back Transcode Progress"
 		sleep 3
 	done
 }
