@@ -1,5 +1,6 @@
 #!/bin/bash
-jellymanVersion="v1.6.4"
+jellymanVersion="v1.6.5"
+sourceFile="/opt/jellyfin/config/jellyman.conf"
 
 ###############################################################################
 # FUNCTIONS                                                                   #
@@ -47,26 +48,20 @@ Change_variable()
 	varToChange=$1
 	newVarContent=$2
 	varType=$3
-	if [[ $varType == "array" ]]; then
-		newVarContent='"'"$newVarContent"'"'
-	fi
-	
 	if [[ ! -n $varToChange ]] || [[ ! -n $newVarContent ]]; then
 		echo "Function Change_variable requires 2 parameters: varToChange newVarContent"
 		exit
+	elif [[ $varType == "array" ]]; then
+		sed -i -e "s|$varToChange=.*|$varToChange=\($newVarContent\)|g" $sourceFile
 	else
-		sed -i -e "s|$varToChange=.*|$varToChange=$newVarContent|g" /opt/jellyfin/config/jellyman.conf
+		sed -i -e "s|$varToChange=.*|$varToChange=$newVarContent|g" $sourceFile
 	fi
 	
-	if [[ $varType == "array" ]]; then
-		newArrayVar=$(grep "$varToChange" /opt/jellyfin/config/jellyman.conf | sed -r 's/="/=(/g' | sed -r 's/"/)/g')
-		sed -i -e "s|$varToChange=.*|$newArrayVar|g" /opt/jellyfin/config/jellyman.conf
-	fi
 }
 
 isCurrentVersion()
 {
-	source /opt/jellyfin/config/jellyman.conf
+	source $sourceFile
 	jellyfinVersionToDownload=$1
 	if [[ $jellyfinVersionToDownload == $currentVersion ]]; then
 		echo "The installed version of Jellyfin matches the newest version available."
@@ -93,7 +88,7 @@ isInstalledVersion()
 
 Check_disk_free()
 {
-	source /opt/jellyfin/config/jellyman.conf
+	source $sourceFile
 	if [ ! -n $defaultPath ]; then 
 		echo "|-----------------------------------------------|"
 		echo "|          No default directory found...        |"
@@ -105,7 +100,7 @@ Check_disk_free()
 		echo "|-----------------------------------------------|"
 		read defaultPath
 		defaultPath=($defaultPath)
-		Change_variable defaultPath $defaultPath
+		Change_variable defaultPath $defaultPath array
 		df -h ${defaultPath[*]}
 	else 
 		df -h ${defaultPath[*]}
@@ -120,14 +115,14 @@ Get_jellyman_version()
 Get_jellyfin_version()
 {
 	Has_sudo
-	source /opt/jellyfin/config/jellyman.conf
+	source $sourceFile
 	echo $currentVersion
 }
 
 Download_version()
 {
 	Has_sudo
-	source /opt/jellyfin/config/jellyman.conf
+	source $sourceFile
 	versionListVar=$(curl -sL https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/)
 	versionList=$(echo "$versionListVar" | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g")
 	versionListNumbered=$(echo "$versionList" | cat -n)
@@ -234,46 +229,6 @@ before removing $versionToRemove"
 		rm -rfv /opt/jellyfin/$versionToRemove
 }
 
-Help()
-{
-	# Display Help
-	echo "Jellyman - The Jellyfin Manager $jellymanVersion"
-	echo "-Created by Smiley McSmiles"
-	echo 
-	echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
-	echo "COMMANDS:"
-	echo "-b     [DIRECTORY] Input directory to output backup archive."
-	echo "-d     Disable Jellyfin on System Start."
-	echo "-e     Enable Jellyfin on System Start."
-	echo "-h     Print this Help."
-	echo "-i     [FILE.tar] Input file to Import jellyfin-backup.tar."
-	echo "-p     [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory."
-	echo "-r     Restart Jellyfin."
-	echo "-s     Start Jellyfin."
-	echo "-S     Stop Jellyfin."
-	echo "-t     Status of Jellyfin."
-	echo "-u     [URL - optional] Downloads and updates the current stable or supplied Jellyfin version."
-	echo "-U     Update Jellyman - The Jellyfin Manager."
-	echo "-ub    Update Jellyfin to the most recent Beta."
-	echo "-v     Get the current installed version of Jellyfin."
-	echo "-vd    Download an available Jellyfin version from the stable repository."
-	echo "-vs    Switch Jellyfin version for another previously installed version."
-	echo "-rv    Remove a Jellyfin version."
-	echo "-rc    Removes old https certifications and creates new ones for the next 365 days."
-	echo "-rn    Batch renaming script for TV shows."
-	echo "-ls    Tell Jellyfin to scan your media library."
-	echo "-cp    Change Jellyfins http network port - Default = 8096"
-	echo "-cps   Change Jellyfins https network port - Default = 8920."
-	echo "-ik    Import an API key"
-	echo "-md    Change the Media Directory for Jellyman."
-	echo "-tc    Transcode a file/directory with a GB per hour filter (1.5GB is recommended)"
-	echo "-X     Uninstall Jellyfin and Jellyman Completely."
-	echo
-	echo "To browse Jellyfin versions please use this link."
-	echo "***WARNING*** ONLY USE COMBINED(Web & Server) PACKAGES"
-	echo "https://repo.jellyfin.org/releases/server/linux/versions/"
-}
-
 Import()
 {
 	Has_sudo
@@ -291,7 +246,7 @@ Import()
 		rm -rf /opt/jellyfin
 		tar xvf $importTar -C /
 		clear
-		source /opt/jellyfin/config/jellyman.conf
+		source $sourceFile
 		mv -f /opt/jellyfin/backup/jellyfin /bin/
 		chmod +x /bin/jellyman
 		mv -f /opt/jellyfin/backup/jellyfin.service /usr/lib/systemd/system/
@@ -338,7 +293,7 @@ Import()
 Library_scan()
 {
 	Has_sudo
-	source /opt/jellyfin/config/jellyman.conf
+	source $sourceFile
 	Check_api_key
 	curl -d POST http://localhost:$networkPort/Library/Refresh?api_key=$apiKey
 }
@@ -362,7 +317,7 @@ Import_api_key()
 Check_api_key()
 {
 	Has_sudo
-	source /opt/jellyfin/config/jellyman.conf
+	source $sourceFile
 	if [[ ! -n $apiKey ]]; then
 		echo "***ERROR***"
 		echo "NO API KEY FOUND, RUN 'sudo jellyman -ik' TO IMPORT A NEW KEY!"
@@ -376,7 +331,7 @@ Check_api_key()
 Http_port_change()
 {
 	Has_sudo
-	source /opt/jellyfin/config/jellyman.conf
+	source $sourceFile
 	echo
 	echo "Default http port is 8096"
 	if Is_jellyfin_setup; then
@@ -402,7 +357,7 @@ Http_port_change()
 Https_port_change()
 {
 	Has_sudo
-	source /opt/jellyfin/config/jellyman.conf
+	source $sourceFile
 	if Is_jellyfin_setup; then
 		echo "Default https port is 8920"
 		read -p "Please enter the new https network port for Jellyfin: " port
@@ -428,55 +383,55 @@ Https_port_change()
 Permissions()
 {
 	Has_sudo
-	source /opt/jellyfin/config/jellyman.conf
+	source $sourceFile
 	checkForDefaultPath="yes"
 	directoryToFix=
-	if [[ "$1" == "/"* ]]; then
+
+	if [ -d "$1" ]; then
 		directoryToFix=$1
-	elif [[ "$1" == *"/" ]]; then
+		echo "Setting permissions for "$directoryToFix""
+		time $(
+			chown -R $defaultUser:$defaultUser "$directoryToFix"
+			chmod -R 660 "$directoryToFix"
+			chmod -R ug+X "$directoryToFix"
+		)
+		echo "...DONE"
+	elif [ ! -d "$1" ] && [ -n "$1" ]; then
 		echo "$1 is not a directory. Please enter a absolute path to your media"
 		echo "EXITING..."
 		exit
 	else
-		#Check if there is a recorded media library path for chown and chmod:
-		if [[ ! -n $defaultPath ]] ; then 
-			echo "No default directory found..."
-			echo "Please enter the root directory for your Media Library..."
-			echo "If multiple paths please enter all paths separated by a space"
-			read defaultPath
-			Change_variable defaultPath "$defaultPath" "array"
-		else 
-			echo "defaultPath is set to ${defaultPath[*]}"
-		fi
-		#Check if there is a recorded user/group for chown and chmod:
-		if id "$defaultUser" &>/dev/null; then
-			echo "defaultUser is set to $defaultUser"
-		else
-			echo "No default user found..."
-			echo "Please enter the owner for this directory..."
-			read defaultUser
-			Change_variable defaultUser $defaultUser
-		fi
-		chown -Rfv $defaultUser:$defaultUser ${defaultPath[*]}
-		chmod -Rfv 770 ${defaultPath[*]}
-	fi
 
-	chown -Rfv $defaultUser:$defaultUser "$directoryToFix"
-	chmod -Rfv 770 "$directoryToFix"
+		#Check if there is a recorded media library path for chown and chmod:
+		if ! areDirectories "${defaultPath[*]}"; then
+			echo "No default media directory found..."
+			echo "Running sudo jellyman -md to change media directory in:"
+			Countdown 5
+			jellyman -md
+		fi
+
+		echo "Setting permissions for ${defaultPath[*]}"
+		time $(
+			chown -R $defaultUser:$defaultUser ${defaultPath[*]}
+			chmod -R 660 ${defaultPath[*]}
+			chmod -R ug+X ${defaultPath[*]}
+		)
+		echo "...DONE"
+	fi
 }
 
 Status()
 {
-	Check_disk_free
-	echo
-	echo
 	systemctl status jellyfin.service
+	echo
+	echo
+	Check_disk_free
 }
 
 Update()
 {
 	Has_sudo
-	source /opt/jellyfin/config/jellyman.conf
+	source $sourceFile
 	customVersionLink=
 	customVersion=""
 	fileType=""
@@ -541,7 +496,7 @@ Update()
 Update_beta()
 {
 	Has_sudo
-	source /opt/jellyfin/config/jellyman.conf
+	source $sourceFile
 	betasAvailable=$(curl -sL https://repo.jellyfin.org/releases/server/linux/stable-pre/)
 	jellyfinArchives=$(echo "$betasAvailable" | grep "combined" | grep -o jellyfin_.*_$architecture.tar.gz'"' | cut -d '"' -f 1)
 	jellyfinNumbered=$(echo "$jellyfinArchives" | sed -r "s|_$architecture.tar.gz||g" | cat -n)
@@ -619,7 +574,7 @@ Recertify_https()
 	echo "|       This only works if you have completed          |" 
 	echo "|           first time setup in Jellyfin               |"
 	echo "|------------------------------------------------------|"
-	source /opt/jellyfin/config/jellyman.conf
+	source $sourceFile
 	if Is_jellyfin_setup; then
 		rm -fv /opt/jellyfin/cert/*
 		openssl req -x509 -newkey rsa:4096 -keyout /opt/jellyfin/cert/privkey.pem -out /opt/jellyfin/cert/cert.pem -days 365 -nodes -subj '/CN=jellyfin.lan'
@@ -638,10 +593,10 @@ Recertify_https()
 Rename_tv()
 {
 	Has_sudo
-	source /opt/jellyfin/config/jellyman.conf
-	nameOfTestFile=""
-
-	while [ ! -f $nameOfTestFile ]; do
+	source $sourceFile
+	nameOfTestFile=
+	loop=true
+	while $loop; do
 		clear
 		echo "|--------------------------------------------------------------|"
 		echo "|                        ***WARNING***                         |"
@@ -664,6 +619,11 @@ Rename_tv()
 		read -p "Please enter a directory : " directoryToCorrect
 		clear
 		nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
+		if [ -f "$nameOfTestFile" ]; then
+			loop=false
+		else
+			echo "Path does not exist, please try again."
+		fi
 	done
 	
 	testDirCount=$(echo $nameOfTestFile | grep -o "/" | wc -w)
@@ -712,7 +672,7 @@ Rename_tv()
 				echo "New Name:"
 				echo "$newItemName"
 				chown -fv $defaultUser:$defaultUser "$newItemName"
-				chmod -fv 770 "$newItemName"
+				chmod -fv 660 "$newItemName"
 				echo
 			fi
 	done
@@ -734,7 +694,7 @@ Uninstall()
 		echo "Goodbye..."
 		echo "Removing Jellyfin and Jellyman in:"
 		Countdown 5
-		source /opt/jellyfin/config/jellyman.conf
+		source $sourceFile
 			echo "Blocking port 8096 and 8920..."
 		if [ -x "$(command -v ufw)" ]; then
 			ufw deny 8096/tcp
@@ -760,6 +720,20 @@ Uninstall()
 	fi
 }
 
+Kill_job()
+{
+	# Run a job '_ID="jellyman-tc && COMMAND &'
+	# To kill a job `Kill_job "jellyman-tc"
+	_jobName=$1
+	_jobID=$(jobs | grep "$_jobName" | cut -d "[" -f 2 | cut -d "]" -f 1)
+	kill %$_jobID
+}
+
+Dev_func()
+{
+	_func=$1
+	$1
+}
 
 isVideo()
 {
@@ -771,14 +745,55 @@ isVideo()
 	fi
 }
 
-Transcode_file()
+Progress_bar()
+{
+	progressBarConf="/tmp/jellyman_transcode.conf"
+	if [ -f $progressBarConf ]; then
+		source $progressBarConf
+		currentState=$startState
+		totalState=$maxState
+		currentVideoSizeMB=$(du -m "$currentVideo" | cut -d "	" -f 1)
+		previousVideoSizeMB=$(du -m "$previousVideo" | cut -d "	" -f 1)
+		sizeSavingsPercent=$(bc -l <<< "$currentVideoSizeMB/$previousVideoSizeMB*100")
+		sizeSavingsPercent=$(bc -l <<< "100-$sizeSavingsPercent" | cut -c 1-4)'%'
+		let _progress=(${currentState}*100/${totalState}*100)/100
+		let _done=(${_progress}*4)/10
+		let _left=40-$_done
+		_fill=$(printf "%${_done}s")
+		_empty=$(printf "%${_left}s")
+
+		printf "\rTranscoded : [$currentState/$totalState] [${_fill// /#}${_empty// /-}] ${_progress}%%"
+		printf "\nTranscoding File : $previousVideo \n"
+		echo "Original Size    : $previousVideoSizeMB MB"
+		echo "New Size         : $currentVideoSizeMB MB"
+		echo "Percentave Saved : $sizeSavingsPercent"
+
+		if [ $currentState -eq $totalState ]; then
+			printf '\nFinished!\n'
+		fi
+	else
+		echo "loading..."
+	fi
+}
+
+View_Transcode_Progress()
+{
+	while true; do
+		clear
+		Progress_bar
+		echo
+		echo "CTRL+C to exit progress bar"
+		echo "'jellyman -tcp' to bring back Transcode Progress"
+		sleep 3
+	done
+}
+
+Qualify_Transcode()
 {
 	videoToEdit="$1"
 	desiredGBperHour=$2
-	delteOrnot=$3
-	preset=$4
-	crf=$5
-	
+	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
+
 	videoSize=$(du -h "$videoToEdit" | cut -d "/" -f 1)
 	videoDuration=$(ffprobe -i "$videoToEdit" -show_entries format=duration -v quiet -of csv="p=0" | cut -d "." -f 1)
 	if isVideo "$videoToEdit"; then
@@ -792,22 +807,12 @@ Transcode_file()
 		fi
 		_videoRatio=$(bc -l <<< "$_videoSizeGB/$_videoTimeHours")
 		if [ 1 -eq "$(echo "$_videoRatio > $desiredGBperHour" | bc)" ]; then
-			#TRANSCODE FILE
 			echo "Transcoding $videoToEdit ..."
 			_newName=$(echo $videoToEdit | rev | cut -d "." -f 2 | rev)
 			echo "Video time in Hours: $_videoTimeHours"
 			echo "Video size GB:  $_videoSizeGB"
 			echo "Current GB/Hour: $_videoRatio"
-			time ffmpeg -i "$videoToEdit" -c:v libx265 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
-			_newVideoSize=$(du -h "$_newName.downsampled.mp4" | cut -d "/" -f 1)
-			echo "Downsampled size: $_newVideoSize"
-			if $deleteOrNot; then
-			  echo "DELETING $videoToEdit IN 10 SECONDS!"
-			  Countdown 10
-			  rm -v "$videoToEdit"
-			  mv -v "$_newName.downsampled.mp4" "$_newName.mp4"
-		  fi
-
+			echo "$videoToEdit" >> $qualifiedVideos
 		else
 			echo "$videoToEdit is less than $desiredGBperHour GB/Hour, skipping..."
 		fi
@@ -815,6 +820,58 @@ Transcode_file()
 		_file=$(echo $videoToEdit | rev | cut -d "/" -f 1 | rev)
 		echo "$_file is not a video, skipping..."
 	fi
+}
+
+Transcode_stop()
+{
+	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
+	progressBarConf="/tmp/jellyman_transcode.conf"
+	screen -XS jellyman_transcode quit
+	rm $qualifiedVideos
+	rm $progressBarConf
+}
+
+Transcode_file()
+{
+	deleteOrNot=$1
+	preset=$2
+	crf=$3
+	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
+	progressBarConf="/tmp/jellyman_transcode.conf"
+	totalVideos=$(cat "$qualifiedVideos" | wc -l)
+	iteration=0
+	currentVideo=
+
+	while [ ! $iteration -eq $totalVideos ]; do
+		iteration=$(($iteration + 1))
+		currentVideo=$(cat "$qualifiedVideos" | head -n $iteration | tail -n 1)
+		_newName=$(echo $currentVideo | rev | cut -d "." -f 2 | rev)
+		_progressIteration=$(($iteration - 1))
+#		_progress=$(Progress_bar $_progressIteration $totalVideos)
+#		echo "$_progress" > $progressBarFile
+
+		echo '#!/bin/bash' > "$progressBarConf"
+		echo "startState=$_progressIteration" >> "$progressBarConf"
+		echo "maxState=$totalVideos" >> "$progressBarConf"
+		echo "currentVideo=\"$_newName.downsampled.mp4\"" >> "$progressBarConf"
+		echo "previousVideo=\"$currentVideo\"" >> "$progressBarConf"
+
+		echo "Transcoding $currentVideo"
+		nice ffmpeg -y -i "$currentVideo" -c:v libx265 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
+		_newVideoSize=$(du -h "$_newName.downsampled.mp4" | cut -d "/" -f 1)
+		echo "Downsampled size: $_newVideoSize"
+		if $deleteOrNot; then
+		  echo "DELETING $currentVideo IN: "
+		  Countdown 10
+		  rm -v "$currentVideo"
+		  mv -v "$_newName.downsampled.mp4" "$_newName.mp4"
+	  fi
+	done
+
+	sed -i -e "s|startState=.*|startState=$totalVideos|g" "$progressBarConf"
+	sleep 10
+	rm $qualifiedVideos
+	exit
 }
 
 Transcode()
@@ -896,18 +953,24 @@ Transcode()
 	
 	for item in $_directoryToCorrect
 	do
-		Transcode_file "$item" $desiredGBperHour $deleteOrNot $preset $crf
+		Qualify_Transcode "$item" $desiredGBperHour
 	done
+
+	screen -dmS jellyman_transcode jellyman --dev_func "Transcode_file $deleteOrNot $preset $crf"
+	sleep 1
+	View_Transcode_Progress
 }
 
 Countdown()
 {
 	_time=$1
 	while [ $_time -gt 0 ]; do
-		echo $_time
+		printf "\r $_time seconds"
 		_time=$(($_time - 1))
 		sleep 1
 	done
+	printf "\n Done!"
+	printf "\n"
 }
 
 Update-jellyman()
@@ -981,13 +1044,55 @@ Has_sudo()
 	`timeout -k .1 .1 bash -c "sudo /bin/chmod --help" >&/dev/null 2>&1` >/dev/null 2>&1
 	if [ $? -eq 0 ];then
 		has_sudo_access="YES"
-		source /opt/jellyfin/config/jellyman.conf
+		source $sourceFile
 	else
 		has_sudo_access="NO"
 		echo "$USER, you're not using sudo..."
 		echo "Please use 'sudo jellyman -[COMMAND] [PARAMETERS]'"
 		exit
 	fi
+}
+
+Help()
+{
+	# Display Help
+	echo "Jellyman - The Jellyfin Manager $jellymanVersion"
+	echo "-Created by Smiley McSmiles"
+	echo
+	echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
+	echo "COMMANDS:"
+	echo "-b     [DIRECTORY] Input directory to output backup archive."
+	echo "-d     Disable Jellyfin on System Start."
+	echo "-e     Enable Jellyfin on System Start."
+	echo "-h     Print this Help."
+	echo "-i     [FILE.tar] Input file to Import jellyfin-backup.tar."
+	echo "-p     [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory."
+	echo "-r     Restart Jellyfin."
+	echo "-s     Start Jellyfin."
+	echo "-S     Stop Jellyfin."
+	echo "-t     Status of Jellyfin."
+	echo "-u     [URL - optional] Downloads and updates the current stable or supplied Jellyfin version."
+	echo "-U     Update Jellyman - The Jellyfin Manager."
+	echo "-ub    Update Jellyfin to the most recent Beta."
+	echo "-v     Get the current installed version of Jellyfin."
+	echo "-vd    Download an available Jellyfin version from the stable repository."
+	echo "-vs    Switch Jellyfin version for another previously installed version."
+	echo "-rv    Remove a Jellyfin version."
+	echo "-rc    Removes old https certifications and creates new ones for the next 365 days."
+	echo "-rn    Batch renaming script for TV shows."
+	echo "-ls    Tell Jellyfin to scan your media library."
+	echo "-cp    Change Jellyfins http network port - Default = 8096"
+	echo "-cps   Change Jellyfins https network port - Default = 8920."
+	echo "-ik    Import an API key"
+	echo "-md    Change the Media Directory for Jellyman."
+	echo "-tc    Transcode a file/directory with a GB per hour filter (1.5GB is recommended)"
+	echo "-tcp   View progress of the Transcode"
+	echo "-tcs   Stop the current transcode process."
+	echo "-X     Uninstall Jellyfin and Jellyman Completely."
+	echo
+	echo "To browse Jellyfin versions please use this link."
+	echo "***WARNING*** ONLY USE COMBINED(Web & Server) PACKAGES"
+	echo "https://repo.jellyfin.org/releases/server/linux/versions/"
 }
 
 ###############################################################################
@@ -1041,7 +1146,15 @@ if [ -n "$1" ]; then
 			-ik) Import_api_key ;;
 			-md) Change_Media_Directory ;;
 			-tc) Transcode ;;
+			-tcp) View_Transcode_Progress ;;
+#			-tcf) Transcode_file $2 $3 $4
+#						shift
+#						shift
+#						shift ;;
+			-tcs) Transcode_stop ;;
 			-X) Uninstall ;;
+			--dev_func) Dev_func "$2"
+									shift ;;
 			*) echo "Option $1 not recognized" 
 				Help ;;
 		esac

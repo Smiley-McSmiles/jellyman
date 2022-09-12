@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
 =======
 
-> v1.6.4 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
+> v1.6.5 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
 > Tested on Fedora 34/35/36, Ubuntu 22.04, Manjaro 21.3.6, EndeavourOS Artemis Neo, Linux Mint 21, and Rocky Linux 8.6/9.0
 
@@ -234,6 +234,8 @@ COMMANDS:
 -ik    Import an API key.
 -md    Change the Media Directory for Jellyman.
 -tc    Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
+-tcp   View progress of the current transcode.
+-tcs   Stop the current transcode process.
 -X     Uninstall Jellyfin and Jellyman Completely.
 
 EXAMPLE:
