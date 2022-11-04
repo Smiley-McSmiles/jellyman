@@ -7,7 +7,7 @@
 .B Jellyman - a Jellyfin Manager for the Jellyfin generic linux amd64.tar.gz package
 
 .SH VERSION
-.B Jellyman - The Jellyfin Manager - v1.6.5
+.B Jellyman - The Jellyfin Manager - v1.6.6
 
 .SH SYNOPSIS
 .B jellyman
@@ -22,68 +22,68 @@ is a set of scripts to install/manage and update the jellyfin-combined tar.gz ge
 .TP
 .SS COMMANDS
 .TP
-.B -b     [DIRECTORY] Input directory to output backup archive.
+.B -b, --backup                 [DIRECTORY] Input directory to output backup archive.
 .TP
-.B -d     Disable Jellyfin on System Start.
+.B -d, --disable                Disable Jellyfin on System Start.
 .TP
-.B -e     Enable Jellyfin on System Start.
+.B -e, --enable                 Enable Jellyfin on System Start.
 .TP
-.B -h     Print this Help.
+.B -h, --help                   Print this Help.
 .TP
-.B -i     [FILE.tar] Input file to Import jellyfin-backup.tar.
+.B -i, --import                 [FILE.tar] Input file to Import jellyfin-backup.tar.
 └── This will only work if on your new OS/setup you have your Media directories exactly the same as your old OS/setup.
 .TP
-.B -p     [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
+.B -p, --permissions            [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
 └── Uses 'chmod -R 770' on your media directory.
 .TP
-.B -r     Restart Jellyfin.
+.B -r, --restart                Restart Jellyfin.
 .TP
-.B -s     Start Jellyfin.
+.B -s, --start                  Start Jellyfin.
 .TP
-.B -S     Stop Jellyfin.
+.B -S, --stop                   Stop Jellyfin.
 .TP
-.B -t     Status of Jellyfin.
+.B -t, --status                 Status of Jellyfin.
 .TP
-.B -u     [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
+.B -u, --update-jellyfin        [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
 └── NOTE - Supplied URL has to end with jellyfin_x.x.x_<ARCHITECTURE>.tar.gz
 .TP
-.B -U     Update Jellyman - The CLI Tool.
+.B -U, --update-jellyman        Update Jellyman - The CLI Tool.
 └── Checks and downloads most recent version from GitHub.
 .TP
-.B -ub    Update Jellyfin to the most recent Beta.
+.B -ub, --update-beta           Update Jellyfin to the most recent Beta.
 .TP
-.B -v     Get the current installed version of Jellyfin.
+.B -v, --version                Get the current installed version of Jellyfin.
 .TP
-.B -vd    Download an available Jellyfin version from the stable repository.
+.B -vd, --version-download      Download an available Jellyfin version from the stable repository.
 └── Provides a list of currently installed versions of Jellyfin for you to download.
 .TP
-.B -vs    Switch Jellyfin version for another previously installed version.
+.B -vs, --version-switch        Switch Jellyfin version for another previously installed version.
 └── Provides a list of currently installed versions of Jellyfin for you to switch to.
 .TP
-.B -rv    Remove a Jellyfin version.
+.B -rv, --remove-version        Remove a Jellyfin version.
 └── Provides a list of currently installed versions of Jellyfin for you to remove.
 .TP
-.B -rc    Removes old https certifications and creates new ones for the next 365 days.
+.B -rc, --recertify             Removes old https certifications and creates new ones for the next 365 days.
 .TP
-.B -rn    Batch renaming script for TV shows.
+.B -rn, --rename                Batch renaming script for TV shows.
 .TP
-.B -ls    Tell Jellyfin to scan your media library.
+.B -ls, --library-scan          Tell Jellyfin to scan your media library.
 .TP
-.B -cp    Change Jellyfins http network port - Default = 8096.
+.B -cp, --change-http           Change Jellyfins http network port - Default = 8096.
 .TP
-.B -cps   Change Jellyfins https network port - Default = 8920.
+.B -cps, --change-https         Change Jellyfins https network port - Default = 8920.
 .TP
-.B -ik    Import an API key.
+.B -ik, --import-key            Import an API key.
 .TP
-.B -md    Change the Media Directory for Jellyman.
+.B -md, --media-directory       Change the Media Directory for Jellyman.
 .TP
-.B -tc    Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
+.B -tc, --transcode             Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
 .TP
-.B -tcp   View the progress of current transcode
+.B -tcp, --transcode-progress   View the progress of current transcode
 .TP
-.B -tcs   Stop the current transcode process.
+.B -tcs, --transcode-stop       Stop the current transcode process.
 .TP
-.B -X     Uninstall Jellyfin and Jellyman Completely.
+.B -X, --uninstall              Uninstall Jellyfin and Jellyman Completely.
 └── Ignores the Media Directory.
 
 .SH EXAMPLE

@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.6.5"
+jellymanVersion="v1.6.6"
 sourceFile="/opt/jellyfin/config/jellyman.conf"
 
 ###############################################################################
@@ -901,14 +901,12 @@ Transcode()
 	while [ $preset -gt 9 ] || [ $preset -lt 1 ]; do
 	  clear
 	  echo
-	  echo '* = recommended'
-	  echo
 	  echo "1: ultrafast"
 	  echo "2: superfast"
 	  echo "3: veryfast"
 	  echo "4: faster"
 	  echo "5: fast"
-	  echo '6: medium *'
+	  echo '6: medium (RECOMMENDED)'
 	  echo "7: slow"
 	  echo "8: slower"
 	  echo "9: veryslow"
@@ -1061,34 +1059,34 @@ Help()
 	echo
 	echo "Syntax: jellyman -[COMMAND] [PARAMETER]"
 	echo "COMMANDS:"
-	echo "-b     [DIRECTORY] Input directory to output backup archive."
-	echo "-d     Disable Jellyfin on System Start."
-	echo "-e     Enable Jellyfin on System Start."
-	echo "-h     Print this Help."
-	echo "-i     [FILE.tar] Input file to Import jellyfin-backup.tar."
-	echo "-p     [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory."
-	echo "-r     Restart Jellyfin."
-	echo "-s     Start Jellyfin."
-	echo "-S     Stop Jellyfin."
-	echo "-t     Status of Jellyfin."
-	echo "-u     [URL - optional] Downloads and updates the current stable or supplied Jellyfin version."
-	echo "-U     Update Jellyman - The Jellyfin Manager."
-	echo "-ub    Update Jellyfin to the most recent Beta."
-	echo "-v     Get the current installed version of Jellyfin."
-	echo "-vd    Download an available Jellyfin version from the stable repository."
-	echo "-vs    Switch Jellyfin version for another previously installed version."
-	echo "-rv    Remove a Jellyfin version."
-	echo "-rc    Removes old https certifications and creates new ones for the next 365 days."
-	echo "-rn    Batch renaming script for TV shows."
-	echo "-ls    Tell Jellyfin to scan your media library."
-	echo "-cp    Change Jellyfins http network port - Default = 8096"
-	echo "-cps   Change Jellyfins https network port - Default = 8920."
-	echo "-ik    Import an API key"
-	echo "-md    Change the Media Directory for Jellyman."
-	echo "-tc    Transcode a file/directory with a GB per hour filter (1.5GB is recommended)"
-	echo "-tcp   View progress of the Transcode"
-	echo "-tcs   Stop the current transcode process."
-	echo "-X     Uninstall Jellyfin and Jellyman Completely."
+	echo "-b, --backup                 [DIRECTORY] Input directory to output backup archive."
+	echo "-d, --disable                Disable Jellyfin on System Start."
+	echo "-e, --enable                 Enable Jellyfin on System Start."
+	echo "-h, --help                   Print this Help."
+	echo "-i, --import                 [FILE.tar] Input file to Import jellyfin-backup.tar."
+	echo "-p, --permissions            [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory."
+	echo "-r, --restart                Restart Jellyfin."
+	echo "-s, --start                  Start Jellyfin."
+	echo "-S, --stop                   Stop Jellyfin."
+	echo "-t, --status                 Status of Jellyfin."
+	echo "-u, --update-jellyfin        [URL - optional] Downloads and updates the current stable or supplied Jellyfin version."
+	echo "-U, --update-jellyman        Update Jellyman - The Jellyfin Manager."
+	echo "-ub, --update-beta           Update Jellyfin to the most recent Beta."
+	echo "-v, --version                Get the current installed version of Jellyfin."
+	echo "-vd, --version-download      Download an available Jellyfin version from the stable repository."
+	echo "-vs, --version-switch        Switch Jellyfin version for another previously installed version."
+	echo "-rv, --remove-version        Remove a Jellyfin version."
+	echo "-rc, --recertify             Removes old https certifications and creates new ones for the next 365 days."
+	echo "-rn, --rename                Batch renaming script for TV shows."
+	echo "-ls, --library-scan          Tell Jellyfin to scan your media library."
+	echo "-cp, --change-http           Change Jellyfins http network port - Default = 8096"
+	echo "-cps, --change-https         Change Jellyfins https network port - Default = 8920."
+	echo "-ik, --import-key            Import an API key"
+	echo "-md, --media-directory       Change the Media Directory for Jellyman."
+	echo "-tc, --transcode             Transcode a file/directory with a GB per hour filter (1.5GB is recommended)"
+	echo "-tcp, --transcode-progress   View progress of the Transcode"
+	echo "-tcs, --transcode-stop       Stop the current transcode process."
+	echo "-X, --uninstall              Uninstall Jellyfin and Jellyman Completely."
 	echo
 	echo "To browse Jellyfin versions please use this link."
 	echo "***WARNING*** ONLY USE COMBINED(Web & Server) PACKAGES"
@@ -1107,52 +1105,52 @@ if [ -n "$1" ]; then
 	total=1
 	while [ -n "$1" ]; do
 		case "$1" in
-			-b) Backup $2
+			-b | --backup) Backup $2
 				 shift ;;
-			-d) systemctl disable jellyfin.service ;;
-			-e) systemctl enable jellyfin.service ;;
-			-h) Help ;;
-			-i) Import $2
+			-d | --disable) systemctl disable jellyfin.service ;;
+			-e | --enable) systemctl enable jellyfin.service ;;
+			-h | --help) Help ;;
+			-i | --import) Import $2
 				 shift ;;
-			-p) if [[ "$2" == "-"* ]]; then
+			-p | --permissions) if [[ "$2" == "-"* ]]; then
 					 Permissions 
 				 else
 					 Permissions $2
 					 shift 
 				 fi  ;;
-			-r) systemctl restart jellyfin.service ;;
-			-s) systemctl start jellyfin.service ;;
-			-S) systemctl stop jellyfin.service ;;
-			-t) Status ;;
-			-u) if [[ "$2" == "-"* ]]; then
+			-r | --restart) systemctl restart jellyfin.service ;;
+			-s | --start) systemctl start jellyfin.service ;;
+			-S | --stop) systemctl stop jellyfin.service ;;
+			-t | --status) Status ;;
+			-u | --update-jellyfin) if [[ "$2" == "-"* ]]; then
 					 Update
 				 else
 					 Update $2
 					 shift
 				 fi ;;
-			-U) Update-jellyman 
+			-U | --update-jellyman) Update-jellyman
 				 exit ;;
-			-ub) Update_beta ;;
-			-v) Get_jellyfin_version
+			-ub | --update-beta) Update_beta ;;
+			-v | --version) Get_jellyfin_version
 					Get_jellyman_version ;;
-			-vd) Download_version ;;
-			-vs) Version_switch ;;
-			-rv) Remove_version ;;
-			-rc) Recertify_https ;;
-			-rn) Rename_tv ;;
-			-ls) Library_scan ;;
-			-cp) Http_port_change ;;
-			-cps) Https_port_change ;;
-			-ik) Import_api_key ;;
-			-md) Change_Media_Directory ;;
-			-tc) Transcode ;;
-			-tcp) View_Transcode_Progress ;;
+			-vd | --version-download) Download_version ;;
+			-vs | --version-switch) Version_switch ;;
+			-rv | --remove-version) Remove_version ;;
+			-rc | --recertify) Recertify_https ;;
+			-rn | --rename) Rename_tv ;;
+			-ls | --library-scan) Library_scan ;;
+			-cp | --change-http) Http_port_change ;;
+			-cps | --change-https) Https_port_change ;;
+			-ik | --import-key) Import_api_key ;;
+			-md | --media-directory) Change_Media_Directory ;;
+			-tc | --transcode) Transcode ;;
+			-tcp | --transcode-progress) View_Transcode_Progress ;;
 #			-tcf) Transcode_file $2 $3 $4
 #						shift
 #						shift
 #						shift ;;
-			-tcs) Transcode_stop ;;
-			-X) Uninstall ;;
+			-tcs | --transcode-stop) Transcode_stop ;;
+			-X | --uninstall) Uninstall ;;
 			--dev_func) Dev_func "$2"
 									shift ;;
 			*) echo "Option $1 not recognized" 
