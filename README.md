@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
 =======
 
-> v1.6.5 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
+> v1.6.6 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
 > Tested on Fedora 34/35/36, Ubuntu 22.04, Manjaro 21.3.6, EndeavourOS Artemis Neo, Linux Mint 21, and Rocky Linux 8.6/9.0
 
@@ -209,34 +209,34 @@ Jellyman - The Jellyfin Manager
 Syntax: jellyman -[COMMAND] [PARAMETER]
 
 COMMANDS:
--b     [DIRECTORY] Input directory to output backup archive.
--d     Disable Jellyfin on System Start.
--e     Enable Jellyfin on System Start.
--h     Print this Help.
--i     [FILE.tar] Input file to Import jellyfin-backup.tar.
--p     [DIRECTORY - optional] Reset the permissions of Jellyfins Media Library or supplied directory.
--r     Restart Jellyfin.
--s     Start Jellyfin.
--S     Stop Jellyfin.
--t     Status of Jellyfin.
--u     [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
--U     Update Jellyman - The Jellyfin Manager
--ub    Update Jellyfin to the most recent Beta.
--v     Get the current version of Jellyfin.
--vd    Download an available Jellyfin version from the stable repository.
--vs    Switch Jellyfin version for another previously installed version.
--rv    Remove a Jellyfin version.
--rc    Removes old https certifications and creates new ones for the next 365 days.
--rn    Batch renaming script for TV shows.
--ls    Tell Jellyfin to scan your media library.
--cp    Change Jellyfins http network port - Default = 8096.
--cps   Change Jellyfins https network port - Default = 8920.
--ik    Import an API key.
--md    Change the Media Directory for Jellyman.
--tc    Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
--tcp   View progress of the current transcode.
--tcs   Stop the current transcode process.
--X     Uninstall Jellyfin and Jellyman Completely.
+-b, --backup                 [DIRECTORY] Input directory to output backup archive.
+-d, --disable                Disable Jellyfin on System Start.
+-e, --enable                 Enable Jellyfin on System Start.
+-h, --help                   Print this Help.
+-i, --import                 [FILE.tar] Input file to Import jellyfin-backup.tar.
+-p, --permissions            [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
+-r, --restart                Restart Jellyfin.
+-s, --start                  Start Jellyfin.
+-S, --stop                   Stop Jellyfin.
+-t, --status                 Status of Jellyfin.
+-u, --update-jellyfin        [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
+-U, --update-jellyman        Update Jellyman - The Jellyfin Manager.
+-ub, --update-beta           Update Jellyfin to the most recent Beta.
+-v, --version                Get the current installed version of Jellyfin.
+-vd, --version-download      Download an available Jellyfin version from the stable repository.
+-vs, --version-switch        Switch Jellyfin version for another previously installed version.
+-rv, --remove-version        Remove a Jellyfin version.
+-rc, --recertify             Removes old https certifications and creates new ones for the next 365 days.
+-rn, --rename                Batch renaming script for TV shows.
+-ls, --library-scan          Tell Jellyfin to scan your media library.
+-cp, --change-http           Change Jellyfins http network port - Default = 8096
+-cps, --change-https         Change Jellyfins https network port - Default = 8920.
+-ik, --import-key            Import an API key
+-md, --media-directory       Change the Media Directory for Jellyman.
+-tc, --transcode             Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
+-tcp, --transcode-progress   View progress of the Transcode
+-tcs, --transcode-stop       Stop the current transcode process.
+-X, --uninstall              Uninstall Jellyfin and Jellyman Completely.
 
 EXAMPLE:
 - To stop jellyfin, disable on startup, backup, and then start the jellyfin server:
