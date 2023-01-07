@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.6.6"
+jellymanVersion="v1.6.7"
 sourceFile="/opt/jellyfin/config/jellyman.conf"
 
 ###############################################################################
@@ -12,7 +12,8 @@ Backup()
 	# Backup /opt/jellyfin to passed directory
 	backupDirectory=$1
 	tarPath=
-	fileName=jellyfin-backup.tar
+	_date=$(date +%m%d%Y%H%M)
+	fileName=jellyfin-backup-$_date.tar
 	mkdir /opt/jellyfin/backup
 	cp /bin/jellyman /opt/jellyfin/backup/
 	cp /etc/jellyfin.conf /opt/jellyfin/backup/
