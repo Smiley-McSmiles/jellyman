@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.6.7"
+jellymanVersion="v1.6.8"
 sourceFile="/opt/jellyfin/config/jellyman.conf"
 
 ###############################################################################
@@ -464,7 +464,7 @@ Update()
 		echo "Getting current version from repository..."
 		mkdir /opt/jellyfin/update
 		stableReleases=$(curl -sL https://repo.jellyfin.org/releases/server/linux/stable/combined/)
-		jellyfin_archive=$(echo $stableReleases | grep -o "jellyfin_"[0-9][0-9].[0-9].[0-9]"_$architecture.tar.gz" | head -1)
+		jellyfin_archive=$(echo $stableReleases | grep -o "jellyfin_"[0-9][0-9].[0-9]*.[0-9]*"_$architecture.tar.gz" | head -1)
 		jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
 		
 		echo "jellyfin_archive = $jellyfin_archive"
