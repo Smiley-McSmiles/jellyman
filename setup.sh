@@ -255,7 +255,7 @@ Setup()
 	
 	if [ ! -f *"tar.gz" ]; then
 		jellyfinIndex=$(curl -sL https://repo.jellyfin.org/releases/server/linux/stable/combined/)
-		jellyfin_archive=$(echo "$jellyfinIndex" | grep -o jellyfin_[0-9][0-9].[0-9].[0-9].$architecture.tar.gz | head -1)
+		jellyfin_archive=$(echo "$jellyfinIndex" | grep -o "jellyfin_"[0-9][0-9].[0-9]*.[0-9]*"_$architecture.tar.gz" | head -1)
 		wget https://repo.jellyfin.org/releases/server/linux/stable/combined/$jellyfin_archive
 		jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
 	else
