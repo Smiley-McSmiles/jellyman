@@ -125,7 +125,7 @@ Download_version()
 	Has_sudo
 	source $sourceFile
 	versionListVar=$(curl -sL https://repo.jellyfin.org/releases/server/linux/versions/stable/combined/)
-	versionList=$(echo "$versionListVar" | grep -o ">[0-9][0-9].[0-9].[0-9]" | sed -r "s|>||g")
+	versionList=$(echo "$versionListVar" | grep -o ">[0-9][0-9].[0-9].[0-9]*" | sed -r "s|>||g")
 	versionListNumbered=$(echo "$versionList" | cat -n)
 	maxNumber=$(echo "$versionList" | wc -l)
 	newVersionNumber=""
@@ -464,7 +464,7 @@ Update()
 		echo "Getting current version from repository..."
 		mkdir /opt/jellyfin/update
 		stableReleases=$(curl -sL https://repo.jellyfin.org/releases/server/linux/stable/combined/)
-		jellyfin_archive=$(echo $stableReleases | grep -o "jellyfin_"[0-9][0-9].[0-9]*.[0-9]*"_$architecture.tar.gz" | head -1)
+		jellyfin_archive=$(echo $stableReleases | grep -Po jellyfin_[^_]+_$architecture.tar.gz | head -1)
 		jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
 		
 		echo "jellyfin_archive = $jellyfin_archive"
