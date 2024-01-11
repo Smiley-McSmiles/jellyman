@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
 =======
 
-> v1.6.9 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
+> v1.7.0 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
 > Tested on Fedora 34/35/36/37/38, Ubuntu 22.04/22.10, Manjaro 21.3.6, EndeavourOS Artemis Neo/Nova & Cassini Nova, Linux Mint 21, and Rocky Linux 8.6/9.0
 
@@ -101,7 +101,7 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
 
 * **Version Download** - Download an available Jellyfin version from the stable repository.
 
-    └── _Provides a list of currently installed versions of Jellyfin for you to download._
+    └── _Provides a list of Jellyfin versions for you to download._
 
 * **Version Switch** - Switch Jellyfin version for another previously installed version.
 
