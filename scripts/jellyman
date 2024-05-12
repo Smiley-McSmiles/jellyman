@@ -445,7 +445,7 @@ Update()
 		customVersionLink=$1
 		customVersion=$(echo $customVersionLink | rev | cut -d/ -f1 | rev)
 		jellyfin_archive=$customVersion
-		jellyfin=$(echo $jellyfin_archive | sed -r "s|-$architecture.tar.gz||g")
+		jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
 		fileType=$(echo $customVersion | cut -d_ -f3)
 		
 		if isInstalledVersion $jellyfin; then
@@ -463,15 +463,16 @@ Update()
 	else
 		echo "Getting current version from repository..."
 		mkdir /opt/jellyfin/update
-		stableReleases=$(curl -sL https://repo.jellyfin.org/?path=/server/linux/latest-stable/$architecture)
+		stableReleases=$(curl -sL https://repo.jellyfin.org/?path=/server/linux/latest-stable/$architecture/)
 		jellyfin_archive=$(echo "$stableReleases" | grep -Po jellyfin_[^_]+-$architecture.tar.gz | head -1)
 		jellyfin=$(echo "$jellyfin_archive" | sed -r "s|-$architecture.tar.gz||g")
+		newJellyfinArchive=$(echo "$jellyfin"_$architecture.tar.gz)
 		
 		echo "jellyfin_archive = $jellyfin_archive"
 		echo "jellyfin = $jellyfin"
 		echo "currentVersion = $currentVersion"
 		if ! isCurrentVersion $jellyfin && ! isInstalledVersion $jellyfin; then
-			wget -O /opt/jellyfin/update/$jellyfin_archive https://repo.jellyfin.org/files/server/linux/latest-stable/$architecture/$jellyfin_archive/
+			wget -O /opt/jellyfin/update/$newJellyfinArchive https://repo.jellyfin.org/?path=/server/linux/latest-stable/$architecture/$jellyfin_archive/
 		else
 			exit
 		fi
