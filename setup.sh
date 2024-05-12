@@ -254,12 +254,12 @@ Setup()
 	jellyfin_archive=
 	
 	if [ ! -f *"tar.gz" ]; then
-		jellyfin_archive=$(curl -sL https://repo.jellyfin.org/releases/server/linux/stable/combined/ | grep -Po jellyfin_[^_]+_$architecture.tar.gz | head -1)	
-		wget https://repo.jellyfin.org/releases/server/linux/stable/combined/$jellyfin_archive
-		jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
+		jellyfin_archive=$(curl -sL https://repo.jellyfin.org/files/server/linux/latest-stable/$architecture/ | grep -Po jellyfin_[^_]+-$architecture.tar.gz | head -1)	
+		wget https://repo.jellyfin.org/files/server/linux/latest-stable/$architecture/$jellyfin_archive
+		jellyfin=$(echo $jellyfin_archive | sed -r "s|-$architecture.tar.gz||g")
 	else
 		jellyfin_archive=$(ls *.tar.gz)
-		jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
+		jellyfin=$(echo $jellyfin_archive | sed -r "s|-$architecture.tar.gz||g")
 	fi
 	
 	mkdir /opt/jellyfin
@@ -300,6 +300,8 @@ Setup()
 	cp $DIRECTORY/conf/jellyfin.conf /etc/
 	cd /opt/jellyfin
 	tar xvzf $DIRECTORY/$jellyfin_archive
+	mv -f /opt/jellyfin/jellyfin /opt/jellyfin/$jellyfin
+	mkdir /opt/jellyfin/jellyfin
 	ln -s $jellyfin jellyfin
 	echo "architecture=$architecture" >> config/jellyman.conf
 	echo "defaultPath=" >> config/jellyman.conf

@@ -480,8 +480,17 @@ Update()
 	
 	new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
 	echo "Unpacking $jellyfin_archive to /opt/jellyfin/..."
-	tar xvzf /opt/jellyfin/update/$newJellyfinArchive -C /opt/jellyfin/
 	jellyman -S
+	tar xvzf /opt/jellyfin/update/$newJellyfinArchive -C /opt/jellyfin/
+	
+	if [ -n "$(ls -A /opt/jellyfin/jellyfin/ 2>/dev/null)" ]
+		then
+		  echo "contains files (or is a file)"
+		else
+		  mv -f /opt/jellyfin/jellyfin /opt/jellyfin/$jellyfin
+		  mkdir /opt/jellyfin/jellyfin
+	fi
+
 	unlink /opt/jellyfin/jellyfin
 	ln -s /opt/jellyfin/$jellyfin /opt/jellyfin/jellyfin
 	echo "Removing $jellyfin_archive"
