@@ -472,7 +472,7 @@ Update()
 		echo "jellyfin = $jellyfin"
 		echo "currentVersion = $currentVersion"
 		if ! isCurrentVersion $jellyfin && ! isInstalledVersion $jellyfin; then
-			wget -O /opt/jellyfin/update/$newJellyfinArchive https://repo.jellyfin.org/?path=/server/linux/latest-stable/$architecture/$jellyfin_archive/
+			wget -O /opt/jellyfin/update/$newJellyfinArchive https://repo.jellyfin.org/files/server/linux/latest-stable/$architecture/$jellyfin_archive
 		else
 			exit
 		fi
@@ -532,7 +532,7 @@ Update_beta()
 		else
 			newVersionArchive=$(echo "$jellyfinArchives" | head -n $versionSelected | tail -n 1)
 			echo "Getting $newVersionArchive..."
-			wget -O /opt/jellyfin/update/$newVersionName https://repo.jellyfin.org/files/server/linux/latest-unstable/$architecture/$newVersionArchive/
+			wget -O /opt/jellyfin/update/$newVersionName https://repo.jellyfin.org/files/server/linux/latest-unstable/$architecture/$newVersionArchive
 			echo "Unpacking $newVersionArchive to /opt/jellyfin/..."
 			tar xvzf /opt/jellyfin/update/$newVersionArchive -C /opt/jellyfin/
 			jellyman -S
