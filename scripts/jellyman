@@ -486,10 +486,10 @@ Update()
 	
 	if [ -n "$(ls -A /opt/jellyfin/jellyfin/ 2>/dev/null)" ]
 		then
-		  echo "contains files (or is a file)"
-		else
 		  mv -f /opt/jellyfin/jellyfin /opt/jellyfin/$jellyfin
 		  mkdir /opt/jellyfin/jellyfin
+		else
+		  echo "Directory does not contain files..."
 	fi
 
 	ln -s /opt/jellyfin/$jellyfin /opt/jellyfin/jellyfin
