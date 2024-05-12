@@ -480,7 +480,7 @@ Update()
 	
 	new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
 	echo "Unpacking $jellyfin_archive to /opt/jellyfin/..."
-	tar xvzf /opt/jellyfin/update/$jellyfin_archive -C /opt/jellyfin/
+	tar xvzf /opt/jellyfin/update/$newJellyfinArchive -C /opt/jellyfin/
 	jellyman -S
 	unlink /opt/jellyfin/jellyfin
 	ln -s /opt/jellyfin/$jellyfin /opt/jellyfin/jellyfin
