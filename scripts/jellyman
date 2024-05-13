@@ -487,7 +487,6 @@ Update()
 	if [ -n "$(ls -A /opt/jellyfin/jellyfin/ 2>/dev/null)" ]
 		then
 		  mv -f /opt/jellyfin/jellyfin /opt/jellyfin/$jellyfin
-		  mkdir /opt/jellyfin/jellyfin
 		else
 		  echo "Directory does not contain files..."
 	fi
