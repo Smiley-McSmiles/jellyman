@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.7.1"
+jellymanVersion="v1.7.2"
 sourceFile="/opt/jellyfin/config/jellyman.conf"
 
 ###############################################################################
@@ -126,14 +126,14 @@ Download_version()
 	Has_sudo
 	source $sourceFile
 	versionListVar=$(curl -sL https://repo.jellyfin.org/files/server/linux/stable/)
-	versionList=$(echo "$versionListVar" | grep ':' | cut -d '>' -f 2 | cut -d '/' -f 1)
+	versionList=$(echo "$versionListVar" | grep '>v' | cut -d '>' -f 2 | cut -d '/' -f 1)
 	versionListNumbered=$(echo "$versionList" | cat -n)
 	maxNumber=$(echo "$versionList" | wc -l)
 	newVersionNumber=""
 	versionToSwitchNumber=0
 	warning=""
 
-	while (( $versionToSwitchNumber > $maxNumber )) && (( $versionToSwitchNumber < 1 )); do
+	while (( $versionToSwitchNumber > $maxNumber )) || (( $versionToSwitchNumber < 1 )); do
 		clear
 		echo "**WARNING** If Jellyfin v10.9.0 or later has been installed, it is impossible to revert to older versions as they will no longer be supported by Jellyman"
 		echo "Current Jellyfin version installed"
@@ -146,7 +146,7 @@ Download_version()
 		read -p "the version you want to install [1-$maxNumber] : " versionToSwitchNumber
 		newVersionNumber=$(echo "$versionList" | head -n $versionToSwitchNumber | tail -n 1)
 
-		if [[ $versionToSwitchNumber > $maxNumber && $versionToSwitchNumber < 1 ]]; then
+		if [[ $versionToSwitchNumber > $maxNumber || $versionToSwitchNumber < 1 ]]; then
 			versionToSwitchnumber=0
 			warning="ERROR: Please select one of the numbers provided!"
 			echo "Press CTRL+C to exit..."
@@ -443,14 +443,16 @@ Update()
 	jellyfin_archive=""
 	jellyfin=""
 	new_jellyfin_version=""
+	newJellyfinArchive=""
 	
 	if [[ $1 == *"://"* ]] ; then 
 		echo "Fetching custom Jellyfin version..."
 		customVersionLink=$1
 		customVersion=$(echo $customVersionLink | rev | cut -d/ -f1 | rev)
 		jellyfin_archive=$customVersion
-		jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
-		fileType=$(echo $customVersion | cut -d_ -f3)
+		newJellyfinArchive=$jellyfin_archive
+		jellyfin=$(echo $jellyfin_archive | sed -r "s|-$architecture.tar.gz||g")
+		fileType=$(echo $customVersion | cut -d '-' -f2)
 		
 		if isInstalledVersion $jellyfin; then
 			exit
@@ -470,7 +472,7 @@ Update()
 		stableReleases=$(curl -sL https://repo.jellyfin.org/?path=/server/linux/latest-stable/$architecture/)
 		jellyfin_archive=$(echo "$stableReleases" | grep -Po jellyfin_[^_]+-$architecture.tar.gz | head -1)
 		jellyfin=$(echo "$jellyfin_archive" | sed -r "s|-$architecture.tar.gz||g")
-		newJellyfinArchive=$(echo "$jellyfin"_$architecture.tar.gz)
+		newJellyfinArchive=$(echo "$jellyfin"-$architecture.tar.gz)
 		
 		echo "jellyfin_archive = $jellyfin_archive"
 		echo "jellyfin = $jellyfin"
@@ -483,7 +485,7 @@ Update()
 	fi
 	
 	new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
-	echo "Unpacking $jellyfin_archive to /opt/jellyfin/..."
+	echo "Unpacking $jellyfin_archive to /opt/jellyfin/$jellyfin"
 	jellyman -S
 	unlink /opt/jellyfin/jellyfin
 	tar xvzf /opt/jellyfin/update/$newJellyfinArchive -C /opt/jellyfin/
@@ -1103,8 +1105,7 @@ Help()
 	echo "-X, --uninstall              Uninstall Jellyfin and Jellyman Completely."
 	echo
 	echo "To browse Jellyfin versions please use this link."
-	echo "***WARNING*** ONLY USE COMBINED(Web & Server) PACKAGES"
-	echo "https://repo.jellyfin.org/releases/server/linux/versions/"
+	echo "https://repo.jellyfin.org/files/server/linux/stable/"
 }
 
 ###############################################################################
