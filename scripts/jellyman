@@ -449,7 +449,7 @@ Update()
 		customVersionLink=$1
 		customVersion=$(echo $customVersionLink | rev | cut -d/ -f1 | rev)
 		jellyfin_archive=$customVersion
-		jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
+		jellyfin=$(echo $jellyfin_archive | sed -r "s|-$architecture.tar.gz||g")
 		fileType=$(echo $customVersion | cut -d_ -f3)
 		
 		if isInstalledVersion $jellyfin; then
