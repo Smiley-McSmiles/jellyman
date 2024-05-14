@@ -443,12 +443,14 @@ Update()
 	jellyfin_archive=""
 	jellyfin=""
 	new_jellyfin_version=""
+	newJellyfinArchive=""
 	
 	if [[ $1 == *"://"* ]] ; then 
 		echo "Fetching custom Jellyfin version..."
 		customVersionLink=$1
 		customVersion=$(echo $customVersionLink | rev | cut -d/ -f1 | rev)
 		jellyfin_archive=$customVersion
+		newJellyfinArchive=$jellyfin_archive
 		jellyfin=$(echo $jellyfin_archive | sed -r "s|-$architecture.tar.gz||g")
 		fileType=$(echo $customVersion | cut -d '-' -f2)
 		
@@ -470,7 +472,7 @@ Update()
 		stableReleases=$(curl -sL https://repo.jellyfin.org/?path=/server/linux/latest-stable/$architecture/)
 		jellyfin_archive=$(echo "$stableReleases" | grep -Po jellyfin_[^_]+-$architecture.tar.gz | head -1)
 		jellyfin=$(echo "$jellyfin_archive" | sed -r "s|-$architecture.tar.gz||g")
-		newJellyfinArchive=$(echo "$jellyfin"_$architecture.tar.gz)
+		newJellyfinArchive=$(echo "$jellyfin"-$architecture.tar.gz)
 		
 		echo "jellyfin_archive = $jellyfin_archive"
 		echo "jellyfin = $jellyfin"
@@ -483,7 +485,7 @@ Update()
 	fi
 	
 	new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
-	echo "Unpacking $jellyfin_archive to /opt/jellyfin/..."
+	echo "Unpacking $jellyfin_archive to /opt/jellyfin/$jellyfin"
 	jellyman -S
 	unlink /opt/jellyfin/jellyfin
 	tar xvzf /opt/jellyfin/update/$newJellyfinArchive -C /opt/jellyfin/
