@@ -133,7 +133,7 @@ Download_version()
 	versionToSwitchNumber=0
 	warning=""
 
-	while (( $versionToSwitchNumber > $maxNumber )) && (( $versionToSwitchNumber < 1 )); do
+	while (( $versionToSwitchNumber > $maxNumber )) || (( $versionToSwitchNumber < 1 )); do
 		clear
 		echo "**WARNING** If Jellyfin v10.9.0 or later has been installed, it is impossible to revert to older versions as they will no longer be supported by Jellyman"
 		echo "Current Jellyfin version installed"
@@ -146,7 +146,7 @@ Download_version()
 		read -p "the version you want to install [1-$maxNumber] : " versionToSwitchNumber
 		newVersionNumber=$(echo "$versionList" | head -n $versionToSwitchNumber | tail -n 1)
 
-		if [[ $versionToSwitchNumber > $maxNumber && $versionToSwitchNumber < 1 ]]; then
+		if [[ $versionToSwitchNumber > $maxNumber || $versionToSwitchNumber < 1 ]]; then
 			versionToSwitchnumber=0
 			warning="ERROR: Please select one of the numbers provided!"
 			echo "Press CTRL+C to exit..."
