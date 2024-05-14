@@ -248,21 +248,22 @@ Previous_install()
 
 Setup()
 {
+	Has_sudo
 	echo "Fetching newest stable Jellyfin version..."
 	Get_Architecture
 	jellyfin=
 	jellyfin_archive=
 	
 	if [ ! -f *"tar.gz" ]; then
-		jellyfin_archive=$(curl -sL https://repo.jellyfin.org/releases/server/linux/stable/combined/ | grep -Po jellyfin_[^_]+_$architecture.tar.gz | head -1)	
-		wget https://repo.jellyfin.org/releases/server/linux/stable/combined/$jellyfin_archive
-		jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
+		jellyfin_archive=$(curl -sL https://repo.jellyfin.org/files/server/linux/latest-stable/$architecture/ | grep -Po jellyfin_[^_]+-$architecture.tar.gz | head -1)	
+		wget https://repo.jellyfin.org/files/server/linux/latest-stable/$architecture/$jellyfin_archive
+		jellyfin=$(echo $jellyfin_archive | sed -r "s|-$architecture.tar.gz||g")
 	else
 		jellyfin_archive=$(ls *.tar.gz)
-		jellyfin=$(echo $jellyfin_archive | sed -r "s|_$architecture.tar.gz||g")
+		jellyfin=$(echo $jellyfin_archive | sed -r "s|-$architecture.tar.gz||g")
 	fi
 	
-	mkdir /opt/jellyfin
+	mkdir /opt/jellyfin /opt/jellyfin/old /opt/jellyfin/backup /opt/jellyfin/data /opt/jellyfin/cache /opt/jellyfin/config /opt/jellyfin/log /opt/jellyfin/cert
 	clear
 	Previous_install
 
@@ -274,15 +275,12 @@ Setup()
 
 	useradd -rd /opt/jellyfin $defaultUser
 
-	mkdir /opt/jellyfin/old /opt/jellyfin/backup
-
 	if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
 		cp $DIRECTORY/jellyman.1 /usr/share/man/man1/
 	elif [ -x "$(command -v dnf)" ] || [ -x "$(command -v zypper)" ]; then 
 		cp $DIRECTORY/jellyman.1 /usr/local/share/man/man1/
 	fi
 
-	mkdir /opt/jellyfin/data /opt/jellyfin/cache /opt/jellyfin/config /opt/jellyfin/log /opt/jellyfin/cert
 	cp $DIRECTORY/scripts/jellyman /bin/
 	cp $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/
 	touch /opt/jellyfin/config/jellyman.conf
@@ -300,6 +298,7 @@ Setup()
 	cp $DIRECTORY/conf/jellyfin.conf /etc/
 	cd /opt/jellyfin
 	tar xvzf $DIRECTORY/$jellyfin_archive
+	mv -f /opt/jellyfin/jellyfin /opt/jellyfin/$jellyfin
 	ln -s $jellyfin jellyfin
 	echo "architecture=$architecture" >> config/jellyman.conf
 	echo "defaultPath=" >> config/jellyman.conf
