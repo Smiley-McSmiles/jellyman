@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.7.1"
+jellymanVersion="v1.7.2"
 sourceFile="/opt/jellyfin/config/jellyman.conf"
 
 ###############################################################################
@@ -1105,8 +1105,7 @@ Help()
 	echo "-X, --uninstall              Uninstall Jellyfin and Jellyman Completely."
 	echo
 	echo "To browse Jellyfin versions please use this link."
-	echo "***WARNING*** ONLY USE COMBINED(Web & Server) PACKAGES"
-	echo "https://repo.jellyfin.org/releases/server/linux/versions/"
+	echo "https://repo.jellyfin.org/files/server/linux/stable/"
 }
 
 ###############################################################################

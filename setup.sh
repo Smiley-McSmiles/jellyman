@@ -401,6 +401,7 @@ Update_jellyman()
 	source /opt/jellyfin/config/jellyman.conf
 	echo "Updating Jellyman - The Jellyfin Manager"
 	cp -f scripts/jellyman /bin/jellyman
+	cp -f scripts/jellyfin.sh /opt/jellyfin/jellyfin.sh
 	chmod +x /bin/jellyman
 	if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
 		cp jellyman.1 /usr/share/man/man1/
