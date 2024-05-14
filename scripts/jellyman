@@ -126,7 +126,7 @@ Download_version()
 	Has_sudo
 	source $sourceFile
 	versionListVar=$(curl -sL https://repo.jellyfin.org/files/server/linux/stable/)
-	versionList=$(echo "$versionListVar" | grep ':' | cut -d '>' -f 2 | cut -d '/' -f 1)
+	versionList=$(echo "$versionListVar" | grep '>v' | cut -d '>' -f 2 | cut -d '/' -f 1)
 	versionListNumbered=$(echo "$versionList" | cat -n)
 	maxNumber=$(echo "$versionList" | wc -l)
 	newVersionNumber=""
