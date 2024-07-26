@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.7.2"
+jellymanVersion="v1.7.3"
 sourceFile="/opt/jellyfin/config/jellyman.conf"
 
 ###############################################################################
@@ -10,7 +10,7 @@ Backup()
 {
 	Has_sudo
 	# Backup /opt/jellyfin to passed directory
-	backupDirectory=$1
+	backupDirectory="$1"
 	tarPath=
 	_date=$(date +%m%d%Y%H%M)
 	fileName=jellyfin-backup-$_date.tar
@@ -19,17 +19,17 @@ Backup()
 	cp /etc/jellyfin.conf /opt/jellyfin/backup/
 	cp /usr/lib/systemd/system/jellyfin.service /opt/jellyfin/backup/
 	if [[ $(echo "${backupDirectory: -1}") == "/" ]]; then
-		tarPath=$backupDirectory$fileName
-		echo $tarPath
+		tarPath="$backupDirectory$fileName"
+		echo "$tarPath"
 	else
-		tarPath=$backupDirectory/$fileName
-		echo $tarPath
+		tarPath="$backupDirectory/$fileName"
+		echo "$tarPath"
 	fi
 
-	time tar cvf $tarPath /opt/jellyfin
-	USER=$(stat -c '%U' $backupDirectory)
-	chown -f $USER:$USER $tarPath
-	chmod -f 660 $tarPath
+	time tar cvf "$tarPath" /opt/jellyfin
+	USER=$(stat -c '%U' "$backupDirectory")
+	chown -f $USER:$USER "$tarPath"
+	chmod -f 660 "$tarPath"
 	echo
 	echo "|--------------------------------------------------------|"
 	echo "|        To Import on your next setup, simply run:       |"
@@ -40,7 +40,7 @@ Backup()
 	echo "|--------------------------------------------------------|"
 	echo
 	echo "Your backup is:"
-	tarSize=$(du -h $tarPath)
+	tarSize=$(du -h "$tarPath")
 	echo "Size: $tarSize"
 }
 
@@ -342,8 +342,10 @@ Http_port_change()
 	if Is_jellyfin_setup; then
 		read -p "Please enter the new http network port for Jellyfin: " port
 		Change_variable httpPort $port
+		jellyman -S
 		sed -i -e "s|<HttpServerPortNumber>*</HttpServerPortNumber>|<HttpServerPortNumber>$port</HttpServerPortNumber>|g" /opt/jellyfin/config/network.xml
 		sed -i -e "s|<PublicPort>*</PublicPort>|<PublicPort>$port</PublicPort>|g" /opt/jellyfin/config/network.xml
+		jellyman -s
 		echo "Unblocking port $port..."
 		if [ -x "$(command -v ufw)" ]; then
 			ufw allow $port
@@ -367,8 +369,10 @@ Https_port_change()
 		echo "Default https port is 8920"
 		read -p "Please enter the new https network port for Jellyfin: " port
 		Change_variable httpsPort $port
+		jellyman -S
 		sed -i -e "s|<HttpsServerPortNumber>*</HttpsServerPortNumber>|<HttpsServerPortNumber>$port</HttpsServerPortNumber>|g" /opt/jellyfin/config/network.xml
 		sed -i -e "s|<PublicHttpsPort>*</PublicHttpsPort>|<PublicHttpsPort>$port</PublicHttpsPort>|g" /opt/jellyfin/config/network.xml
+		jellyman -s
 		echo "Unblocking port $port..."
 		if [ -x "$(command -v ufw)" ]; then
 			ufw allow $port
@@ -1120,12 +1124,12 @@ if [ -n "$1" ]; then
 	total=1
 	while [ -n "$1" ]; do
 		case "$1" in
-			-b | --backup) Backup $2
+			-b | --backup) Backup "$2"
 				 shift ;;
 			-d | --disable) systemctl disable jellyfin.service ;;
 			-e | --enable) systemctl enable jellyfin.service ;;
 			-h | --help) Help ;;
-			-i | --import) Import $2
+			-i | --import) Import "$2"
 				 shift ;;
 			-p | --permissions) if [[ "$2" == "-"* ]]; then
 					 Permissions 

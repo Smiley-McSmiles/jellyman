@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
 =======
 
-> v1.7.2 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
+> v1.7.3 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
 > Tested on Fedora 34-40, Ubuntu 22.04/22.10, Manjaro 21.3.6, EndeavourOS Artemis Neo/Nova & Cassini Nova, Linux Mint 21, and Rocky Linux 8.6/9.0
 
