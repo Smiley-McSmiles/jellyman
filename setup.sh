@@ -112,10 +112,10 @@ Get_Architecture()
 
 Install_dependancies()
 {
-	packagesNeededDebian='ffmpeg git net-tools openssl bc screen'
-	packagesNeededRHEL='ffmpeg ffmpeg-devel ffmpeg-libs git openssl bc screen'
-	packagesNeededArch='ffmpeg git openssl bc screen'
-	packagesNeededOpenSuse='ffmpeg-4 git openssl bc screen'
+	packagesNeededDebian='ffmpeg git net-tools openssl bc screen curl'
+	packagesNeededRHEL='ffmpeg ffmpeg-devel ffmpeg-libs git openssl bc screen curl'
+	packagesNeededArch='ffmpeg git openssl bc screen curl'
+	packagesNeededOpenSuse='ffmpeg-4 git openssl bc screen curl'
 	echo "Preparing to install needed dependancies for Jellyfin..."
 
 	if [ -f /etc/os-release ]; then
