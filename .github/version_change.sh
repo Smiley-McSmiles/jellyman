@@ -3,7 +3,7 @@ currentVersion=$(cat ../jellyman.1 | grep " - v" | cut -d "v" -f2)
 echo "Current version is v$currentVersion"
 echo
 echo "Please enter the new version number"
-echo "EXAMPLE: '1.4.0'"
+echo "EXAMPLE: $currentVersion"
 read newVersion
 
 sed -i -e "s|v$currentVersion|v$newVersion|g" ../README.md
