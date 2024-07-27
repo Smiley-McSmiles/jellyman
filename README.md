@@ -68,16 +68,15 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
           │           └── tvshows.collection
           │
           └── transcodes
-   ```
+```
 * **Update** - [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
-
-    └── _NOTE - Supplied URL has to end with_
-**jellyfin_x.x.x_<_ARCHITECTURE_>.tar.gz**
-
+```
+    └── NOTE - Supplied URL has to be formatted like: jellyfin_x.x.x-<ARCHITECTURE>.tar.gz
+```
 * **Update-Jellyman** - Updates this Jellyman CLI Tool.
-
-    └── _Checks and downloads most recent version from GitHub._
-
+```
+    └── Checks and downloads most recent version from GitHub.
+```
 * **Update Beta** Downloads and updates to the current Jellyfin Beta version.
 * **Disable** - Disable the jellyfin.service.
 * **Enable** - Enable the jellyfin.service
@@ -86,34 +85,32 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
 * **Restart** - Restart the jellyfin.service.
 * **Status** - Get status information on jellyfin.service.
 * **Backup** - Input a directroy to output the backup archive.
-
 ```
     ├── jellyman -b "/path/to/backup/directory" will output a jellyfin-backup.tar to that directory.
     ├── jellyman -ba will perform an automatic backup. But only if automatic backups are set up.
     └── jellyman -bu will launch the automatic backup setup utility.
 ```
-
 * **Import** - Import a .tar file to pick up where you left off on another system.
-
-    └── _This will only work if on your new OS/setup you have your Media directories exactly the same as your old OS/setup._
-
+```
+    └── This will only work if on your new OS/setup you have your Media directories exactly the same as your old OS/setup.
+```
 * **Fix Permissions** - [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
-
-    └── _Uses_ `chmod -R 770` _on your media directory._
-
+```
+    └── Uses 'chmod -R 770' on your media directory.
+```
 * **Get Version** - Get the current installed version of Jellyfin.
 * **Remove Version** - Remove a specific version of Jellyfin
-
-    └── _Provides a list of currently installed versions of Jellyfin for you to remove._
-
+```
+    └── Provides a list of currently installed versions of Jellyfin for you to remove.
+```
 * **Version Download** - Download an available Jellyfin version from the stable repository.
-
-    └── _Provides a list of Jellyfin versions for you to download._
-
+```
+    └── Provides a list of Jellyfin versions for you to download.
+```
 * **Version Switch** - Switch Jellyfin version for another previously installed version.
-
-    └── _Provides a list of currently installed versions of Jellyfin for you to switch to._
-
+```
+    └── Provides a list of currently installed versions of Jellyfin for you to switch to.
+```
 * **Recertify https** - Removes old https certifications and creates new **self signed** keys for the next 365 days. 
 * **Rename TV** - Batch renaming script for TV shows.
 * **Library Scan** - Tell Jellyfin to scan your media library.
@@ -122,12 +119,12 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
 * **Import API Key** - Import a new API key.
 * **Transcode** - Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
 * **Uninstall** - Uninstalls Jellyfin and Jellyman completely 
-
-    └── _Ignores the Media Directory._
-
+```
+    └── Does not remove backup archives or media files.
+```
 # Getting Started
 
-```shell
+```sh
 git clone https://github.com/Smiley-McSmiles/jellyman
 cd jellyman
 chmod ug+x setup.sh
@@ -136,19 +133,12 @@ sudo ./setup.sh
 
 # Example Install
 ```
-|-------------------------------------------------------------------|
-|                     No commands recognized                        |
-|                      setup.sh options are:                        |
-|                                                                   |
-|  -i [jellyfin-backup.tar] Import .tar to pick up where you left   |
-|                    off on another machine                         |
-|                                                                   |
-|                    -U Update Jellyman only.                       |
-|-------------------------------------------------------------------|
+1. Start first time setup
+2. Force update Jellyman
+3. Import a jellyfin-backup.tar file
 
-Press ENTER to continue with first time setup or CTRL+C to exit...
-[Pressed ENTER]
-
+Please select the number corresponding with the option you want to select.
+>>> 1
 Fetching newest stable Jellyfin version...
 Is there a current install of Jellyfin on this system? [y/N] : N
 
@@ -169,32 +159,32 @@ Complete!
 Setting Permissions for Jellyfin...
 Unblocking port 8096 and 8920...
 
-|-------------------------------------------------------------------|
++-------------------------------------------------------------------+
 |               Navigate to http://localhost:8096/                  |
 |        in your Web Browser to claim your Jellyfin server          |
-|-------------------------------------------------------------------|
++-------------------------------------------------------------------+
 
-|-------------------------------------------------------------------|
++-------------------------------------------------------------------+
 |         To enable https please enter 'sudo jellyman -rc'          |
 |       (After you have navigated to the Jellyfin Dashboard)        |
 |                                                                   |
 |             To manage Jellyfin use 'jellyman -h'                  |
-|-------------------------------------------------------------------|
++-------------------------------------------------------------------+
 
 
-|-----------------------------------------------|
++-----------------------------------------------+
 |          No default directory found...        |
 |     Please enter the root directory for       |
 |              your Media Library               |
 |    DO NOT ENTER YOUR USER DIRECTORY AS IT     |
 |    WILL RESET PERMISSIONS OF THE ENTERED      |
 |       DIRECTORY TO YOUR JELLYFIN USER         |
-|-----------------------------------------------|
++-----------------------------------------------+
 /testMediaDirectory
 
 ● jellyfin.service - Jellyfin Media Server - Installed by Jellyman
      Loaded: loaded (/usr/lib/systemd/system/jellyfin.service; enabled; vendor preset: disabled)
-     Active: active (running) since Tue 2022-08-23 21:18:41 CDT; 17h ago
+     Active: active (running) since Tue 2024-07-27 04:20:00 CDT; 1h ago
    Main PID: 944 (jellyfin.sh)
       Tasks: 18 (limit: 8736)
      Memory: 254.3M
@@ -260,8 +250,9 @@ EXAMPLE:
 git clone https://github.com/Smiley-McSmiles/jellyman
 cd jellyman
 chmod ug+x setup.sh
-sudo ./setup.sh -U
+sudo ./setup.sh
 ```
+#### Then choose option #3
 
 ### License
 
