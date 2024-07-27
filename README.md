@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
 =======
 
-> v1.7.3 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
+> v1.7.4 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
 > Tested on Fedora 34-40, Ubuntu 22.04/22.10, Manjaro 21.3.6, EndeavourOS Artemis Neo/Nova & Cassini Nova, Linux Mint 21, and Rocky Linux 8.6/9.0
 
@@ -210,6 +210,8 @@ Syntax: jellyman -[COMMAND] [PARAMETER]
 
 COMMANDS:
 -b, --backup                 [DIRECTORY] Input directory to output backup archive.
+-ba, --backup-auto           Perform an automatic backup.
+-bu, --backup-utility        Start the automatic backup utility.
 -d, --disable                Disable Jellyfin on System Start.
 -e, --enable                 Enable Jellyfin on System Start.
 -h, --help                   Print this Help.
