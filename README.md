@@ -3,13 +3,13 @@
 
 > v1.7.4 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
-> Tested on Fedora 34-40, Ubuntu 22.04/22.10, Manjaro 21.3.6, EndeavourOS Artemis Neo/Nova & Cassini Nova, Linux Mint 21, and Rocky Linux 8.6/9.0
+> Tested on Fedora 34-40, Ubuntu 22.04-24.04, Manjaro 21.3.6, EndeavourOS Artemis Neo/Nova/Cassini Nova, Linux Mint 21, and Rocky/Alma/RHEL Linux 8.6/9.0
 
-> Should work on Any Debian, Arch, or RHEL Based Distribution
+> Should work on Any Debian, Arch, or RHEL Based Distribution **with SystemD**
 
 # Description
 
-Jellyman is a simple BASH program and CLI (Command Line Interface) tool for installing and managing Jellyfin. Most notably, The ability to download and install the Jellyfin Media Server and switch between already downloaded versions of Jellyfin on the fly. As well as create a full backup so you can move or import all your metadata and user information to another machine.
+Jellyman is a lightweight BASH CLI (Command Line Interface) tool for installing and managing Jellyfin. Most notably, The ability to download and install the Jellyfin Media Server and switch between already downloaded versions of Jellyfin on the fly. As well as create a full backup (automatically or manually) so you can move or import all your metadata and user information to another machine.
 
 # Features
 
