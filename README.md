@@ -87,12 +87,12 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
 * **Status** - Get status information on jellyfin.service.
 * **Backup** - Input a directroy to output the backup archive.
 
-    ├── _jellyman -b "/path/to/backup/directory" will output a jellyfin-backup.tar to that directory._
-    │
-    ├── _jellyman -ba will perform an automatic backup. But only if automatic backups are set up._
-    │
-    └── _jellyman -bu will launch the automatic backup setup utility._
-    
+```
+    ├── jellyman -b "/path/to/backup/directory" will output a jellyfin-backup.tar to that directory.
+    ├── jellyman -ba will perform an automatic backup. But only if automatic backups are set up.
+    └── jellyman -bu will launch the automatic backup setup utility.
+```
+
 * **Import** - Import a .tar file to pick up where you left off on another system.
 
     └── _This will only work if on your new OS/setup you have your Media directories exactly the same as your old OS/setup._
