@@ -14,7 +14,7 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
 # Features
 
 * **Setup** - Sets up the initial install.
-* **Import Metadata and Configuration** - During setup, import your currently installed Jellyfin configs and metadata.
+* **Import Metadata and Configuration** - During setup, import the **CURRENTLY** installed Jellyfin configs and metadata.
 ```
    ├── NOTE - If you installed Jellyfin with Docker
    ├── this will likely not work
@@ -92,7 +92,8 @@ Jellyman is a simple BASH program and CLI (Command Line Interface) tool for inst
 ```
 * **Import** - Import a .tar file to pick up where you left off on another system.
 ```
-    └── This will only work if on your new OS/setup you have your Media directories exactly the same as your old OS/setup.
+    ├── Media metadata will only import if your new OS/setup and old OS/setup media folders are exactly the same.
+    └── User and Web-UI configurations will still import just fine however.
 ```
 * **Fix Permissions** - [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
 ```
@@ -252,7 +253,7 @@ cd jellyman
 chmod ug+x setup.sh
 sudo ./setup.sh
 ```
-#### Then choose option #3
+**Then choose option #3**
 
 ### License
 
