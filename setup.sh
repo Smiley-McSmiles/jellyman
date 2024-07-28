@@ -446,6 +446,14 @@ Update_jellyman()
 		echo "jellyfinServiceLocation=$jellyfinServiceLocation" >> $sourceFile
 	fi
 
+	if [ -d /usr/lib/systemd ]; then
+		jellyfinServiceLocation="/usr/lib/systemd/system"
+		sed -ie "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" /opt/jellyfin/config/jellyman.conf
+	elif [[ ! -n $jellyfinServiceLocation ]]; then
+		jellyfinServiceLocation="/etc/systemd/system"
+		sed -ie "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" /opt/jellyfin/config/jellyman.conf
+	fi
+
 	if [[ ! -n $architecture ]]; then
 		architecture=
 		Get_Architecture
@@ -471,26 +479,30 @@ Update_jellyman()
 
 Has_sudo
 optionNumber=
-while [[ ! -n $optionNumber ]]; do	
-	echo "1. Start first time setup"
-	echo "2. Force update Jellyman"
-	echo "3. Import a jellyfin-backup.tar file"
-	echo
-	echo "Please select the number corresponding with the option you want to select."
-	read -p ">>> " optionNumber
-	echo
-	if [ $optionNumber -gt 3 ] || [ $optionNumber -lt 1 ]; then
-		optionNumber=
-		clear
-		echo "ERROR: Please input an available option!"
+
+if [[ $1 == "-U" ]]; then
+	Update_jellyman
+else
+	while [[ ! -n $optionNumber ]]; do
+		echo "1. Start first time setup"
+		echo "2. Force update Jellyman"
+		echo "3. Import a jellyfin-backup.tar file"
 		echo
-	fi
-done
+		echo "Please select the number corresponding with the option you want to select."
+		read -p ">>> " optionNumber
+		echo
+		if [ $optionNumber -gt 3 ] || [ $optionNumber -lt 1 ]; then
+			optionNumber=
+			clear
+			echo "ERROR: Please input an available option!"
+			echo
+		fi
+	done
 
 
-case "$optionNumber" in
-	1)	Setup  ;;
-	2)	Update_jellyman ;;
-	3)	Import;;
-esac
-
+	case "$optionNumber" in
+		1)	Setup  ;;
+		2)	Update_jellyman ;;
+		3)	Import;;
+	esac
+fi
