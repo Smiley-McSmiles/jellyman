@@ -15,28 +15,27 @@ Has_sudo()
 	else
 		has_sudo_access="NO"
 		echo "$USER, you're not using sudo..."
-		echo "Please use 'sudo ./setup.sh' to install the scripts."
+		echo "Please use 'sudo ./setup.sh' to install Jellyfin and Jellyman."
 		exit
 	fi
 }
 
 Import()
 {
-	Has_sudo
 	importTar=
-	while [ ! -f $importTar ]; do
+	while [[ ! -f $importTar ]]; do
 		echo "Please enter the path to the jellyfin-backup.tar archive."
-		read -p ">>> "importTar
+		read -p ">>> " importTar
 	done
 	
-	echo "+-------------------------------------------------------------------+"
-	echo "|                        ******WARNING******                        |"
-	echo "|                        ******CAUTION******                        |"
-	echo "|This procedure should only be used as a fresh install of Jellyfin. |"
-	echo "|       As this procedure will erase /opt/jellyfin COMPLETELY       |"
-	echo "+-------------------------------------------------------------------+"
+	echo "+--------------------------------------------------------------------+"
+	echo "|                        ******WARNING******                         |"
+	echo "|                        ******CAUTION******                         |"
+	echo "| This procedure should only be used as a fresh install of Jellyfin. |"
+	echo "|       As this procedure will erase /opt/jellyfin COMPLETELY        |"
+	echo "+--------------------------------------------------------------------+"
 
-	read -p "...Continue? [yes/No] :" importOrNotToImport
+	read -p "...Continue? [yes/No] : " importOrNotToImport
 	if [[ $importOrNotToImport == [yY][eE][sS] ]] || [[ $importOrNotToImport == [yY] ]]; then
 		echo "IMPORTING $importTar"
 		jellyman -S
@@ -66,10 +65,11 @@ Import()
 			echo "|                          'ls -l /opt/jellyfin/config/jellyman.conf'                           |"
 			echo "+-----------------------------------------------------------------------------------------------+"
 			sleep 5
-			read -p "...Create user $defaultUser? [yes/No] :" newUserOrOld
+			read -p "...Create user $defaultUser? [yes/No] : " newUserOrOld
 			if [[ $newUserOrOld == [yY][eE][sS] ]] || [[ $newUserOrOld == [yY] ]]; then
 				echo "Great!"
 				sleep .5
+				useradd -rd /opt/jellyfin $defaultUser
 				chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
 				chmod -Rfv 770 /opt/jellyfin
 				Install_dependancies
@@ -94,7 +94,35 @@ Import()
 
 	else
 		echo "Returning..."
-	fi	 
+	fi
+
+	echo "Unblocking port $httpPort and $httpsPort..."
+	if [ -x "$(command -v ufw)" ]; then
+		ufw allow $httpPort/tcp
+		ufw allow $httpsPort/tcp
+		ufw reload
+	elif [ -x "$(command -v firewall-cmd)" ]; then
+		firewall-cmd --permanent --zone=public --add-port=$httpPort/tcp
+		firewall-cmd --permanent --zone=public --add-port=$httpsPort/tcp
+		firewall-cmd --reload
+	else
+		echo "+-------------------------------------------------------------------+"
+		echo "|                        ******WARNING******                        |"
+		echo "|                         ******ERROR******                         |"
+		echo "|                  FAILED TO OPEN PORT $httpPort/$httpsPort!                   |"
+		echo "|          ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!          |"
+		echo "+-------------------------------------------------------------------+"
+	fi
+
+	
+	read -p "Would you like to remove the cloned git directory $DIRECTORY? [Y/n] : " deleteOrNot
+	if [[ $deleteOrNot == [nN] ]] || [[ $deleteOrNot == [nN][oO] ]]; then
+		echo "Okay, keeping $DIRECTORY"
+	else
+		echo "Removing cloned git directory:$DIRECTORY..."
+		rm -rf $DIRECTORY
+	fi
+
 }
 
 Get_Architecture()
@@ -249,7 +277,6 @@ Previous_install()
 
 Setup()
 {
-	Has_sudo
 	echo "Fetching newest stable Jellyfin version..."
 	Get_Architecture
 	jellyfin=
@@ -301,24 +328,25 @@ Setup()
 	
 	sed -ie "s|User.*|User=$defaultUser|g" $jellyfinServiceLocation/jellyfin.service
 	cp $DIRECTORY/conf/jellyfin.conf /etc/
-	cd /opt/jellyfin
+	jellyfinDir=/opt/jellyfin
+	jellyfinConfigFile=$jellyfinDir/config/jellyman.conf
 	tar xvzf $DIRECTORY/$jellyfin_archive
-	mv -f /opt/jellyfin/jellyfin /opt/jellyfin/$jellyfin
-	ln -s $jellyfin jellyfin
-	echo "architecture=$architecture" >> config/jellyman.conf
-	echo "defaultPath=" >> config/jellyman.conf
-	echo "apiKey=" >> config/jellyman.conf
-	echo "httpPort=8096" >> config/jellyman.conf
-	echo "httpsPort=8920" >> config/jellyman.conf
-	echo "currentVersion=$jellyfin" >> config/jellyman.conf
-	echo "defaultUser=$defaultUser" >> config/jellyman.conf
-	echo "jellyfinServiceLocation=$jellyfinServiceLocation" >> config/jellyman.conf
+	mv -f $DIRECTORY/jellyfin /opt/jellyfin/$jellyfin
+	ln -s $jellyfinDir/$jellyfin $jellyfinDir/jellyfin
+	echo "architecture=$architecture" >> $jellyfinConfigFile
+	echo "defaultPath=" >> $jellyfinConfigFile
+	echo "apiKey=" >> $jellyfinConfigFile
+	echo "httpPort=8096" >> $jellyfinConfigFile
+	echo "httpsPort=8920" >> $jellyfinConfigFile
+	echo "currentVersion=$jellyfin" >> $jellyfinConfigFile
+	echo "defaultUser=$defaultUser" >> $jellyfinConfigFile
+	echo "jellyfinServiceLocation=$jellyfinServiceLocation" >> $jellyfinConfigFile
 
 	Install_dependancies
 
 	echo "Setting Permissions for Jellyfin..."
 	chown -R $defaultUser:$defaultUser /opt/jellyfin
-	chmod u+x jellyfin.sh
+	chmod u+x $jellyfinDir/jellyfin.sh
 	chmod +x /bin/jellyman
 
 	echo "Unblocking port 8096 and 8920..."
@@ -376,7 +404,7 @@ Setup()
 	jellyman -t
 	echo
 	read -p "Would you like to remove the cloned git directory $DIRECTORY? [Y/n] : " deleteOrNot
-	if [[ $deleteOrNot == [nN]* ]]; then
+	if [[ $deleteOrNot == [nN] ]] || [[ $deleteOrNot == [nN][oO] ]]; then
 		echo "Okay, keeping $DIRECTORY"
 	else
 		echo "Removing cloned git directory:$DIRECTORY..."
@@ -386,7 +414,6 @@ Setup()
 
 Update_jellyman()
 {
-	Has_sudo
 	sourceFile=/opt/jellyfin/config/jellyman.conf
 	source $sourceFile
 	echo "Updating Jellyman - The Jellyfin Manager"
@@ -431,8 +458,18 @@ Update_jellyman()
 	sed -ie "s|User.*|User=$defaultUser|g" $jellyfinServiceLocation/jellyfin.service
 
 	echo "...complete"
+
+	read -p "Would you like to remove the cloned git directory $DIRECTORY? [Y/n] : " deleteOrNot
+	if [[ $deleteOrNot == [nN] ]] || [[ $deleteOrNot == [nN][oO] ]]; then
+		echo "Okay, keeping $DIRECTORY"
+	else
+		echo "Removing cloned git directory:$DIRECTORY..."
+		rm -rf $DIRECTORY
+	fi
+
 }
 
+Has_sudo
 optionNumber=
 while [[ ! -n $optionNumber ]]; do	
 	echo "1. Start first time setup"
@@ -453,11 +490,7 @@ done
 
 case "$optionNumber" in
 	1)	Setup  ;;
-	2)	Update_jellyman
-			rm -rf $DIRECTORY
-			exit ;;
-	3)	Import
-			rm -rf $DIRECTORY
-			exit ;;
+	2)	Update_jellyman ;;
+	3)	Import;;
 esac
 

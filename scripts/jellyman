@@ -9,6 +9,7 @@ sourceFile="/opt/jellyfin/config/jellyman.conf"
 Backup()
 {
 	Has_sudo
+	source $sourceFile
 	# Backup /opt/jellyfin to passed directory
 	backupDirectory="$1"
 	tarPath=
@@ -46,26 +47,28 @@ Backup()
 
 Backup_auto()
 {
+	Has_sudo
+	source $sourceFile
 	if [[ ! -n $backupDir ]]; then
-		echo "ERROR: AUTO-BACKUPS HAS NOT BEEN SETUP. PLEASE RUN 'jellyman -bu'"
+		echo "ERROR: AUTO-BACKUPS HAVE NOT BEEN SETUP. PLEASE RUN 'jellyman -bu'"
 		exit
 	else
 		jellyman -b "$backupDir"
 		chown -Rf $defaultUser:$defaultUser "$backupDir/*.tar"
 
-		tarList=$(ls -1 "$backupDir/*.tar")
+		tarList=$(ls -1 "$backupDir"/*.tar)
 		newestTar=$(echo "$tarList" | tail -n 1)
 		oldestTar=$(echo "$tarList" | head -n 1)
-		tarCount=$( | wc -l)
+		tarCount=$(echo "$tarList" | wc -l)
 
 		if [[ $tarCount -gt $maxBackupNumber ]]; then
 			echo "More than $maxBackupNumber backups..."
 			echo "Removing $oldestTar"
-			echo "NewBacup=$newestTar"
+			# echo "NewBackup=$newestTar"
 			rm -f "$oldestTar"
 		else
-			echo "Less than $maxBackupNumber backups..."
-			echo "NewBacup=$newestTar"
+			# echo "Less than $maxBackupNumber backups..."
+			# echo "NewBackup=$newestTar"
 			exit
 		fi	
 	fi
@@ -73,9 +76,11 @@ Backup_auto()
 
 Backup_utility()
 {
+	Has_sudo
+	source $sourceFile
 	optionNumber=
 
-	while [[ ! -n $backupDir ]]; do
+	while [ ! -d $backupDir ]; do
 		echo "Please enter your desired directory for backup archives"
 		read -p ">>> " backupDir
 		echo "backupDir=$backupDir" >> $sourceFile
@@ -86,7 +91,7 @@ Backup_utility()
 
 	while [[ ! -n $optionNumber ]]; do	
 		echo "1. Enable automatic backups"
-		echo "2. disable automatic backups"
+		echo "2. Disable automatic backups"
 		echo "3. Change backup folder"
 		echo "4. Change max backups"
 		echo "5. Change frequency of backups"
@@ -141,15 +146,16 @@ Backup_utility()
 				echo
 			fi
 		done
-
+		
+		jellyfinBackupTimer=/usr/lib/systemd/system/jellyfin-backup.timer
 		if [[ $_optionNumber == 1 ]]; then
-			sed -ie "s|OnCalendar.*|OnCalendar=*-*-* 01:00:00|g" /usr/lib/systemd/system/jellyfin.timer
+			sed -ie "s|OnCalendar.*|OnCalendar=*-*-* 01:00:00|g" $jellyfinBackupTimer
 			echo "Backups will now created every day at 1:00 AM"
 		elif [[ $_optionNumber == 2 ]]; then
-			sed -ie "s|OnCalendar.*|OnCalendar=Sun *-*-* 01:00:00|g" /usr/lib/systemd/system/jellyfin.timer
+			sed -ie "s|OnCalendar.*|OnCalendar=Sun *-*-* 01:00:00|g" $jellyfinBackupTimer
 			echo "Backups will now created every Sunday at 1:00 AM"
 		elif [[ $_optionNumber == 3 ]]; then
-			sed -ie "s|OnCalendar.*|OnCalendar=*-*-01 01:00:00|g" /usr/lib/systemd/system/jellyfin.timer
+			sed -ie "s|OnCalendar.*|OnCalendar=*-*-01 01:00:00|g" $jellyfinBackupTimer
 			echo "Backups will now created on the 1st of every month at 1:00 AM"
 		fi
 		
@@ -280,6 +286,7 @@ Download_version()
 Version_switch()
 {
 	Has_sudo
+	source $sourceFile
 	versionToSwitchNumber=0
 	installedVersions=$(ls /opt/jellyfin/ | grep "_")
 	installedVersionsClean=$(echo "$installedVersions" | sed -r "s|j|J|g" | sed -r "s|_| v|g")
@@ -315,6 +322,7 @@ Version_switch()
 Remove_version()
 {
 	Has_sudo
+	source $sourceFile
 	versionToRemoveNumber=0
 	versionToRemove=""
 	installedVersions=$(ls /opt/jellyfin/ | grep "_")
@@ -351,6 +359,7 @@ before removing $versionToRemove"
 Import()
 {
 	Has_sudo
+	source $sourceFile
 	importTar=$1
 	echo "+-------------------------------------------------------------------+"
 	echo "|                        ******WARNING******                        |"
@@ -711,6 +720,7 @@ Is_jellyfin_setup()
 Recertify_https()
 {
 	Has_sudo
+	source $sourceFile
 	echo "+------------------------------------------------------+"
 	echo "|  Creating OpenSSL self signed certificate for https. |"
 	echo "|             Valid for the next 365 days.             |"
@@ -824,6 +834,7 @@ Rename_tv()
 Uninstall()
 {
 	Has_sudo
+	source $sourceFile
 	echo "|-------------------------------------------------------------------|"
 	echo "|                        ******WARNING******                        |"
 	echo "|                        ******CAUTION******                        |"
@@ -837,7 +848,6 @@ Uninstall()
 		echo "Goodbye..."
 		echo "Removing Jellyfin and Jellyman in:"
 		Countdown 5
-		source $sourceFile
 			echo "Blocking port 8096 and 8920..."
 		if [ -x "$(command -v ufw)" ]; then
 			ufw deny 8096/tcp
@@ -856,6 +866,7 @@ Uninstall()
 			echo "|-------------------------------------------------------------------|"
 		fi
 		jellyman -d -S
+		systemctl disable --now jellyfin-backup.timer
 		rm -fv /etc/jellyfin.conf $jellyfinServiceLocation/jellyfin*
 		rm -rfv /opt/jellyfin
 		userdel -f $defaultUser
@@ -876,6 +887,8 @@ Kill_job()
 
 Dev_func()
 {
+	Has_sudo
+	source $sourceFile
 	_func=$1
 	$1
 }
@@ -1154,6 +1167,7 @@ Change_Media_Directory()
 			continue=false
 		else
 			warning="ERROR: Make sure each input is a directory!"
+			exit
 		fi
 	done
 
@@ -1235,7 +1249,7 @@ Help()
 	echo "-tcs, --transcode-stop       Stop the current transcode process."
 	echo "-X, --uninstall              Uninstall Jellyfin and Jellyman Completely."
 	echo
-	echo "To browse Jellyfin versions please use this link."
+	echo "To browse Jellyfin archives please use this link."
 	echo "https://repo.jellyfin.org/files/server/linux/stable/"
 	echo
 	echo "EXAMPLE:"
