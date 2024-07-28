@@ -5,19 +5,15 @@ architecture=
 os_detected=
 currentJellyfinDirectory=null
 tarPath=
+sourceFile=/opt/jellyfin/config/jellyman.conf
 
 Has_sudo()
 {
-	has_sudo_access=""
-	`timeout -k .1 .1 bash -c "sudo /bin/chmod --help" >&/dev/null 2>&1` >/dev/null 2>&1
-	if [ $? -eq 0 ];then
-		has_sudo_access="YES"
-	else
-		has_sudo_access="NO"
+	if [ "$EUID" -ne 0 ]; then
 		echo "$USER, you're not using sudo..."
-		echo "Please use 'sudo ./setup.sh' to install Jellyfin and Jellyman."
+		echo "Please use 'sudo jellyman -[COMMAND] [PARAMETERS]'"
 		exit
-	fi
+    	fi
 }
 
 Import()
@@ -29,46 +25,45 @@ Import()
 	done
 	
 	echo "+--------------------------------------------------------------------+"
-	echo "|                        ******WARNING******                         |"
 	echo "|                        ******CAUTION******                         |"
-	echo "| This procedure should only be used as a fresh install of Jellyfin. |"
-	echo "|       As this procedure will erase /opt/jellyfin COMPLETELY        |"
+	echo "|      This import procedurewill erase /opt/jellyfin COMPLETELY      |"
 	echo "+--------------------------------------------------------------------+"
 
-	read -p "...Continue? [yes/No] : " importOrNotToImport
+	echo "Import $importTar?"
+	read -p ">>> [yes/No] :" importOrNotToImport
 	if [[ $importOrNotToImport == [yY][eE][sS] ]] || [[ $importOrNotToImport == [yY] ]]; then
 		echo "IMPORTING $importTar"
 		jellyman -S
 		rm -rf /opt/jellyfin
 		tar xvf $importTar -C /
 		clear
-		source /opt/jellyfin/config/jellyman.conf
+		source $sourceFile
 		mv -f /opt/jellyfin/backup/jellyman /usr/bin/
 		chmod +rx /usr/bin/jellyman
 		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/
 		mv -f /opt/jellyfin/backup/jellyfin-backup.timer $jellyfinServiceLocation/
+		systemctl daemon-reload
 		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
-		if id "$defaultUser" &>/dev/null; then 
+		if id $defaultUser &>/dev/null; then 
 			chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
 			chmod -Rfv 770 /opt/jellyfin
 			Install_dependancies
-			jellyman -e -s -t
+			jellyman -e -s
 		else
 			clear
 			echo "+-----------------------------------------------------------------------------------------------+"
-			echo "|                                     ******WARNING******                                       |"
 			echo "|                                     *******ERROR*******                                       |"
 			echo "|          The imported default Jellyfin user($defaultUser) has not yet been created.           |"
-			echo "|    This error is likely due to a read error of the /opt/jellyfin/config/jellyman.conf file.   |"
+			echo "|              This error is likely due to a read error of the $sourceFile file.                |"
 			echo "| The default user is usually created by Jellyman - The Jellyfin Manager, when running setup.sh.|"
 			echo "|                   You may want to see who owns that configuration file with:                  |"
 			echo "|                          'ls -l /opt/jellyfin/config/jellyman.conf'                           |"
 			echo "+-----------------------------------------------------------------------------------------------+"
 			sleep 5
-			read -p "...Create user $defaultUser? [yes/No] : " newUserOrOld
+			echo "Would you like to create the LINUX user $defaultUser?"
+			read -p ">>> [yes/No] : " newUserOrOld
 			if [[ $newUserOrOld == [yY][eE][sS] ]] || [[ $newUserOrOld == [yY] ]]; then
 				echo "Great!"
-				sleep .5
 				useradd -rd /opt/jellyfin $defaultUser
 				chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
 				chmod -Rfv 770 /opt/jellyfin
@@ -94,6 +89,8 @@ Import()
 
 	else
 		echo "Returning..."
+		return 0
+		exit
 	fi
 
 	echo "Unblocking port $httpPort and $httpsPort..."
@@ -121,6 +118,7 @@ Import()
 	else
 		echo "Removing cloned git directory:$DIRECTORY..."
 		rm -rf $DIRECTORY
+		cd ~/
 	fi
 
 }
@@ -211,7 +209,7 @@ Backup()
 	time tar cvf $tarPath data config
 	USER=$(stat -c '%U' $backupDirectory)
 	chown -f $USER:$USER $tarPath
-	chmod -f 660 $tarPath
+	chmod -f 770 $tarPath
 }
 
 
@@ -268,10 +266,10 @@ Previous_install()
 			fi
 			
 		done
-	
-	Backup $HOME
-	cd /opt/jellyfin
-	tar xvf $tarPath -C ./
+		
+		Backup $HOME
+		cd /opt/jellyfin
+		tar xvf $tarPath -C ./
 	
 	fi
 }
@@ -315,7 +313,7 @@ Setup()
 
 	cp $DIRECTORY/scripts/jellyman /usr/bin/
 	cp $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/
-	touch /opt/jellyfin/config/jellyman.conf
+	touch $sourceFile
 	jellyfinServiceLocation=
 	
 	if [ -d /usr/lib/systemd/system ]; then
@@ -369,25 +367,26 @@ Setup()
 		echo "+-------------------------------------------------------------------+"
 	fi
 
-	echo
-	echo
-	echo "DONE"
-	echo
-	echo "+-------------------------------------------------------------------+"
-	echo "|                 Navigate to http://localhost:8096/                |"
-	echo "|         in your Web Browser to claim your Jellyfin server         |"
-	echo "+-------------------------------------------------------------------+"
-	echo
-	echo "+-------------------------------------------------------------------+"
-	echo "|         To enable https please enter 'sudo jellyman -rc'          |"
-	echo "|       (After you have navigated to the Jellyfin Dashboard)        |"
-	echo "|                                                                   |"
-	echo "|                To manage Jellyfin use 'jellyman -h'               |"
-	echo "+-------------------------------------------------------------------+"
-	echo
 	if $os_detected; then
+		jellyman -e -s
+		echo
+		echo
+		echo "DONE"
+		echo
+		echo "+-------------------------------------------------------------------+"
+		echo "|                 Navigate to http://localhost:8096/                |"
+		echo "|         in your Web Browser to claim your Jellyfin server         |"
+		echo "+-------------------------------------------------------------------+"
+		echo
+		echo "+-------------------------------------------------------------------+"
+		echo "|         To enable https please enter 'sudo jellyman -rc'          |"
+		echo "|       (After you have navigated to the Jellyfin Dashboard)        |"
+		echo "|                                                                   |"
+		echo "|                To manage Jellyfin use 'jellyman -h'               |"
+		echo "+-------------------------------------------------------------------+"
+		echo
 		read -p "Press ENTER to continue" ENTER
-		jellyman -h -e -s
+		jellyman -h
 	else
 		jellyman -h 
 		echo "+-------------------------------------------------------------------+"
@@ -400,7 +399,6 @@ Setup()
 		echo "+-------------------------------------------------------------------+"
 	fi
 	echo
-	read -p " Press ENTER to continue" ENTER
 	echo "Press 'q' to exit next screen"
 	read -p " Press ENTER to continue" ENTER
 	jellyman -t
@@ -412,12 +410,12 @@ Setup()
 	else
 		echo "Removing cloned git directory:$DIRECTORY..."
 		rm -rf $DIRECTORY
+		cd ~/
 	fi
 }
 
 Update_jellyman()
 {
-	sourceFile=/opt/jellyfin/config/jellyman.conf
 	source $sourceFile
 	echo "Updating Jellyman - The Jellyfin Manager"
 	cp -f $DIRECTORY/scripts/jellyman /usr/bin/jellyman
@@ -425,6 +423,8 @@ Update_jellyman()
 	chmod +rx /usr/bin/jellyman
 	cp $DIRECTORY/conf/jellyfin.service /usr/lib/systemd/system/
 	
+	# deletes all empty lines in $sourcefile
+	sed -ie '/^ *$/d' $sourceFile
 	if [ ! -f $jellyfinServiceLocation/jellyfin-backup.timer ]; then
 		cp $DIRECTORY/conf/jellyfin-backup.service /usr/lib/systemd/system/
 		cp $DIRECTORY/conf/jellyfin-backup.timer /usr/lib/systemd/system/
@@ -438,15 +438,14 @@ Update_jellyman()
 		cp $DIRECTORY/jellyman.1 /usr/local/share/man/man1/
 	fi
 	
-	if ( ! grep -q apiKey= "/opt/jellyfin/config/jellyman.conf" ); then
-		echo "apiKey=" >> /opt/jellyfin/config/jellyman.conf
+	if ( ! grep -q apiKey= "$sourceFile" ); then
+		echo "apiKey=" >> $sourceFile
 	fi
 
-	if ( ! grep -q networkPort= "/opt/jellyfin/config/jellyman.conf" ) && ( ! grep -q httpPort= "/opt/jellyfin/config/jellyman.conf" ); then
-		echo "networkPort=8096" >> /opt/jellyfin/config/jellyman.conf
-	elif ( ! grep -q httpPort= "/opt/jellyfin/config/jellyman.conf" ) || ( ! grep -q httpsPort= "/opt/jellyfin/config/jellyman.conf" ); then
-		sed -i -e "s|networkPort=.*|httpPort=8096|g" /opt/jellyfin/config/jellyman.conf
-		echo "httpsPort=8920" >> /opt/jellyfin/config/jellyman.conf
+	if ( ! grep -q httpPort= "$sourceFile" ) || ( ! grep -q httpsPort= "$sourceFile" ); then
+		sed -ie "s|networkPort=.*|httpPort=8096|g" $sourceFile
+		echo "httpsPort=8920" >> $sourceFile
+		sed -ie "/networkPort/d" $sourceFile
 	fi
 	
 	if [ -d /usr/lib/systemd ] && [[ ! -n $jellyfinServiceLocation ]]; then
@@ -459,16 +458,16 @@ Update_jellyman()
 
 	if [ -d /usr/lib/systemd ]; then
 		jellyfinServiceLocation="/usr/lib/systemd/system"
-		sed -ie "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" /opt/jellyfin/config/jellyman.conf
+		sed -ie "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" $sourceFile
 	elif [[ ! -n $jellyfinServiceLocation ]]; then
 		jellyfinServiceLocation="/etc/systemd/system"
-		sed -ie "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" /opt/jellyfin/config/jellyman.conf
+		sed -ie "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" $sourceFile
 	fi
 
 	if [[ ! -n $architecture ]]; then
 		architecture=
 		Get_Architecture
-		echo "architecture=$architecture" >> /opt/jellyfin/config/jellyman.conf
+		echo "architecture=$architecture" >> $sourceFile
 	fi
 
 
@@ -479,9 +478,11 @@ Update_jellyman()
 	else
 		echo "Removing cloned git directory:$DIRECTORY..."
 		rm -rf $DIRECTORY
+		cd ~/
 	fi
 
 	echo "...complete"
+	
 }
 
 Has_sudo
