@@ -446,7 +446,7 @@ Update_jellyman()
 		echo "jellyfinServiceLocation=$jellyfinServiceLocation" >> $sourceFile
 	fi
 
-	if [ -d /usr/lib/systemd ] && [[ ! -n $jellyfinServiceLocation ]]; then
+	if [ -d /usr/lib/systemd ]; then
 		jellyfinServiceLocation="/usr/lib/systemd/system"
 		sed -ie "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" /opt/jellyfin/config/jellyman.conf
 	elif [[ ! -n $jellyfinServiceLocation ]]; then
