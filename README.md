@@ -251,9 +251,8 @@ EXAMPLE:
 git clone https://github.com/Smiley-McSmiles/jellyman
 cd jellyman
 chmod ug+x setup.sh
-sudo ./setup.sh
+sudo ./setup.sh -U
 ```
-**Then choose option #3**
 
 ### License
 
