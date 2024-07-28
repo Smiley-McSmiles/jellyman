@@ -86,10 +86,17 @@ Backup_utility()
 	while [[ ! -d $backupDir ]]; do
 		echo "Please enter your desired directory for backup archives"
 		read -p ">>> " backupDir
-		echo "backupDir=$backupDir" >> $sourceFile
 		echo "Please enter your desired maximum number of backup archives"
 		read -p ">>> " maxBackupNumber
-		echo "maxBackupNumber=$maxBackupNumber" >> $sourceFile
+		if [[ -d $backupDir ]] && [ $maxBackupNumber -gt 0 ] && [ $maxBackupNumber -lt 20 ]; then
+			echo "backupDir=$backupDir" >> $sourceFile
+			echo "maxBackupNumber=$maxBackupNumber" >> $sourceFile
+		else
+			backupDir=
+			maxBackupNumber=
+			echo "WARNING: Either your backup directory is not a valid directory"
+			echo "WARNING: Or the maximum number of backups is less than 0 or greater than 20."
+		fi
 	done
 
 	while [[ ! -n $optionNumber ]]; do	
