@@ -2,4 +2,6 @@
 Description="Jellyfin Backup"
 
 [Service]
+Type=oneshot
 ExecStart=/usr/bin/jellyman -ba
+

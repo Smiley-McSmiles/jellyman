@@ -27,6 +27,7 @@ Backup()
 		echo "$tarPath"
 	fi
 
+	echo "Running backup, this may take some time..."
 	time tar cvf "$tarPath" /opt/jellyfin
 	USER1=$(stat -c '%U' "$backupDirectory")
 	chown -f $USER1:$USER1 "$tarPath"
@@ -43,6 +44,8 @@ Backup()
 	echo "Your backup is:"
 	tarSize=$(du -h "$tarPath")
 	echo "Size: $tarSize"
+	return 0
+	exit
 }
 
 Backup_auto()
