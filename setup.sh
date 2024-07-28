@@ -44,7 +44,7 @@ Import()
 		clear
 		source /opt/jellyfin/config/jellyman.conf
 		mv -f /opt/jellyfin/backup/jellyman /usr/bin/
-		chmod +x /usr/bin/jellyman
+		chmod +rx /usr/bin/jellyman
 		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/
 		mv -f /opt/jellyfin/backup/jellyfin-backup.timer $jellyfinServiceLocation/
 		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
@@ -257,7 +257,8 @@ Previous_install()
 			
 			if ! $isDataThere || ! $isConfigThere; then
 				echo "***ERROR*** - one or more directories not found..."
-				read -p "Would you like to try a different directory? [Y/n] : " newDirectory
+				echo "Would you like to try a different directory?"
+				read -p ">>> [Y/n] : " newDirectory
 				
 				if [[ $newDirectory == [nN] ]]; then
 					exit
@@ -294,11 +295,12 @@ Setup()
 	mkdir /opt/jellyfin /opt/jellyfin/old /opt/jellyfin/backup /opt/jellyfin/data /opt/jellyfin/cache /opt/jellyfin/config /opt/jellyfin/log /opt/jellyfin/cert
 	clear
 	Previous_install
-
-	read -p "Please enter the default user for Jellyfin: " defaultUser
+	echo "Please enter the default user for Jellyfin"
+	read -p ">>> " defaultUser
 	while id "$defaultUser" &>/dev/null; do
 		echo "Cannot create $defaultUser as $defaultUser already exists..."
-		read -p "Please re-enter a new default user for Jellyfin: " defaultUser
+		echo "Please re-enter a new default user for Jellyfin"
+		read -p ">>> " defaultUser
 	done
 	
 	defaultUser=${defaultUser,,}
@@ -311,7 +313,7 @@ Setup()
 		cp $DIRECTORY/jellyman.1 /usr/local/share/man/man1/
 	fi
 
-	cp $DIRECTORY/scripts/jellyman /bin/
+	cp $DIRECTORY/scripts/jellyman /usr/bin/
 	cp $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/
 	touch /opt/jellyfin/config/jellyman.conf
 	jellyfinServiceLocation=
@@ -347,7 +349,7 @@ Setup()
 	echo "Setting Permissions for Jellyfin..."
 	chown -R $defaultUser:$defaultUser /opt/jellyfin
 	chmod u+x $jellyfinDir/jellyfin.sh
-	chmod +x /bin/jellyman
+	chmod +rx /usr/bin/jellyman
 
 	echo "Unblocking port 8096 and 8920..."
 	if [ -x "$(command -v ufw)" ]; then
@@ -403,7 +405,8 @@ Setup()
 	read -p " Press ENTER to continue" ENTER
 	jellyman -t
 	echo
-	read -p "Would you like to remove the cloned git directory $DIRECTORY? [Y/n] : " deleteOrNot
+	echo "Would you like to remove the cloned git directory $DIRECTORY?"
+	read -p ">>> [Y/n] : " deleteOrNot
 	if [[ $deleteOrNot == [nN] ]] || [[ $deleteOrNot == [nN][oO] ]]; then
 		echo "Okay, keeping $DIRECTORY"
 	else
@@ -419,7 +422,10 @@ Update_jellyman()
 	echo "Updating Jellyman - The Jellyfin Manager"
 	cp -f $DIRECTORY/scripts/jellyman /usr/bin/jellyman
 	cp -f $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/jellyfin.sh
-	chmod +x /usr/bin/jellyman
+	chmod +rx /usr/bin/jellyman
+	cp $DIRECTORY/conf/jellyfin.service /usr/lib/systemd/system/
+	cp $DIRECTORY/conf/jellyfin-backup* /usr/lib/systemd/system/
+	sed -ie "s|User.*|User=$defaultUser|g" $jellyfinServiceLocation/jellyfin.service
 	
 	if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
 		cp $DIRECTORY/jellyman.1 /usr/share/man/man1/
@@ -460,14 +466,9 @@ Update_jellyman()
 		echo "architecture=$architecture" >> /opt/jellyfin/config/jellyman.conf
 	fi
 
-	source $sourceFile
-	cp $DIRECTORY/conf/jellyfin.service /usr/lib/systemd/system/
-	cp $DIRECTORY/conf/jellyfin-backup* /usr/lib/systemd/system/
-	sed -ie "s|User.*|User=$defaultUser|g" $jellyfinServiceLocation/jellyfin.service
 
-	echo "...complete"
-
-	read -p "Would you like to remove the cloned git directory $DIRECTORY? [Y/n] : " deleteOrNot
+	echo "Would you like to remove the cloned git directory $DIRECTORY?"
+	read -p ">>> [Y/n] : " deleteOrNot
 	if [[ $deleteOrNot == [nN] ]] || [[ $deleteOrNot == [nN][oO] ]]; then
 		echo "Okay, keeping $DIRECTORY"
 	else
@@ -475,6 +476,7 @@ Update_jellyman()
 		rm -rf $DIRECTORY
 	fi
 
+	echo "...complete"
 }
 
 Has_sudo
