@@ -374,14 +374,20 @@ Import()
 	Has_sudo
 	source $sourceFile
 	importTar=$1
-	echo "+-------------------------------------------------------------------+"
-	echo "|                        ******WARNING******                        |"
-	echo "|                        ******CAUTION******                        |"
-	echo "|This procedure should only be used as a fresh install of Jellyfin. |"
-	echo "|       As this procedure will erase /opt/jellyfin COMPLETELY       |"
-	echo "+-------------------------------------------------------------------+"
 
-	echo "...Continue?"
+	while [[ ! -f $importTar ]]; do
+		echo "Please enter the path to the jellyfin-backup.tar archive."
+		read -p ">>> " importTar
+	done
+
+	echo "+--------------------------------------------------------------------+"
+	echo "|                        ******WARNING******                         |"
+	echo "|                        ******CAUTION******                         |"
+	echo "| This procedure should only be used as a fresh install of Jellyfin. |"
+	echo "|       As this procedure will erase /opt/jellyfin COMPLETELY        |"
+	echo "+--------------------------------------------------------------------+"
+
+	echo "Import $importTar?"
 	read -p ">>> [yes/No] :" importOrNotToImport
 	if [[ $importOrNotToImport == [yY][eE][sS] ]] || [[ $importOrNotToImport == [yY] ]]; then
 		echo "IMPORTING $importTar"
@@ -390,15 +396,14 @@ Import()
 		tar xvf $importTar -C /
 		clear
 		source $sourceFile
-		mv -f /opt/jellyfin/backup/jellyman /usr/bin/
-		chmod +x /usr/bin/jellyman
 		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/
 		mv -f /opt/jellyfin/backup/jellyfin-backup.timer $jellyfinServiceLocation/
+		systemctl daemon-reload
 		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
 		if id "$defaultUser" &>/dev/null; then 
 			chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
 			chmod -Rfv 770 /opt/jellyfin
-			jellyman -e -s -t
+			jellyman -e -s
 		else
 			clear
 			echo "+-----------------------------------------------------------------------------------------------+"
@@ -411,14 +416,13 @@ Import()
 			echo "|                          'ls -l /opt/jellyfin/config/jellyman.conf'                           |"
 			echo "+-----------------------------------------------------------------------------------------------+"
 			sleep 5
-			echo "...Create user $defaultUser?"
-			read -p ">>> [yes/No] :" newUserOrOld
+			echo "Would you like to create LINUX user $defaultUser?"
+			read -p ">>> [yes/No] : " newUserOrOld
 			if [[ $newUserOrOld == [yY][eE][sS] ]] || [[ $newUserOrOld == [yY] ]]; then
 				echo "Great!"
-				sleep .5
+				useradd -rd /opt/jellyfin $defaultUser
 				chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
 				chmod -Rfv 770 /opt/jellyfin
-				Install_dependancies
 				jellyman -s -t
 			else
 				echo "Please enter a new Linux user"
