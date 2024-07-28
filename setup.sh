@@ -75,10 +75,10 @@ Import()
 				Install_dependancies
 				jellyman -s -t
 			else
-				read -p "Please enter a new Linux user: " defaultUser
+				read -p "Please enter a new LINUX user: " defaultUser
 				while id "$defaultUser" &>/dev/null; do
 					  echo "Cannot create $defaultUser as $defaultUser already exists..."
-					  read -p "Please re-enter a new default Linux user for Jellyfin: " defaultUser
+					  read -p "Please re-enter a new LINUX user for Jellyfin: " defaultUser
 				 done
 		 
 				defaultUser=${defaultUser,,}
@@ -295,11 +295,11 @@ Setup()
 	mkdir /opt/jellyfin /opt/jellyfin/old /opt/jellyfin/backup /opt/jellyfin/data /opt/jellyfin/cache /opt/jellyfin/config /opt/jellyfin/log /opt/jellyfin/cert
 	clear
 	Previous_install
-	echo "Please enter the default user for Jellyfin"
+	echo "Please enter the LINUX user for Jellyfin"
 	read -p ">>> " defaultUser
 	while id "$defaultUser" &>/dev/null; do
 		echo "Cannot create $defaultUser as $defaultUser already exists..."
-		echo "Please re-enter a new default user for Jellyfin"
+		echo "Please re-enter a new LINUX user for Jellyfin"
 		read -p ">>> " defaultUser
 	done
 	
