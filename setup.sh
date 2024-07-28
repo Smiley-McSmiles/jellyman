@@ -443,8 +443,11 @@ Update_jellyman()
 	fi
 
 	if ( ! grep -q httpPort= "$sourceFile" ) || ( ! grep -q httpsPort= "$sourceFile" ); then
-		sed -ie "s|networkPort=.*|httpPort=8096|g" $sourceFile
+		sed -ie "s|networkPort=|httpPort=|g" $sourceFile
 		echo "httpsPort=8920" >> $sourceFile
+	fi
+	
+	if  ( grep -q networkPort= "$sourceFile" ); then
 		sed -ie "/networkPort/d" $sourceFile
 	fi
 	
