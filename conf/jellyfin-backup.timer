@@ -1,0 +1,10 @@
+[Unit]
+Description="Run jellyfin-service.service once a week on Sunday"
+
+[Timer]
+OnCalendar=Sun *-*-* 01:00:00
+Persistent=true
+Unit=jellyfin-backup.service
+
+[Install]
+WantedBy=multi-user.target

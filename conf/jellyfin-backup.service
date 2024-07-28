@@ -1,0 +1,5 @@
+[Unit]
+Description="Jellyfin Backup"
+
+[Service]
+ExecStart=/usr/bin/jellyman -ba
