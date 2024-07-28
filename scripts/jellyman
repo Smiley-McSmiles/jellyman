@@ -80,7 +80,7 @@ Backup_utility()
 	source $sourceFile
 	optionNumber=
 
-	while [ ! -d $backupDir ]; do
+	while [[ ! -d $backupDir ]]; do
 		echo "Please enter your desired directory for backup archives"
 		read -p ">>> " backupDir
 		echo "backupDir=$backupDir" >> $sourceFile
