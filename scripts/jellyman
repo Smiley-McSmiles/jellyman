@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.7.5"
+jellymanVersion="v1.7.6"
 sourceFile="/opt/jellyfin/config/jellyman.conf"
 
 ###############################################################################
@@ -88,9 +88,10 @@ Backup_utility()
 		read -p ">>> " backupDir
 		echo "Please enter your desired maximum number of backup archives"
 		read -p ">>> " maxBackupNumber
-		if [[ -d $backupDir ]] && [ $maxBackupNumber -gt 0 ] && [ $maxBackupNumber -lt 20 ]; then
+		if [[ -d $backupDir ]] && [[ $maxBackupNumber -gt 0 ] && [ $maxBackupNumber -lt 20 ]; then
 			echo "backupDir=$backupDir" >> $sourceFile
 			echo "maxBackupNumber=$maxBackupNumber" >> $sourceFile
+			systemctl enable --now jellyfin-backup.timer
 		else
 			backupDir=
 			maxBackupNumber=
@@ -160,13 +161,13 @@ Backup_utility()
 		jellyfinBackupTimer=/usr/lib/systemd/system/jellyfin-backup.timer
 		if [[ $_optionNumber == 1 ]]; then
 			sed -ie "s|OnCalendar.*|OnCalendar=*-*-* 01:00:00|g" $jellyfinBackupTimer
-			echo "Backups will now created every day at 1:00 AM"
+			echo "Backups will now be created every day at 1:00 AM"
 		elif [[ $_optionNumber == 2 ]]; then
 			sed -ie "s|OnCalendar.*|OnCalendar=Sun *-*-* 01:00:00|g" $jellyfinBackupTimer
-			echo "Backups will now created every Sunday at 1:00 AM"
+			echo "Backups will now be created every Sunday at 1:00 AM"
 		elif [[ $_optionNumber == 3 ]]; then
 			sed -ie "s|OnCalendar.*|OnCalendar=*-*-01 01:00:00|g" $jellyfinBackupTimer
-			echo "Backups will now created on the 1st of every month at 1:00 AM"
+			echo "Backups will now be created on the 1st of every month at 1:00 AM"
 		fi
 		
 		systemctl daemon-reload

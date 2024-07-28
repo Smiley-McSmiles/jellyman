@@ -424,7 +424,12 @@ Update_jellyman()
 	cp -f $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/jellyfin.sh
 	chmod +rx /usr/bin/jellyman
 	cp $DIRECTORY/conf/jellyfin.service /usr/lib/systemd/system/
-	cp $DIRECTORY/conf/jellyfin-backup* /usr/lib/systemd/system/
+	
+	if [ ! -f $jellyfinServiceLocation/jellyfin-backup.timer ]; then
+		cp $DIRECTORY/conf/jellyfin-backup.service /usr/lib/systemd/system/
+		cp $DIRECTORY/conf/jellyfin-backup.timer /usr/lib/systemd/system/
+	fi
+	
 	sed -ie "s|User.*|User=$defaultUser|g" $jellyfinServiceLocation/jellyfin.service
 	
 	if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
