@@ -1,5 +1,6 @@
 #!/bin/bash
 DIRECTORY=$(cd `dirname $0` && pwd)
+source $DIRECTORY/scripts/base_functions.sh
 has_sudo_access=
 architecture=
 os_detected=
@@ -7,31 +8,17 @@ currentJellyfinDirectory=null
 tarPath=
 sourceFile=/opt/jellyfin/config/jellyman.conf
 
-Has_sudo()
-{
-	if [ "$EUID" -ne 0 ]; then
-		echo "$USER, you're not using sudo..."
-		echo "Please use 'sudo jellyman -[COMMAND] [PARAMETERS]'"
-		exit
-    	fi
-}
-
 Import()
 {
-	importTar=
-	while [[ ! -f $importTar ]]; do
-		echo "Please enter the path to the jellyfin-backup.tar archive."
-		read -p ">>> " importTar
-	done
-	
+	Prompt_user file "Please enter the path to the jellyfin-backup.tar archive."
+	importTar=$promptFile
+
 	echo "+--------------------------------------------------------------------+"
 	echo "|                        ******CAUTION******                         |"
 	echo "|      This import procedurewill erase /opt/jellyfin COMPLETELY      |"
 	echo "+--------------------------------------------------------------------+"
 
-	echo "Import $importTar?"
-	read -p ">>> [yes/No] :" importOrNotToImport
-	if [[ $importOrNotToImport == [yY][eE][sS] ]] || [[ $importOrNotToImport == [yY] ]]; then
+	if Prompt_user yN "Import $importTar?"; then
 		echo "IMPORTING $importTar"
 		jellyman -S
 		rm -rf /opt/jellyfin
@@ -39,7 +26,9 @@ Import()
 		clear
 		source $sourceFile
 		mv -f /opt/jellyfin/backup/jellyman /usr/bin/
+		mv -f /opt/jellyfin/backup/base_functions.sh /usr/bin/
 		chmod +rx /usr/bin/jellyman
+		chmod +rx /usr/bin/base_functions.sh
 		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/
 		mv -f /opt/jellyfin/backup/jellyfin-backup.timer $jellyfinServiceLocation/
 		systemctl daemon-reload
@@ -60,9 +49,7 @@ Import()
 			echo "|                          'ls -l /opt/jellyfin/config/jellyman.conf'                           |"
 			echo "+-----------------------------------------------------------------------------------------------+"
 			sleep 5
-			echo "Would you like to create the LINUX user $defaultUser?"
-			read -p ">>> [yes/No] : " newUserOrOld
-			if [[ $newUserOrOld == [yY][eE][sS] ]] || [[ $newUserOrOld == [yY] ]]; then
+			if Prompt_user yN "Would you like to create the LINUX user $defaultUser?"; then
 				echo "Great!"
 				useradd -rd /opt/jellyfin $defaultUser
 				chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
@@ -70,11 +57,8 @@ Import()
 				Install_dependancies
 				jellyman -s -t
 			else
-				read -p "Please enter a new LINUX user: " defaultUser
-				while id "$defaultUser" &>/dev/null; do
-					  echo "Cannot create $defaultUser as $defaultUser already exists..."
-					  read -p "Please re-enter a new LINUX user for Jellyfin: " defaultUser
-				 done
+				Prompt_user usr "Please enter a new LINUX user"
+				defaultUser=$promptUsr
 		 
 				defaultUser=${defaultUser,,}
 				echo "Linux user = $defaultUser"
@@ -99,8 +83,8 @@ Import()
 		ufw allow $httpsPort/tcp
 		ufw reload
 	elif [ -x "$(command -v firewall-cmd)" ]; then
-		firewall-cmd --permanent --zone=public --add-port=$httpPort/tcp
-		firewall-cmd --permanent --zone=public --add-port=$httpsPort/tcp
+		firewall-cmd --permanent --add-port=$httpPort/tcp
+		firewall-cmd --permanent --add-port=$httpsPort/tcp
 		firewall-cmd --reload
 	else
 		echo "+-------------------------------------------------------------------+"
@@ -112,15 +96,13 @@ Import()
 	fi
 
 	
-	read -p "Would you like to remove the cloned git directory $DIRECTORY? [Y/n] : " deleteOrNot
-	if [[ $deleteOrNot == [nN] ]] || [[ $deleteOrNot == [nN][oO] ]]; then
-		echo "Okay, keeping $DIRECTORY"
-	else
+	if Prompt_user Yn "Would you like to remove the cloned git directory $DIRECTORY?"; then
 		echo "Removing cloned git directory:$DIRECTORY..."
 		rm -rf $DIRECTORY
 		cd ~/
+	else
+		echo "Okay, keeping $DIRECTORY"
 	fi
-
 }
 
 Get_Architecture()
@@ -217,60 +199,53 @@ Previous_install()
 {
 	echo "WARNING: THIS OPTION IS HIGHLY UNSTABLE, ONLY USE IF YOU KNOW WHAT YOU'RE DOING!!!"
 	echo
-	read -p "Is Jellyfin CURRENTLY installed on this system? [y/N] : " currentlyInstalled
-
-	if [[ $currentlyInstalled == [yY] ]] || [[ $currentlyInstalled == [yY][eE][sS] ]]; then
+	if Prompt_user yN "Is Jellyfin CURRENTLY installed on this system?"; then
 		isDataThere=false
 		isConfigThere=false
 		newDirectory=false
+		Prompt_user dir "Where is Jellyfins intalled directory?"
+		currentJellyfinDirectory=$promptDir
 		
-		while [ ! -d $currentJellyfinDirectory ]; do
-			read -p "Where is Jellyfins intalled directory? : " currentJellyfinDirectory
-			
-			#systemFileXML=$(find $currentJellyfinDirectory -name "system.xml")
-			#configPath=$(echo $systemFileXML | sed -r "s|/system.xml||g")
-			#metadataPath=$(grep -o "<MetadataPath>.*" $systemFileXML | sed -r "s|<MetadataPath>||g" | sed -r "s|</MetadataPath>||g")
-			#if [[ $configPath != *"config" ]]; then
-			#	echo "'config' folder not found"
-			#else
-			#	
-			#fi
-			
-			if [ ! -d "$currentJellyfinDirectory/data/metadata" ]; then
-				echo "$currentJellyfinDirectory/data/metadata does not exist"
-				isDataThere=false
-			else
-				isDataThere=true
-				echo "Found metadata!"
-			fi
+		#systemFileXML=$(find $currentJellyfinDirectory -name "system.xml")
+		#configPath=$(echo $systemFileXML | sed -r "s|/system.xml||g")
+		#metadataPath=$(grep -o "<MetadataPath>.*" $systemFileXML | sed -r "s|<MetadataPath>||g" | sed -r "s|</MetadataPath>||g")
+		#if [[ $configPath != *"config" ]]; then
+		#	echo "'config' folder not found"
+		#else
+		#	
+		#fi
+		
+		if [ ! -d "$currentJellyfinDirectory/data/metadata" ]; then
+			echo "$currentJellyfinDirectory/data/metadata does not exist"
+			isDataThere=false
+		else
+			isDataThere=true
+			echo "Found metadata!"
+		fi
 
-			if [ ! -d "$currentJellyfinDirectory/config" ]; then
-				echo "$currentJellyfinDirectory/config does not exist"
-				isConfigThere=false
-			else
-				isConfigThere=true
-				echo "Found config!"
-			fi
+		if [ ! -d "$currentJellyfinDirectory/config" ]; then
+			echo "$currentJellyfinDirectory/config does not exist"
+			isConfigThere=false
+		else
+			isConfigThere=true
+			echo "Found config!"
+		fi
 
-			
-			if ! $isDataThere || ! $isConfigThere; then
-				echo "***ERROR*** - one or more directories not found..."
-				echo "Would you like to try a different directory?"
-				read -p ">>> [Y/n] : " newDirectory
-				
-				if [[ $newDirectory == [nN] ]]; then
-					exit
-				else
-					currentJellyfinDirectory=null
-				fi
+		
+		if ! $isDataThere || ! $isConfigThere; then
+			echo "***ERROR*** - one or more directories not found..."
+			if Prompt_user Yn "Would you like to try a different directory?"; then
+				currentJellyfinDirectory=null
+			else
+				exit
 			fi
-			
-		done
+		fi
 		
 		Backup $HOME
 		cd /opt/jellyfin
 		tar xvf $tarPath -C ./
-	
+	else
+		echo "Good call.."
 	fi
 }
 
@@ -293,12 +268,12 @@ Setup()
 	mkdir /opt/jellyfin /opt/jellyfin/old /opt/jellyfin/backup /opt/jellyfin/data /opt/jellyfin/cache /opt/jellyfin/config /opt/jellyfin/log /opt/jellyfin/cert
 	clear
 	Previous_install
-	echo "Please enter the LINUX user for Jellyfin"
-	read -p ">>> " defaultUser
+	Prompt_user usr "Please enter the LINUX user for Jellyfin"
+	defaultUser=$promptUsr
 	while id "$defaultUser" &>/dev/null; do
 		echo "Cannot create $defaultUser as $defaultUser already exists..."
-		echo "Please re-enter a new LINUX user for Jellyfin"
-		read -p ">>> " defaultUser
+		Prompt_user usr "Please re-enter a new LINUX user for Jellyfin"
+		defaultUser=$promptUsr
 	done
 	
 	defaultUser=${defaultUser,,}
@@ -312,6 +287,8 @@ Setup()
 	fi
 
 	cp $DIRECTORY/scripts/jellyman /usr/bin/
+	cp $DIRECTORY/scripts/base_functions.sh /usr/bin/
+	chmod +rx /usr/bin/base_functions.sh
 	cp $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/
 	touch $sourceFile
 	jellyfinServiceLocation=
@@ -326,7 +303,7 @@ Setup()
 		jellyfinServiceLocation="/etc/systemd/system"
 	fi
 	
-	sed -ie "s|User.*|User=$defaultUser|g" $jellyfinServiceLocation/jellyfin.service
+	sed -i "s|User.*|User=$defaultUser|g" $jellyfinServiceLocation/jellyfin.service
 	cp $DIRECTORY/conf/jellyfin.conf /etc/
 	jellyfinDir=/opt/jellyfin
 	jellyfinConfigFile=$jellyfinDir/config/jellyman.conf
@@ -403,14 +380,12 @@ Setup()
 	read -p " Press ENTER to continue" ENTER
 	jellyman -t
 	echo
-	echo "Would you like to remove the cloned git directory $DIRECTORY?"
-	read -p ">>> [Y/n] : " deleteOrNot
-	if [[ $deleteOrNot == [nN] ]] || [[ $deleteOrNot == [nN][oO] ]]; then
-		echo "Okay, keeping $DIRECTORY"
-	else
+	if Prompt_user Yn "Would you like to remove the cloned git directory $DIRECTORY?"; then
 		echo "Removing cloned git directory:$DIRECTORY..."
 		rm -rf $DIRECTORY
 		cd ~/
+	else
+		echo "Okay, keeping $DIRECTORY"
 	fi
 }
 
@@ -422,15 +397,19 @@ Update_jellyman()
 	cp -f $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/jellyfin.sh
 	chmod +rx /usr/bin/jellyman
 	cp $DIRECTORY/conf/jellyfin.service /usr/lib/systemd/system/
+	cp $DIRECTORY/scripts/base_functions.sh /usr/bin/
+	chmod +rx /usr/bin/base_functions.sh
 	
 	# deletes all empty lines in $sourcefile
 	sed -ie '/^ *$/d' $sourceFile
-	if [ ! -f $jellyfinServiceLocation/jellyfin-backup.timer ]; then
+	
+
+	if [[ ! -f $jellyfinServiceLocation/jellyfin-backup.timer ]]; then
 		cp $DIRECTORY/conf/jellyfin-backup.service /usr/lib/systemd/system/
 		cp $DIRECTORY/conf/jellyfin-backup.timer /usr/lib/systemd/system/
 	fi
 	
-	sed -ie "s|User.*|User=$defaultUser|g" $jellyfinServiceLocation/jellyfin.service
+	sed -i "s|User.*|User=$defaultUser|g" $jellyfinServiceLocation/jellyfin.service
 	
 	if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
 		cp $DIRECTORY/jellyman.1 /usr/share/man/man1/
@@ -443,15 +422,15 @@ Update_jellyman()
 	fi
 
 	if ( ! grep -q httpPort= "$sourceFile" ) || ( ! grep -q httpsPort= "$sourceFile" ); then
-		sed -ie "s|networkPort=|httpPort=|g" $sourceFile
+		sed -i "s|networkPort=|httpPort=|g" $sourceFile
 		echo "httpsPort=8920" >> $sourceFile
 	fi
 	
 	if  ( grep -q networkPort= "$sourceFile" ); then
-		sed -ie "/networkPort/d" $sourceFile
+		sed -i "/networkPort/d" $sourceFile
 	fi
 	
-	if [ -d /usr/lib/systemd ] && [[ ! -n $jellyfinServiceLocation ]]; then
+	if [[ -d /usr/lib/systemd ]] && [[ ! -n $jellyfinServiceLocation ]]; then
 		jellyfinServiceLocation="/usr/lib/systemd/system"
 		echo "jellyfinServiceLocation=$jellyfinServiceLocation" >> $sourceFile
 	elif [[ ! -n $jellyfinServiceLocation ]]; then
@@ -459,12 +438,12 @@ Update_jellyman()
 		echo "jellyfinServiceLocation=$jellyfinServiceLocation" >> $sourceFile
 	fi
 
-	if [ -d /usr/lib/systemd ]; then
+	if [[ -d /usr/lib/systemd ]]; then
 		jellyfinServiceLocation="/usr/lib/systemd/system"
-		sed -ie "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" $sourceFile
+		sed -i "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" $sourceFile
 	elif [[ ! -n $jellyfinServiceLocation ]]; then
 		jellyfinServiceLocation="/etc/systemd/system"
-		sed -ie "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" $sourceFile
+		sed -i "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" $sourceFile
 	fi
 
 	if [[ ! -n $architecture ]]; then
@@ -474,16 +453,13 @@ Update_jellyman()
 	fi
 
 
-	echo "Would you like to remove the cloned git directory $DIRECTORY?"
-	read -p ">>> [Y/n] : " deleteOrNot
-	if [[ $deleteOrNot == [nN] ]] || [[ $deleteOrNot == [nN][oO] ]]; then
-		echo "Okay, keeping $DIRECTORY"
-	else
+	if Prompt_user Yn "Would you like to remove the cloned git directory $DIRECTORY?"; then
 		echo "Removing cloned git directory:$DIRECTORY..."
 		rm -rf $DIRECTORY
 		cd ~/
+	else
+		echo "Okay, keeping $DIRECTORY"
 	fi
-
 	echo "...complete"
 	
 }
@@ -499,17 +475,10 @@ else
 		echo "2. Force update Jellyman"
 		echo "3. Import a jellyfin-backup.tar file"
 		echo
-		echo "Please select the number corresponding with the option you want to select."
-		read -p ">>> " optionNumber
+		Prompt_user num "Please select the number corresponding with the option you want to select." 1 3
+		optionNumber=$promptNum
 		echo
-		if [ $optionNumber -gt 3 ] || [ $optionNumber -lt 1 ]; then
-			optionNumber=
-			clear
-			echo "ERROR: Please input an available option!"
-			echo
-		fi
 	done
-
 
 	case "$optionNumber" in
 		1)	Setup  ;;
