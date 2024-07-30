@@ -397,6 +397,7 @@ Setup()
 
 Update_jellyman()
 {
+	_skip=$1
 	source $sourceFile
 	echo "> Updating Jellyman - The Jellyfin Manager"
 	cp -f $DIRECTORY/scripts/jellyman /usr/bin/jellyman
@@ -445,13 +446,18 @@ Update_jellyman()
 		Set_var architecture "$architecture" "$sourceFile" str
 	fi
 
-
-	if Prompt_user Yn "> Would you like to remove the cloned git directory $DIRECTORY?"; then
+	if [[ $_skip == "y" ]]; then
 		echo "> Removing cloned git directory:$DIRECTORY..."
 		rm -rf $DIRECTORY
 		cd ~/
 	else
-		echo "> Okay, keeping $DIRECTORY"
+		if Prompt_user Yn "> Would you like to remove the cloned git directory $DIRECTORY?"; then
+			echo "> Removing cloned git directory:$DIRECTORY..."
+			rm -rf $DIRECTORY
+			cd ~/
+		else
+			echo "> Okay, keeping $DIRECTORY"
+		fi
 	fi
 	echo "> ...complete"
 	
@@ -461,7 +467,7 @@ Has_sudo
 optionNumber=
 
 if [[ $1 == "-U" ]]; then
-	Update_jellyman
+	Update_jellyman y
 else
 	while [[ ! -n $optionNumber ]]; do
 		echo "1. Start first time setup"
