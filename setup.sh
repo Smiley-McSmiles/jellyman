@@ -146,20 +146,20 @@ Install_dependancies()
 		fi
 		
 			case "$ID" in
-				fedora)	  dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
+				fedora)	dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
 								dnf install $packagesNeededRHEL -y ;;
 				rhel)		 dnf install epel-release -y
 								dnf config-manager --set-enabled $crbOrPowertools
 								dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
 								dnf install $packagesNeededRHEL -y ;;
-				debian)	  apt install $packagesNeededDebian -y ;;
-				ubuntu)	  apt install $packagesNeededDebian -y ;;
-				linuxmint)  apt install $packagesNeededDebian -y ;;
+				debian)	apt install $packagesNeededDebian -y ;;
+				ubuntu)	apt install $packagesNeededDebian -y ;;
+				linuxmint) apt install $packagesNeededDebian -y ;;
 				elementary) apt install $packagesNeededDebian -y ;;
-				arch)		 pacman -Syu $packagesNeededArch  ;;
-				endeavouros) pacman -Syu $packagesNeededArch  ;;
-				manjaro)	 pacman -Syu $packagesNeededArch  ;;
-				opensuse*)  zypper install $packagesNeededOpenSuse ;;
+				arch)		 pacman -Syu $packagesNeededArch ;;
+				endeavouros) pacman -Syu $packagesNeededArch ;;
+				manjaro)	 pacman -Syu $packagesNeededArch ;;
+				opensuse*) zypper install $packagesNeededOpenSuse ;;
 			esac
 	else
 		os_detected=false
@@ -303,21 +303,19 @@ Setup()
 		jellyfinServiceLocation="/etc/systemd/system"
 	fi
 	
-	sed -i "s|User.*|User=$defaultUser|g" $jellyfinServiceLocation/jellyfin.service
+	Set_var User "$defaultUser" "$jellyfinServiceLocation/jellyfin.service" str
 	cp $DIRECTORY/conf/jellyfin.conf /etc/
 	jellyfinDir=/opt/jellyfin
 	jellyfinConfigFile=$jellyfinDir/config/jellyman.conf
 	tar xvzf $DIRECTORY/$jellyfin_archive
 	mv -f $DIRECTORY/jellyfin /opt/jellyfin/$jellyfin
 	ln -s $jellyfinDir/$jellyfin $jellyfinDir/jellyfin
-	echo "architecture=$architecture" >> $jellyfinConfigFile
-	echo "defaultPath=" >> $jellyfinConfigFile
-	echo "apiKey=" >> $jellyfinConfigFile
-	echo "httpPort=8096" >> $jellyfinConfigFile
-	echo "httpsPort=8920" >> $jellyfinConfigFile
-	echo "currentVersion=$jellyfin" >> $jellyfinConfigFile
-	echo "defaultUser=$defaultUser" >> $jellyfinConfigFile
-	echo "jellyfinServiceLocation=$jellyfinServiceLocation" >> $jellyfinConfigFile
+	Set_var architecture "$architecture" "$jellyfinConfigFile" str
+	Set_var httpPort "8096" "$jellyfinConfigFile" str
+	Set_var httpsPort "8920" "$jellyfinConfigFile" str
+	Set_var currentVersion "$jellyfin" "$jellyfinConfigFile" str
+	Set_var defaultUser "$defaultUser" "$jellyfinConfigFile" str
+	Set_var jellyfinServiceLocation "$jellyfinServiceLocation" "$jellyfinConfigFile" str
 
 	Install_dependancies
 
@@ -401,7 +399,7 @@ Update_jellyman()
 	chmod +rx /usr/bin/base_functions.sh
 	
 	# deletes all empty lines in $sourcefile
-	sed -ie '/^ *$/d' $sourceFile
+	sed -i '/^ *$/d' $sourceFile
 	
 
 	if [[ ! -f $jellyfinServiceLocation/jellyfin-backup.timer ]]; then
@@ -409,7 +407,7 @@ Update_jellyman()
 		cp $DIRECTORY/conf/jellyfin-backup.timer /usr/lib/systemd/system/
 	fi
 	
-	sed -i "s|User.*|User=$defaultUser|g" $jellyfinServiceLocation/jellyfin.service
+	Set_var User "$defaultUser" "$jellyfinServiceLocation/jellyfin.service" str
 	
 	if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
 		cp $DIRECTORY/jellyman.1 /usr/share/man/man1/
@@ -417,39 +415,26 @@ Update_jellyman()
 		cp $DIRECTORY/jellyman.1 /usr/local/share/man/man1/
 	fi
 	
-	if ( ! grep -q apiKey= "$sourceFile" ); then
-		echo "apiKey=" >> $sourceFile
-	fi
-
 	if ( ! grep -q httpPort= "$sourceFile" ) || ( ! grep -q httpsPort= "$sourceFile" ); then
-		sed -i "s|networkPort=|httpPort=|g" $sourceFile
-		echo "httpsPort=8920" >> $sourceFile
+		Set_var httpPort "8096" "$sourceFile" str
+		Set_var httpsPort "8920" "$sourceFile" str
 	fi
 	
-	if  ( grep -q networkPort= "$sourceFile" ); then
-		sed -i "/networkPort/d" $sourceFile
-	fi
+	Del_var networkPort $sourceFile
 	
 	if [[ -d /usr/lib/systemd ]] && [[ ! -n $jellyfinServiceLocation ]]; then
 		jellyfinServiceLocation="/usr/lib/systemd/system"
-		echo "jellyfinServiceLocation=$jellyfinServiceLocation" >> $sourceFile
+		Set_var jellyfinServiceLocation "$jellyfinServiceLocation" "$sourceFile" str
 	elif [[ ! -n $jellyfinServiceLocation ]]; then
 		jellyfinServiceLocation="/etc/systemd/system"
-		echo "jellyfinServiceLocation=$jellyfinServiceLocation" >> $sourceFile
+		Set_var jellyfinServiceLocation "$jellyfinServiceLocation" "$sourceFile" str
 	fi
 
-	if [[ -d /usr/lib/systemd ]]; then
-		jellyfinServiceLocation="/usr/lib/systemd/system"
-		sed -i "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" $sourceFile
-	elif [[ ! -n $jellyfinServiceLocation ]]; then
-		jellyfinServiceLocation="/etc/systemd/system"
-		sed -i "s|jellyfinServiceLocation=.*|jellyfinServiceLocation=$jellyfinServiceLocation|g" $sourceFile
-	fi
-
+	
 	if [[ ! -n $architecture ]]; then
 		architecture=
 		Get_Architecture
-		echo "architecture=$architecture" >> $sourceFile
+		Set_var architecture "$architecture" "$sourceFile" str
 	fi
 
 
@@ -481,7 +466,7 @@ else
 	done
 
 	case "$optionNumber" in
-		1)	Setup  ;;
+		1)	Setup ;;
 		2)	Update_jellyman ;;
 		3)	Import;;
 	esac

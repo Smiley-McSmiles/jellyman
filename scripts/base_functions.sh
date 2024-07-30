@@ -152,25 +152,45 @@ Prompt_user()
 # echo "String entered = $promptStr"
 }
 
-Change_variable()
+Set_var()
 {
-	# Change_variable testVar "newVarContent" varType "fileToChange"
+	# Set_var testVar "newVarContent" "fileToChange" varType
 	varToChange=$1
 	newVarContent=$2
 	fileToChange=$3
 	varType=$4
-	if [[ ! -n $varToChange ]] || [[ ! -n $newVarContent ]]; then
-		echo "Function Change_variable requires 3 parameters: varToChange newVarContent fileToChange"
-		exit
-	elif [[ $varType == "array" ]]; then
-		sed -i "s|$varToChange=.*|$varToChange=\($newVarContent\)|g" $fileToChange
+	if ( ! grep -q $varToChange "$fileToChange" ); then
+		echo "$varToChange=$newVarContent" >> $fileToChange
 	else
-		sed -i "s|$varToChange=.*|$varToChange=$newVarContent|g" $fileToChange
+		if [[ ! -n $varToChange ]] || [[ ! -n $newVarContent ]]; then
+			echo "Function Change_variable requires 3 parameters: varToChange newVarContent fileToChange"
+			return 1
+			exit
+		elif [[ $varType == "array" ]]; then
+			sed -i "s|$varToChange=.*|$varToChange=\($newVarContent\)|g" $fileToChange
+			return 0
+		else
+			sed -i "s|$varToChange=.*|$varToChange=$newVarContent|g" $fileToChange
+			return 0
+		fi
 	fi
-	
 }
 
-Change_xml_variable()
+Del_var()
+{
+	# Del_var varToDelete fileToChange
+	varToDelete=$1
+	fileToChange=$2
+	if ( ! grep -q $varToChange "$fileToChange" ); then
+		echo "ERROR: Variable $varToChange is not in $fileToChange"
+		return 1
+	else
+		sed -i "/$varToDelete/d" $fileToChange
+		return 0
+	fi
+}
+
+Set_xml_var()
 {
 	# Change_xml_variable testVar "newVarContent" "fileToChange"
 	varToChange=$1
@@ -178,9 +198,11 @@ Change_xml_variable()
 	fileToChange=$3
 	if [[ ! -n $varToChange ]] || [[ ! -n $newVarContent ]] && [[ ! $fileToChange == *".xml" ]]; then
 		echo "Function Change_xml_variable requires 3 parameters: varToChange newVarContent fileToChange"
+		return 1
 		exit
 	else
 		sed -i "s|<$varToChange>.*</$varToChange>|<$varToChange>$newVarContent</$varToChange>|g" $fileToChange
+		return 0
 	fi
 }
 
@@ -211,8 +233,11 @@ Has_sudo()
 	if [ "$EUID" -ne 0 ]; then
 		echo "ERROR: Permission denied for $USER"
 		echo "This command requires root privileges"
+		return 1
 		exit
-    	fi
+	else
+		return 0
+	fi
 }
 
 areDirectories()

@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.7.6"
+jellymanVersion="v1.7.7"
 sourceFile="/opt/jellyfin/config/jellyman.conf"
 source /usr/bin/base_functions.sh
 
@@ -91,8 +91,8 @@ Backup_utility()
 		backupDir="$promptDir"
 		Prompt_user num "Please enter your desired maximum number of backup archives" 1 20
 		maxBackupNumber=$promptNum
-		echo "backupDir=$backupDir" >> $sourceFile
-		echo "maxBackupNumber=$maxBackupNumber" >> $sourceFile
+		Set_var backupDir "backupDir" "$sourceFile" str
+		Set_var maxBackupNumber "maxBackupNumber" "$sourceFile" str
 		systemctl enable --now jellyfin-backup.timer
 	fi
 
@@ -118,13 +118,13 @@ Backup_utility()
 		# change backup folder
 		Prompt_user dir "Please enter your desired directory for backup archives"
 		backupDir="$promptDir"
-		Change_variable "backupDir" "$backupDir" "$sourceFile"
+		Set_var "backupDir" "$backupDir" "$sourceFile"
 
 	elif [[ $optionNumber == 4 ]]; then
 		# change max backups
 		Prompt_user num "Please enter your desired maximum number of backup archives" 1 50
 		maxBackupNumber=$promptNum
-		Change_variable "maxBackupNumber" "$maxBackupNumber" "$sourceFile"
+		Set_var "maxBackupNumber" "$maxBackupNumber" "$sourceFile"
 	
 	else
 		# change frequency of backups
@@ -195,7 +195,7 @@ Check_disk_free()
 		Prompt_user dir "Enter a valid directory"
 		defaultPath="$promptDir"
 		defaultPath=($defaultPath)
-		Change_variable defaultPath $defaultPath "$sourceFile" array
+		Set_var defaultPath $defaultPath "$sourceFile" array
 		df -h ${defaultPath[*]}
 	else 
 		df -h ${defaultPath[*]}
@@ -276,7 +276,7 @@ Version_switch()
 	unlink /opt/jellyfin/jellyfin
 	ln -s /opt/jellyfin/$newVersion /opt/jellyfin/jellyfin
 	chown -Rfv $defaultUser:$defaultUser /opt/jellyfin/jellyfin
-	Change_variable currentVersion $newVersion "$sourceFile"
+	Set_var currentVersion $newVersion "$sourceFile"
 	jellyman -s
 }
 
@@ -403,7 +403,7 @@ Import_api_key()
 	Prompt_user str "Please paste your API Key"
 	newAPIKey=$promptStr
 	echo "Logging new api key."
-	Change_variable apiKey $newAPIKey "$sourceFile"
+	Set_var apiKey $newAPIKey "$sourceFile"
 }
 
 Check_api_key()
@@ -412,7 +412,7 @@ Check_api_key()
 	source $sourceFile
 	if [[ ! -n $apiKey ]]; then
 		echo "***ERROR***"
-		echo "NO API KEY FOUND, RUN 'sudo jellyman -ik' TO IMPORT A NEW KEY!"
+		echo "ERROR: NO API KEY FOUND, RUN 'sudo jellyman -ik' TO IMPORT A NEW KEY!"
 		return 1
 		exit
 	else
@@ -430,10 +430,10 @@ Http_port_change()
 		Prompt_user num "Please enter the new http network port for Jellyfin" 1 100000
 		port=$promptNum
 		oldPort=$httpPort
-		Change_variable httpPort $port "$sourceFile"
+		Set_var httpPort $port "$sourceFile"
 		jellyman -S
-		Change_xml_variable InternalHttpPort "$port" "/opt/jellyfin/config/network.xml"
-		Change_xml_variable PublicHttpPort "$port" "/opt/jellyfin/config/network.xml"
+		Set_xml_var InternalHttpPort "$port" "/opt/jellyfin/config/network.xml"
+		Set_xml_var PublicHttpPort "$port" "/opt/jellyfin/config/network.xml"
 		jellyman -s
 		echo "Unblocking port $port"
 		echo "Blocking previous port $oldPort"
@@ -462,10 +462,10 @@ Https_port_change()
 		Prompt_user num "Please enter the new https network port for Jellyfin" 1 100000
 		port=$promptNum
 		oldPort=$httpsPort
-		Change_variable httpsPort $port "$sourceFile"
+		Set_var httpsPort $port "$sourceFile"
 		jellyman -S
-		Change_xml_variable InternalHttpsPort "$port" "/opt/jellyfin/config/network.xml"
-		Change_xml_variable PublicHttpsPort "$port" "/opt/jellyfin/config/network.xml"
+		Set_xml_var InternalHttpsPort "$port" "/opt/jellyfin/config/network.xml"
+		Set_xml_var PublicHttpsPort "$port" "/opt/jellyfin/config/network.xml"
 		jellyman -s
 		echo "Unblocking port $port"
 		echo "Blocking previous port $oldPort"
@@ -590,11 +590,10 @@ Update()
 	unlink /opt/jellyfin/jellyfin
 	tar xvzf /opt/jellyfin/update/$newJellyfinArchive -C /opt/jellyfin/
 	
-	if [ -n "$(ls -A /opt/jellyfin/jellyfin/ 2>/dev/null)" ]
-		then
-		  mv -f /opt/jellyfin/jellyfin /opt/jellyfin/$jellyfin
-		else
-		  echo "Directory does not contain files..."
+	if [ -n "$(ls -A /opt/jellyfin/jellyfin/ 2>/dev/null)" ]; then
+			mv -f /opt/jellyfin/jellyfin /opt/jellyfin/$jellyfin
+	else
+			echo "Directory does not contain files..."
 	fi
 
 	ln -s /opt/jellyfin/$jellyfin /opt/jellyfin/jellyfin
@@ -603,7 +602,7 @@ Update()
 
 	chown -R $defaultUser:$defaultUser /opt/jellyfin
 	echo "Jellyfin updated to version $new_jellyfin_version"
-	Change_variable currentVersion $jellyfin "$sourceFile"
+	Set_var currentVersion $jellyfin "$sourceFile"
 	jellyman -s -t
 }
 
@@ -656,7 +655,7 @@ Update_beta()
 
 			chown -R $defaultUser:$defaultUser /opt/jellyfin
 			echo "Jellyfin updated to version $newVersionNumber"
-			Change_variable currentVersion $newVersionName "$sourceFile"
+			Set_var currentVersion $newVersionName "$sourceFile"
 			jellyman -s -t
 		fi
 	done
@@ -696,8 +695,8 @@ Recertify_https()
 		openssl pkcs12 -export -out /opt/jellyfin/cert/jellyfin.pfx -inkey /opt/jellyfin/cert/privkey.pem -in /opt/jellyfin/cert/cert.pem -passout pass:
 		echo "Enabling https..."
 		jellyman -S
-		Change_xml_variable EnableHttps "true" "/opt/jellyfin/config/network.xml"
-		Change_xml_variable CertificatePath "/opt/jellyfin/cert/jellyfin.pfx" "/opt/jellyfin/config/network.xml"
+		Set_xml_var EnableHttps "true" "/opt/jellyfin/config/network.xml"
+		Set_xml_var CertificatePath "/opt/jellyfin/cert/jellyfin.pfx" "/opt/jellyfin/config/network.xml"
 		chown -Rf $defaultUser:$defaultUser /opt/jellyfin/cert
 		chmod -Rf 770 /opt/jellyfin/cert
 		jellyman -s
@@ -921,7 +920,7 @@ Qualify_Transcode()
 			echo "Transcoding $videoToEdit ..."
 			_newName=$(echo $videoToEdit | rev | cut -d "." -f 2 | rev)
 			echo "Video time in Hours: $_videoTimeHours"
-			echo "Video size GB:  $_videoSizeGB"
+			echo "Video size GB: $_videoSizeGB"
 			echo "Current GB/Hour: $_videoRatio"
 			echo "$videoToEdit" >> $qualifiedVideos
 		else
@@ -962,21 +961,21 @@ Transcode_file()
 #		echo "$_progress" > $progressBarFile
 
 		echo '#!/bin/bash' > "$progressBarConf"
-		echo "startState=$_progressIteration" >> "$progressBarConf"
-		echo "maxState=$totalVideos" >> "$progressBarConf"
-		echo "currentVideo=\"$_newName.downsampled.mp4\"" >> "$progressBarConf"
-		echo "previousVideo=\"$currentVideo\"" >> "$progressBarConf"
+		Set_var startState "$_progressIteration" "$progressBarConf" str
+		Set_var maxState "$totalVideos" "$progressBarConf" str
+		Set_var currentVideo "$_newName.downsampled.mp4" "$progressBarConf" str
+		Set_var previousVideo "$currentVideo" "$progressBarConf" str
 
 		echo "Transcoding $currentVideo"
 		nice ffmpeg -y -i "$currentVideo" -c:v libx265 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
 		_newVideoSize=$(du -h "$_newName.downsampled.mp4" | cut -d "/" -f 1)
 		echo "Downsampled size: $_newVideoSize"
 		if $deleteOrNot; then
-		  echo "DELETING $currentVideo IN: "
-		  Countdown 10
-		  rm -v "$currentVideo"
-		  mv -v "$_newName.downsampled.mp4" "$_newName.mp4"
-	  fi
+			echo "DELETING $currentVideo IN: "
+			Countdown 10
+			rm -v "$currentVideo"
+			mv -v "$_newName.downsampled.mp4" "$_newName.mp4"
+		fi
 	done
 
 	sed -i "s|startState=.*|startState=$totalVideos|g" "$progressBarConf"
@@ -1109,7 +1108,7 @@ Change_Media_Directory()
 		fi
 	done
 
-	Change_variable defaultPath "$mediaPath" "$sourceFile" array
+	Set_var defaultPath "$mediaPath" "$sourceFile" array
 }
 
 Help()
@@ -1187,7 +1186,7 @@ if [ -n "$1" ]; then
 				 else
 					 Permissions $2
 					 shift 
-				 fi  ;;
+				 fi ;;
 			-r | --restart) systemctl restart jellyfin.service ;;
 			-s | --start) systemctl start jellyfin.service ;;
 			-S | --stop) systemctl stop jellyfin.service ;;
