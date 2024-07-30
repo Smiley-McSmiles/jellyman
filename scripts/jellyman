@@ -832,7 +832,7 @@ Uninstall()
 		echo "> Goodbye..."
 		echo "> Removing Jellyfin and Jellyman in:"
 		Countdown 5
-			echo "> Blocking port 8096 and 8920..."
+		echo "> Blocking ports 8096 and 8920..."
 		if [ -x "$(command -v ufw)" ]; then
 			ufw deny $httpPort/tcp
 			ufw deny $httpsPort/tcp
@@ -849,17 +849,18 @@ Uninstall()
 			echo "|          ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!          |"
 			echo "|-------------------------------------------------------------------|"
 		fi
+		
 		echo "> Disabling and stopping Jellyfin..."
 		jellyman -d -S
 		systemctl disable --now jellyfin-backup.timer
 		echo "> Deleting /etc/jellyfin.conf and $jellyfinServiceLocation/jellyfin.service..."
-		rm -fv /etc/jellyfin.conf $jellyfinServiceLocation/jellyfin*
+		rm -f /etc/jellyfin.conf $jellyfinServiceLocation/jellyfin*
 		echo "> Deleting LINUX user $defaultUser"
 		userdel -f $defaultUser
 		echo "> Deleting the /opt/jellyfin directory..."
 		rm -rf /opt/jellyfin
 		echo "> Deleting Jellyman..."
-		rm -fv /usr/bin/base_functions.sh /usr/bin/jellyman
+		rm -f /usr/bin/base_functions.sh /usr/bin/jellyman
 	else
 		echo "> Phew! That was a close one!"
 	fi

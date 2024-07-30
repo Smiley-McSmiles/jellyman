@@ -28,7 +28,6 @@ Import()
 
 	if Prompt_user yN "> Import $importTar?"; then
 		echo "> IMPORTING $importTar"
-		jellyman -S
 		rm -rf /opt/jellyfin
 		tar xf $importTar -C /
 		source $sourceFile
