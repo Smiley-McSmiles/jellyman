@@ -349,7 +349,11 @@ Import()
 	if Prompt_user yN "> Import $importTar?"; then
 		echo "> IMPORTING $importTar"
 		jellyman -S
-		rm -rf /opt/jellyfin
+
+		if [[ -d /opt/jellyfin ]]; then
+			rm -rf /opt/jellyfin
+		fi
+
 		tar xf $importTar -C /
 		source $sourceFile
 		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/

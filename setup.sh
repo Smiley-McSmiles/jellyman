@@ -28,11 +28,15 @@ Import()
 
 	if Prompt_user yN "> Import $importTar?"; then
 		echo "> IMPORTING $importTar"
-		rm -rf /opt/jellyfin
+		
+		if [[ -d /opt/jellyfin ]]; then
+			rm -rf /opt/jellyfin
+		fi
+		
 		tar xf $importTar -C /
 		source $sourceFile
 		mv -f $DIRECTORY/scripts/jellyman /usr/bin/
-		mv -f $DIRECTORY/scripts/jellyman/base_functions.sh /usr/bin/
+		mv -f $DIRECTORY/scripts/base_functions.sh /usr/bin/
 		chmod +rx /usr/bin/jellyman
 		chmod +rx /usr/bin/base_functions.sh
 		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/
