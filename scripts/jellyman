@@ -849,11 +849,16 @@ Uninstall()
 			echo "|          ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!          |"
 			echo "|-------------------------------------------------------------------|"
 		fi
+		echo "> Disabling and stopping Jellyfin..."
 		jellyman -d -S
 		systemctl disable --now jellyfin-backup.timer
+		echo "> Deleting /etc/jellyfin.conf and $jellyfinServiceLocation/jellyfin.service..."
 		rm -fv /etc/jellyfin.conf $jellyfinServiceLocation/jellyfin*
-		rm -rfv /opt/jellyfin
+		echo "> Deleting LINUX user $defaultUser"
 		userdel -f $defaultUser
+		echo "> Deleting the /opt/jellyfin directory..."
+		rm -rf /opt/jellyfin
+		echo "> Deleting Jellyman..."
 		rm -fv /usr/bin/base_functions.sh /usr/bin/jellyman
 	else
 		echo "> Phew! That was a close one!"
