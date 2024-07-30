@@ -91,7 +91,7 @@ Backup_utility()
 	if [[ ! -d $backupDir ]]; then
 		Prompt_user dir "> Please enter your desired directory for backup archives"
 		backupDir="$promptDir"
-		Prompt_user num "> Please enter your desired maximum number of backup archives" 1 20
+		Prompt_user num "> Please enter your desired maximum number of backup archives" 1 20 "1-20"
 		maxBackupNumber=$promptNum
 		Set_var backupDir "backupDir" "$sourceFile" str
 		Set_var maxBackupNumber "maxBackupNumber" "$sourceFile" str
@@ -104,7 +104,7 @@ Backup_utility()
 	echo "> 4. Change max backups"
 	echo "> 5. Change frequency of backups"
 	echo
-	Prompt_user num "> Please select the number corresponding with the option you want to select." 1 5
+	Prompt_user num "> Please select the number corresponding with the option you want to select." 1 5 "1-5"
 	optionNumber=$promptNum
 	echo
 	
@@ -124,7 +124,7 @@ Backup_utility()
 
 	elif [[ $optionNumber == 4 ]]; then
 		# change max backups
-		Prompt_user num "> Please enter your desired maximum number of backup archives" 1 50
+		Prompt_user num "> Please enter your desired maximum number of backup archives" 1 50 "1-50"
 		maxBackupNumber=$promptNum
 		Set_var "maxBackupNumber" "$maxBackupNumber" "$sourceFile"
 	
@@ -134,7 +134,7 @@ Backup_utility()
 		echo "> 2. Weekly backups"
 		echo "> 3. Monthly backups"
 		echo
-		Prompt_user num "> Please select the number corresponding with the option you want to select." 1 3
+		Prompt_user num "> Please select the number corresponding with the option you want to select." 1 3 "1-3"
 		_optionNumber=$promptNum
 		echo
 	
@@ -238,7 +238,7 @@ Download_version()
 	echo $warning
 	echo "> $versionListNumbered"
 	echo "> Please enter the number corresponding with"
-	Prompt_user num "  the version you want to install" 1 $maxNumber
+	Prompt_user num "  the version you want to install" 1 $maxNumber "1-$maxNumber"
 	versionToSwitchNumber=$promptNum
 	newVersionNumber=$(echo "$versionList" | head -n $versionToSwitchNumber | tail -n 1)
 
@@ -271,7 +271,7 @@ Version_switch()
 	echo "> $installedVersionsClean" | cat -n
 	echo "> $warning"
 	echo "> Please enter the number corresponding with"
-	Prompt_user num "  the version you want to install" 1 $maxNumber
+	Prompt_user num "  the version you want to install" 1 $maxNumber "1-$maxNumber"
 	versionToSwitchNumber=$promptNum
 	newVersion=$(echo "$installedVersions" | head -n $versionToSwitchNumber | tail -n 1)
 	jellyman -S
@@ -301,7 +301,7 @@ Remove_version()
 	echo
 	echo "> $warning"
 	echo "> Please enter the number corresponding with"
-	Prompt_user num "  the version you want to ERASE" 1 $maxNumber
+	Prompt_user num "  the version you want to ERASE" 1 $maxNumber "1-$maxNumber"
 	versionToSwitchNumber=$promptNum
 	versionToRemove=$(echo "$installedVersions" | head -n $versionToRemoveNumber | tail -n 1)
 	warning="ERROR: Please select one of the numbers provided!"
@@ -323,7 +323,7 @@ Import()
 	source $sourceFile
 	importTar=$1
 	
-	Prompt_user file "> Please enter the path to the jellyfin-backup.tar archive."
+	Prompt_user file "> Please enter the path to the jellyfin-backup.tar archive." 0 0 "/path/to/backup.tar"
 	importTar=$promptFile
 	echo
 	echo "+--------------------------------------------------------------------+"
@@ -364,7 +364,7 @@ Import()
 				chmod -Rfv 770 /opt/jellyfin
 				jellyman -s -t
 			else
-				Prompt_user usr "> Please enter a new LINUX user."
+				Prompt_user usr "> Please enter a new LINUX user." 0 0 "jellyfin"
 				defaultUser=$promptUsr
 				while id "$defaultUser" &>/dev/null; do
 					echo "> Cannot create $defaultUser as $defaultUser already exists..."
@@ -402,7 +402,7 @@ Import_api_key()
 	echo "> Create a API key by signing into Jellyfin, going to Dashboard, then"
 	echo "> clicking on API Keys under the Advanced section on the left."
 	echo
-	Prompt_user str "> Please paste your API Key"
+	Prompt_user str "> Please paste your API Key" 0 0 "API key"
 	newAPIKey=$promptStr
 	echo "> Logging new api key."
 	Set_var apiKey $newAPIKey "$sourceFile"
@@ -428,7 +428,7 @@ Http_port_change()
 	echo
 	echo "> Default http port is 8096"
 	if Is_jellyfin_setup; then
-		Prompt_user num "> Please enter the new http network port for Jellyfin" 1 100000
+		Prompt_user num "> Please enter the new http network port for Jellyfin" 1000 100000 "http port"
 		port=$promptNum
 		oldPort=$httpPort
 		Set_var httpPort $port "$sourceFile"
@@ -461,7 +461,7 @@ Https_port_change()
 	source $sourceFile
 	if Is_jellyfin_setup; then
 		echo "> Default https port is 8920"
-		Prompt_user num "> Please enter the new https network port for Jellyfin" 1 100000
+		Prompt_user num "> Please enter the new https network port for Jellyfin" 1000 100000 "https port"
 		port=$promptNum
 		oldPort=$httpsPort
 		Set_var httpsPort $port "$sourceFile"
@@ -640,7 +640,7 @@ Update_beta()
 	echo "$jellyfinNumbered"
 	echo
 
-	Prompt_user num "> Select which version to install" 1 $maxNumber
+	Prompt_user num "> Select which version to install" 1 $maxNumber "1-$maxNumber"
 	versionSelected=$promptNum
 	newVersionName=$(echo "$jellyfinArchives" | head -n $versionSelected | tail -n 1 | sed -r "s|-$architecture.tar.gz||g")
 	newVersionNumber=$(echo $newVersionName | sed -r 's/jellyfin_//g')
@@ -1007,11 +1007,11 @@ Transcode()
 	echo "|        TO RUN THIS COMMAND IN 'screen' THEN PRESSING         |"
 	echo "|                       CTRL + A THEN D                        |"
 	echo "|--------------------------------------------------------------|"
-	Prompt_user dir "> Please enter the path to the file(s)"
+	Prompt_user dir "> Please enter the directory to the file(s)"
 	_directoryToCorrect=$promptDir
 	echo
 	echo "> Please enter the desired GB per hour of video"
-	Prompt_user str "> EXAMPLE: 1 OR 2.5"
+	Prompt_user str "> EXAMPLE: 1 OR 2.5" 0 0 "float"
 	desiredGBperHour=$promptStr
 	
 	preset=0
@@ -1027,7 +1027,7 @@ Transcode()
 	echo "> 8: slower"
 	echo "> 9: veryslow"
 	echo
-	Prompt_user num "> Please choose a transcode preset" 1 9
+	Prompt_user num "> Please choose a transcode preset" 1 9 "1-9"
 	preset=$promptNum
 	echo
 	case "$preset" in
@@ -1046,7 +1046,7 @@ Transcode()
 	clear
 	echo '> Please enter a Constant Rate Factor (CRF) [20-30]'
 	echo "> 22-26 is recommended"
-	Prompt_user num "> 20 is better quality and 30 is lower quality" 20 30
+	Prompt_user num "> 20 is better quality and 30 is lower quality" 20 30 "20-30"
 	crf=$promptNum
 	echo
 	if Prompt_user yN "> Would you like to delete the original file(s) after transcode?"; then
@@ -1098,7 +1098,7 @@ Change_Media_Directory()
 		echo "|---------------------------------------------------------|"
 		echo
 		echo $warning
-		Prompt_user str " "
+		Prompt_user str " " 0 0 "/dir1 /dir2"
 		mediaPath=$promptStr
 		if areDirectories "$mediaPath"; then
 			continue=false

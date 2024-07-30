@@ -248,10 +248,11 @@ EXAMPLE:
 ### In case Jellyman wont upgrade itself
 
 ```shell
-git clone https://github.com/Smiley-McSmiles/jellyman
+git clone https://github.com/Smiley-McSmiles/jellyman.git
 cd jellyman
 chmod ug+x setup.sh
 sudo ./setup.sh -U
+cd ~/
 ```
 
 ### License

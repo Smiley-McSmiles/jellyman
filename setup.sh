@@ -10,7 +10,7 @@ sourceFile=/opt/jellyfin/config/jellyman.conf
 
 Import()
 {
-	Prompt_user file "> Please enter the path to the jellyfin-backup.tar archive."
+	Prompt_user file "> Please enter the path to the jellyfin-backup.tar archive." 0 0 "/path/to/backup.tar"
 	importTar=$promptFile
 
 	echo "+--------------------------------------------------------------------+"
@@ -57,7 +57,7 @@ Import()
 				Install_dependancies
 				jellyman -s -t
 			else
-				Prompt_user usr "> Please enter a new LINUX user"
+				Prompt_user usr "> Please enter a new LINUX user" 0 0 "jellyfin"
 				defaultUser=$promptUsr
 		 
 				defaultUser=${defaultUser,,}
@@ -203,7 +203,7 @@ Previous_install()
 		isDataThere=false
 		isConfigThere=false
 		newDirectory=false
-		Prompt_user dir "> Where is Jellyfins intalled directory?"
+		Prompt_user dir "> Where is Jellyfins intalled directory?" 0 0 "/path/to/jellyfin/dir"
 		currentJellyfinDirectory=$promptDir
 		
 		#systemFileXML=$(find $currentJellyfinDirectory -name "system.xml")
@@ -268,7 +268,7 @@ Setup()
 	mkdir /opt/jellyfin /opt/jellyfin/old /opt/jellyfin/backup /opt/jellyfin/data /opt/jellyfin/cache /opt/jellyfin/config /opt/jellyfin/log /opt/jellyfin/cert
 	clear
 	Previous_install
-	Prompt_user usr "> Please enter the LINUX user for Jellyfin"
+	Prompt_user usr "> Please enter the LINUX user for Jellyfin" 0 0 "jellyfin"
 	defaultUser=$promptUsr
 	while id "$defaultUser" &>/dev/null; do
 		echo "> Cannot create $defaultUser as $defaultUser already exists..."
@@ -375,7 +375,7 @@ Setup()
 	fi
 	echo
 	echo "> Press 'q' to exit next screen"
-	read -p " Press ENTER to continue" ENTER
+	read -p "> Press ENTER to continue" ENTER
 	jellyman -t
 	echo
 	if Prompt_user Yn "> Would you like to remove the cloned git directory $DIRECTORY?"; then
@@ -460,7 +460,7 @@ else
 		echo "2. Force update Jellyman"
 		echo "3. Import a jellyfin-backup.tar file"
 		echo
-		Prompt_user num "> Please select the number corresponding with the option you want to select." 1 3
+		Prompt_user num "> Please select the number corresponding with the option you want to select." 1 3 "1-3"
 		optionNumber=$promptNum
 		echo
 	done

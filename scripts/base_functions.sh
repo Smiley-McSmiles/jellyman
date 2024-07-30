@@ -12,18 +12,23 @@ Prompt_user()
 	_promptText="$2"
 	_minNumber=$3
 	_maxNumber=$4
+	_inputText=$5
 	_yesOrNo=null
 	_dir=null
 	_file=null
 	_num=null
 	_usr=NULL
 	_str=
+	
 	echo "$_promptText"
 	
 	case $_promptType in
 		"Yn")
+			if [[ ! -n $_inputText ]]; then
+				_inputText="Y/n"
+			fi
 			while [[ ! $_yesOrNo == [yY][eE][sS] ]] || [[ ! $_yesOrNo == [yY] ]] || [[ ! $_yesOrNo == [nN][oO] ]] || [[ ! $_yesOrNo == [nN] ]] || [[ ! $_yesOrNo == "" ]]; do
-				read -p "[Y/n] >>> " _yesOrNo
+				read -p "[$_inputText] >>> " _yesOrNo
 				if [[ $_yesOrNo == "" ]] || [[ $_yesOrNo == [yY][eE][sS] ]] || [[ $_yesOrNo == [yY] ]]; then
 					return 0
 				elif [[ $_yesOrNo == [nN][oO] ]] || [[ $_yesOrNo == [nN] ]]; then
@@ -36,8 +41,11 @@ Prompt_user()
 			done
 		;;
 		"yN")
+			if [[ ! -n $_inputText ]]; then
+				_inputText="y/N"
+			fi
 			while [[ ! $_yesOrNo == [yY][eE][sS] ]] || [[ ! $_yesOrNo == [yY] ]] || [[ ! $_yesOrNo == [nN][oO] ]] || [[ ! $_yesOrNo == [nN] ]] || [[ ! $_yesOrNo == "" ]]; do
-				read -p "[y/N] >>> " _yesOrNo
+				read -p "[$_inputText] >>> " _yesOrNo
 				if [[ $_yesOrNo == [yY][eE][sS] ]] || [[ $_yesOrNo == [yY] ]]; then
 					return 0
 				elif [[ $_yesOrNo == "" ]] || [[ $_yesOrNo == [nN][oO] ]] || [[ $_yesOrNo == [nN] ]]; then
@@ -50,8 +58,11 @@ Prompt_user()
 			done
 		;;
 		"dir")
+			if [[ ! -n $_inputText ]]; then
+				_inputText="/path/to/directory"
+			fi
 			while [[ ! -d $_dir ]]; do
-				read -p "[/path/to/directory] >>> " "_dir"
+				read -p "[$_inputText] >>> " "_dir"
 				if [[ -d $_dir ]]; then
 					promptDir="$_dir"
 					return 0
@@ -62,8 +73,11 @@ Prompt_user()
 			done
 		;;
 		"file")
+			if [[ ! -n $_inputText ]]; then
+				_inputText="/path/to/file"
+			fi
 			while [[ ! -f $_file ]]; do
-				read -p "[/path/to/file] >>> " "_file"
+				read -p "[$_inputText] >>> " "_file"
 				if [[ -f $_file ]]; then
 					promptFile="$_file"
 					return 0
@@ -74,8 +88,11 @@ Prompt_user()
 			done
 		;;
 		"num")
+			if [[ ! -n $_inputText ]]; then
+				_inputText="$_minNumber-$_maxNumber"
+			fi
 			while [[ ! $_num =~ ^[0-9]+$ ]]; do
-				read -p "[number] >>> " _num
+				read -p "[$_inputText] >>> " _num
 				if [[ $_num -lt $_minNumber ]] || [[ $_num -gt $_maxNumber ]]; then
 					echo
 					_num=null
@@ -90,9 +107,12 @@ Prompt_user()
 			done
 		;;
 		"usr")
-			while [[ "$_usr" =~ [A-Z] ]] || [[ "$_usr" =~ \ |\' ]]; do
-				read -p "[username] >>> " "_usr"
-				if [[ ! "$_usr" =~ [A-Z] ]] && [[ ! "$_usr" =~ \ |\' ]]; then
+			if [[ ! -n $_inputText ]]; then
+				_inputText="username"
+			fi
+			while [[ "$_usr" =~ [A-Z] ]] || [[ "$_usr" =~ \ |\' ]] || [[ "$_usr" == "" ]]; do
+				read -p "[$_inputText] >>> " "_usr"
+				if [[ ! "$_usr" =~ [A-Z] ]] && [[ ! "$_usr" =~ \ |\' ]] && [[ ! "$_usr" == "" ]]; then
 					promptUsr=$_usr
 					return 0
 				else
@@ -102,8 +122,11 @@ Prompt_user()
 			done
 		;;
 		"str")
+			if [[ ! -n $_inputText ]]; then
+				_inputText="string"
+			fi
 			while [[ ! -n $_str ]]; do
-				read -p "[string] >>> " "_str"
+				read -p "[$_inputText] >>> " "_str"
 				if [[ -n $_str ]]; then
 					promptUsr=$_str
 					return 0
@@ -118,37 +141,37 @@ Prompt_user()
 		;;
 	esac
 # Default yes
-# if Prompt_user Yn "Example yes or no question?"; then
+# if Prompt_user Yn "Example yes or no question?" 0 0 "Y/n"; then
 #	echo "pass"
 # else
 #	echo "fail"
 # fi
 
 # Default no
-# if Prompt_user yN "Example yes or no question?"; then
+# if Prompt_user yN "Example yes or no question?" 0 0 "y/N"; then
 #	echo "pass"
 # else
 #	echo "fail"
 # fi
 
 # Check for directory, return directory
-# Prompt_user dir "Enter a valid directory"
+# Prompt_user dir "Enter a valid directory" 0 0 "/path/to/directory"
 # echo "Directory entered = $promptDir"
 
 # Check for file, return file
-# Prompt_user file "Enter a valid file"
+# Prompt_user file "Enter a valid file" 0 0 "/path/to/file"
 # echo "File entered = $promptFile"
 
 # Check if number, return number entered
-# Prompt_user num "Enter a valid number" minNumber maxNumber
+# Prompt_user num "Enter a valid number" minNumber maxNumber "$minNumber-$maxNumber"
 # echo "Number entered = $promptNum"
 
 # Check username for uppercase or spaces, return username
-# Prompt_user usr "Enter a valid username"
+# Prompt_user usr "Enter a valid username" 0 0 "username"
 # echo "Username entered = $promptUsr"
 
 # Check if string variable is not empty, return string
-# Prompt_user str "Enter a string"
+# Prompt_user str "Enter a string" 0 0 "string"
 # echo "String entered = $promptStr"
 }
 
