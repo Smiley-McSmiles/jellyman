@@ -14,7 +14,7 @@ Backup()
 	# Backup /opt/jellyfin to passed directory
 	backupDirectory="$1"
 	tarPath=
-	_date=$(date +%m%d%Y%H%M)
+	_date=$(date +%m-%d-%Y-%H:%M)
 	fileName=jellyfin-backup-$_date.tar
 	if [[ ! -d /opt/jellyfin/backup ]]; then
 		mkdir /opt/jellyfin/backup
