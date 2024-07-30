@@ -10,8 +10,16 @@ sourceFile=/opt/jellyfin/config/jellyman.conf
 
 Import()
 {
-	Prompt_user file "> Please enter the path to the jellyfin-backup.tar archive." 0 0 "/path/to/backup.tar"
-	importTar=$promptFile
+	Prompt_user dir "> Please enter the directory to the jellyfin-backup.tar archive(s)." 0 0 "/path/to/backup(s)"
+	importDir=$promptDir
+	listOfBackups=$(ls -1 $importDir | grep "jellyfin-backup".*".tar")
+	listOfBackupsNumbered=$(echo "$listOfBackups" | cat -n)
+	numberOfBackups=$(echo "$listOfBackups" | wc -l)
+	echo "$listOfBackupsNumbered"
+	Prompt_user num "> Please enter the number corresponding with the archive you wish to import." 1 $numberOfBackups "1-$numberOfBackups"
+	backupToImportNumber=$promptNum
+	backupToImport=$(echo "$listOfBackups" | head -n $backupToImportNumber | tail -n 1)
+	importTar="$importDir/$backupToImport"
 
 	echo "+--------------------------------------------------------------------+"
 	echo "|                        ******CAUTION******                         |"
