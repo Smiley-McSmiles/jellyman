@@ -85,6 +85,7 @@ Backup_utility()
 	Has_sudo
 	source $sourceFile
 	optionNumber=
+	autoBackupSwitch=
 
 	if [[ ! -d $backupDir ]]; then
 		Prompt_user dir "> Please enter your desired directory for backup archives"
@@ -94,8 +95,17 @@ Backup_utility()
 		Set_var backupDir "$backupDir" "$sourceFile" str
 		Set_var maxBackupNumber "$maxBackupNumber" "$sourceFile" str
 		systemctl enable --now jellyfin-backup.timer
+		Set_var autoBackups true "$sourceFile" str
 	fi
-
+	
+	if $autoBackups; then
+		autoBackupSwitch="ON"
+	else
+		autoBackupSwitch="OFF"
+	fi
+	echo
+	echo "> Automatic backups are $autoBackupSwitch"
+	echo
 	echo "> 1. Enable automatic backups"
 	echo "> 2. Disable automatic backups"
 	echo "> 3. Change backup folder"
@@ -109,10 +119,12 @@ Backup_utility()
 	if [[ $optionNumber == 1 ]]; then
 		# enable auto-backups
 		systemctl enable --now jellyfin-backup.timer
+		Set_var autoBackups true "$sourceFile" str
 
 	elif [[ $optionNumber == 2 ]]; then
 		# disable auto-backups
 		systemctl disable --now jellyfin-backup.timer
+		Set_var autoBackups false "$sourceFile" str
 	
 	elif [[ $optionNumber == 3 ]]; then
 		# change backup folder
@@ -356,10 +368,22 @@ Import()
 
 		tar xf $importTar -C /
 		source $sourceFile
+		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
 		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/
 		mv -f /opt/jellyfin/backup/jellyfin-backup.timer $jellyfinServiceLocation/
 		systemctl daemon-reload
-		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
+		if [[ -n $autoBackups ]] && $autoBackups; then
+			systemctl enable --now jellyfin-backup.timer
+		else
+			if Prompt_user Yn "Enable automatic backups?" 0 0 "Y/n"; then
+				systemctl enable --now jellyfin-backup.timer
+				Set_var autoBackups true "$sourceFile" str
+			else
+				systemctl enable --now jellyfin-backup.timer
+				Set_var autoBackups false "$sourceFile" str
+			fi
+		fi
+		
 		if id "$defaultUser" &>/dev/null; then 
 			chown -Rf $defaultUser:$defaultUser /opt/jellyfin
 			chmod -Rf 770 /opt/jellyfin

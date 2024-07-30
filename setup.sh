@@ -35,6 +35,7 @@ Import()
 		
 		tar xf $importTar -C /
 		source $sourceFile
+		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
 		mv -f $DIRECTORY/scripts/jellyman /usr/bin/
 		mv -f $DIRECTORY/scripts/base_functions.sh /usr/bin/
 		chmod +rx /usr/bin/jellyman
@@ -42,7 +43,19 @@ Import()
 		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/
 		mv -f /opt/jellyfin/backup/jellyfin-backup.timer $jellyfinServiceLocation/
 		systemctl daemon-reload
-		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
+		
+		if [[ -n $autoBackups ]] && $autoBackups; then
+			systemctl enable --now jellyfin-backup.timer
+		else
+			if Prompt_user Yn "Enable automatic backups?" 0 0 "Y/n"; then
+				systemctl enable --now jellyfin-backup.timer
+				Set_var autoBackups true "$sourceFile" str
+			else
+				systemctl enable --now jellyfin-backup.timer
+				Set_var autoBackups false "$sourceFile" str
+			fi
+		fi
+		
 		if id $defaultUser &>/dev/null; then 
 			chown -Rf $defaultUser:$defaultUser /opt/jellyfin
 			chmod -Rf 770 /opt/jellyfin
@@ -104,7 +117,6 @@ Import()
 		echo "|          ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!          |"
 		echo "+-------------------------------------------------------------------+"
 	fi
-
 	
 	if Prompt_user Yn "> Would you like to remove the cloned git directory $DIRECTORY?"; then
 		echo "> Removing cloned git directory:$DIRECTORY..."
@@ -119,11 +131,11 @@ Get_Architecture()
 {
 	cpuArchitectureFull=$(uname -m)
 		case "$cpuArchitectureFull" in
-				x86_64)	architecture="amd64" ;;
-				aarch64)  architecture="arm64" ;;
-				armv*)	 architecture="armhf" ;;
-				*)		  echo "ERROR UNKNOWN CPU ARCHITECTURE.. EXITING."
-							 exit ;;
+				x86_64) architecture="amd64" ;;
+				aarch64) architecture="arm64" ;;
+				armv*) architecture="armhf" ;;
+				*) echo "ERROR UNKNOWN CPU ARCHITECTURE.. EXITING."
+					exit ;;
 		esac
 }
 
