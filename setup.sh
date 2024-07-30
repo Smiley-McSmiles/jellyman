@@ -30,7 +30,7 @@ Import()
 		echo "> IMPORTING $importTar"
 		jellyman -S
 		rm -rf /opt/jellyfin
-		tar xvf $importTar -C /
+		tar xf $importTar -C /
 		clear
 		source $sourceFile
 		mv -f /opt/jellyfin/backup/jellyman /usr/bin/
@@ -46,6 +46,7 @@ Import()
 			chmod -Rfv 770 /opt/jellyfin
 			Install_dependancies
 			jellyman -e -s
+			echo "> IMPORT COMPLETE!"
 		else
 			clear
 			echo "+-----------------------------------------------------------------------------------------------+"

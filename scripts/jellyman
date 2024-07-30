@@ -352,7 +352,7 @@ Import()
 		echo "> IMPORTING $importTar"
 		jellyman -S
 		rm -rf /opt/jellyfin
-		tar xvf $importTar -C /
+		tar xf $importTar -C /
 		clear
 		source $sourceFile
 		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/
@@ -363,6 +363,7 @@ Import()
 			chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
 			chmod -Rfv 770 /opt/jellyfin
 			jellyman -e -s
+			echo "> IMPORT COMPLETE!"
 		else
 			clear
 			echo "+-----------------------------------------------------------------------------------------------+"
