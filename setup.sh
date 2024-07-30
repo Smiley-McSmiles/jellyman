@@ -31,7 +31,6 @@ Import()
 		jellyman -S
 		rm -rf /opt/jellyfin
 		tar xf $importTar -C /
-		clear
 		source $sourceFile
 		mv -f /opt/jellyfin/backup/jellyman /usr/bin/
 		mv -f /opt/jellyfin/backup/base_functions.sh /usr/bin/

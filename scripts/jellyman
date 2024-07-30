@@ -353,7 +353,6 @@ Import()
 		jellyman -S
 		rm -rf /opt/jellyfin
 		tar xf $importTar -C /
-		clear
 		source $sourceFile
 		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/
 		mv -f /opt/jellyfin/backup/jellyfin-backup.timer $jellyfinServiceLocation/
