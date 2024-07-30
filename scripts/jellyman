@@ -93,8 +93,8 @@ Backup_utility()
 		backupDir="$promptDir"
 		Prompt_user num "> Please enter your desired maximum number of backup archives" 1 20 "1-20"
 		maxBackupNumber=$promptNum
-		Set_var backupDir "backupDir" "$sourceFile" str
-		Set_var maxBackupNumber "maxBackupNumber" "$sourceFile" str
+		Set_var backupDir "$backupDir" "$sourceFile" str
+		Set_var maxBackupNumber "$maxBackupNumber" "$sourceFile" str
 		systemctl enable --now jellyfin-backup.timer
 	fi
 
