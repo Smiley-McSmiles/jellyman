@@ -361,7 +361,7 @@ Import()
 		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
 		if id "$defaultUser" &>/dev/null; then 
 			chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-			chmod -Rfv 770 /opt/jellyfin
+			chmod -Rf 770 /opt/jellyfin
 			jellyman -e -s
 			echo "> IMPORT COMPLETE!"
 		else
@@ -378,8 +378,8 @@ Import()
 			if Prompt_user yN "> Would you like to create the LINUX user $defaultUser?"; then
 				echo "> Great!"
 				useradd -rd /opt/jellyfin $defaultUser
-				chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-				chmod -Rfv 770 /opt/jellyfin
+				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
+				chmod -Rf 770 /opt/jellyfin
 				jellyman -s -t
 			else
 				Prompt_user usr "> Please enter a new LINUX user." 0 0 "jellyfin"
@@ -394,8 +394,8 @@ Import()
 				echo "> Linux user = $defaultUser"
 				useradd -rd /opt/jellyfin $defaultUser
 				
-				chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-				chmod -Rfv 770 /opt/jellyfin
+				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
+				chmod -Rf 770 /opt/jellyfin
 				jellyman -e -s -t
 			fi
 		fi
@@ -518,9 +518,9 @@ Permissions()
 		directoryToFix=$1
 		echo "> Setting permissions for "$directoryToFix""
 		time $(
-			chown -R $defaultUser:$defaultUser "$directoryToFix"
-			chmod -R 770 "$directoryToFix"
-			chmod -R ug+X "$directoryToFix"
+			chown -Rf $defaultUser:$defaultUser "$directoryToFix"
+			chmod -Rf 770 "$directoryToFix"
+			chmod -Rf ug+X "$directoryToFix"
 		)
 		echo "> ...DONE"
 	elif [[ ! -d "$1" ]] && [[ -n "$1" ]]; then
@@ -538,9 +538,9 @@ Permissions()
 
 		echo "> Setting permissions for ${defaultPath[*]}"
 		time $(
-			chown -R $defaultUser:$defaultUser ${defaultPath[*]}
-			chmod -R 770 ${defaultPath[*]}
-			chmod -R ug+X ${defaultPath[*]}
+			chown -Rf $defaultUser:$defaultUser ${defaultPath[*]}
+			chmod -Rf 770 ${defaultPath[*]}
+			chmod -Rf ug+X ${defaultPath[*]}
 		)
 		echo "> ...DONE"
 	fi
@@ -810,8 +810,8 @@ Rename_tv()
 				#echo "$extensionOfFile"
 				echo "> New Name:"
 				echo "> $newItemName"
-				chown -fv $defaultUser:$defaultUser "$newItemName"
-				chmod -fv 770 "$newItemName"
+				chown -f $defaultUser:$defaultUser "$newItemName"
+				chmod -f 770 "$newItemName"
 				echo
 			fi
 	done

@@ -42,8 +42,8 @@ Import()
 		systemctl daemon-reload
 		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
 		if id $defaultUser &>/dev/null; then 
-			chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-			chmod -Rfv 770 /opt/jellyfin
+			chown -Rf $defaultUser:$defaultUser /opt/jellyfin
+			chmod -Rf 770 /opt/jellyfin
 			Install_dependancies
 			jellyman -e -s
 			echo "> IMPORT COMPLETE!"
@@ -61,8 +61,8 @@ Import()
 			if Prompt_user yN "> Would you like to create the LINUX user $defaultUser?"; then
 				echo "> Great!"
 				useradd -rd /opt/jellyfin $defaultUser
-				chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-				chmod -Rfv 770 /opt/jellyfin
+				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
+				chmod -Rf 770 /opt/jellyfin
 				Install_dependancies
 				jellyman -s -t
 			else
@@ -73,8 +73,8 @@ Import()
 				echo "> Linux user = $defaultUser"
 				useradd -rd /opt/jellyfin $defaultUser
 				
-				chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-				chmod -Rfv 770 /opt/jellyfin
+				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
+				chmod -Rf 770 /opt/jellyfin
 				Install_dependancies
 				jellyman -e -s -t
 			fi
