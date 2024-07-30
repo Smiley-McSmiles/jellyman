@@ -59,14 +59,13 @@ Import()
 			echo "|                   You may want to see who owns that configuration file with:                  |"
 			echo "|                          'ls -l /opt/jellyfin/config/jellyman.conf'                           |"
 			echo "+-----------------------------------------------------------------------------------------------+"
-			sleep 5
 			if Prompt_user yN "> Would you like to create the LINUX user $defaultUser?"; then
 				echo "> Great!"
 				useradd -rd /opt/jellyfin $defaultUser
 				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
 				chmod -Rf 770 /opt/jellyfin
 				Install_dependancies
-				jellyman -s -t
+				jellyman -e -s -t
 			else
 				Prompt_user usr "> Please enter a new LINUX user" 0 0 "jellyfin"
 				defaultUser=$promptUsr
