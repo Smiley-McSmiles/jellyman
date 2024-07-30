@@ -1142,7 +1142,7 @@ Help()
 	echo "-d, --disable                Disable Jellyfin on System Start."
 	echo "-e, --enable                 Enable Jellyfin on System Start."
 	echo "-h, --help                   Print this Help."
-	echo "-i, --import                 [FILE.tar] Input file to Import jellyfin-backup.tar."
+	echo "-i, --import                 [FILE.tar - optional] Input file to Import jellyfin-backup.tar."
 	echo "-p, --permissions            [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory."
 	echo "-r, --restart                Restart Jellyfin."
 	echo "-s, --start                  Start Jellyfin."

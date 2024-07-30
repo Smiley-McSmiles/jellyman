@@ -402,18 +402,11 @@ Update_jellyman()
 	cp -f $DIRECTORY/scripts/jellyman /usr/bin/jellyman
 	cp -f $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/jellyfin.sh
 	chmod +rx /usr/bin/jellyman
-	cp $DIRECTORY/conf/jellyfin.service /usr/lib/systemd/system/
 	cp $DIRECTORY/scripts/base_functions.sh /usr/bin/
 	chmod +rx /usr/bin/base_functions.sh
 	
 	# deletes all empty lines in $sourcefile
 	sed -i '/^ *$/d' $sourceFile
-	
-
-	if [[ ! -f $jellyfinServiceLocation/jellyfin-backup.timer ]]; then
-		cp $DIRECTORY/conf/jellyfin-backup.service /usr/lib/systemd/system/
-		cp $DIRECTORY/conf/jellyfin-backup.timer /usr/lib/systemd/system/
-	fi
 	
 	Set_var User "$defaultUser" "$jellyfinServiceLocation/jellyfin.service" str
 	
@@ -437,7 +430,14 @@ Update_jellyman()
 		jellyfinServiceLocation="/etc/systemd/system"
 		Set_var jellyfinServiceLocation "$jellyfinServiceLocation" "$sourceFile" str
 	fi
-
+	
+	cp $DIRECTORY/conf/jellyfin.service $jellyfinServiceLocation/
+	if [[ ! -f $jellyfinServiceLocation/jellyfin-backup.timer ]]; then
+		cp $DIRECTORY/conf/jellyfin-backup.service $jellyfinServiceLocation/
+		cp $DIRECTORY/conf/jellyfin-backup.timer $jellyfinServiceLocation/
+	fi
+	
+	systemctl daemon-reload
 	
 	if [[ ! -n $architecture ]]; then
 		architecture=

@@ -213,7 +213,7 @@ COMMANDS:
 -d, --disable                Disable Jellyfin on System Start.
 -e, --enable                 Enable Jellyfin on System Start.
 -h, --help                   Print this Help.
--i, --import                 [FILE.tar] Input file to Import jellyfin-backup.tar.
+-i, --import                 [FILE.tar - optional] Input file to Import jellyfin-backup.tar.
 -p, --permissions            [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
 -r, --restart                Restart Jellyfin.
 -s, --start                  Start Jellyfin.
