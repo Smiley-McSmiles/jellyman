@@ -19,8 +19,6 @@ Backup()
 	if [[ ! -d /opt/jellyfin/backup ]]; then
 		mkdir /opt/jellyfin/backup
 	fi
-	cp /usr/bin/jellyman /opt/jellyfin/backup/
-	cp /usr/bin/base_functions.sh /opt/jellyfin/backup/
 	cp /etc/jellyfin.conf /opt/jellyfin/backup/
 	cp $jellyfinServiceLocation/jellyfin* /opt/jellyfin/backup/
 	
