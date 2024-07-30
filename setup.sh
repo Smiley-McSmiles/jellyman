@@ -445,7 +445,7 @@ Update_jellyman()
 	else
 		echo "> Okay, keeping $DIRECTORY"
 	fi
-	echo "...complete"
+	echo "> ...complete"
 	
 }
 

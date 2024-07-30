@@ -16,7 +16,9 @@ Backup()
 	tarPath=
 	_date=$(date +%m%d%Y%H%M)
 	fileName=jellyfin-backup-$_date.tar
-	mkdir /opt/jellyfin/backup
+	if [[ ! -d /opt/jellyfin/backup ]]; then
+		mkdir /opt/jellyfin/backup
+	fi
 	cp /usr/bin/jellyman /opt/jellyfin/backup/
 	cp /usr/bin/base_functions.sh /opt/jellyfin/backup/
 	cp /etc/jellyfin.conf /opt/jellyfin/backup/
@@ -28,7 +30,7 @@ Backup()
 		tarPath="$backupDirectory/$fileName"
 	fi
 
-	echo "$tarPath"
+	echo "> $tarPath"
 	echo "> Running backup, this may take some time..."
 	time tar cf "$tarPath" /opt/jellyfin
 	USER1=$(stat -c '%U' "$backupDirectory")
@@ -563,13 +565,17 @@ Update()
 			echo "> Supplied URL does not point to a $architecture.tar.gz.. EXITING..."
 			exit
 		fi
-	
-		mkdir /opt/jellyfin/update
+		
+		if [[ ! -d /opt/jellyfin/update ]]; then
+			mkdir /opt/jellyfin/update
+		fi
 		wget -P /opt/jellyfin/update/ $customVersionLink
 	
 	else
 		echo "> Getting current version from repository..."
-		mkdir /opt/jellyfin/update
+		if [[ ! -d /opt/jellyfin/update ]]; then
+			mkdir /opt/jellyfin/update
+		fi
 		stableReleases=$(curl -sL https://repo.jellyfin.org/?path=/server/linux/latest-stable/$architecture/)
 		jellyfin_archive=$(echo "$stableReleases" | grep -Po jellyfin_[^_]+-$architecture.tar.gz | head -1)
 		jellyfin=$(echo "$jellyfin_archive" | sed -r "s|-$architecture.tar.gz||g")
