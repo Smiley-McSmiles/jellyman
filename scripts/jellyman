@@ -1009,24 +1009,20 @@ Transcode()
 	desiredGBperHour=$promptStr
 	
 	preset=0
-	while [ $preset -gt 9 ] || [ $preset -lt 1 ]; do
-		clear
-		echo
-		echo "> 1: ultrafast"
-		echo "> 2: superfast"
-		echo "> 3: veryfast"
-		echo "> 4: faster"
-		echo "> 5: fast"
-		echo '> 6: medium (RECOMMENDED)'
-		echo "> 7: slow"
-		echo "> 8: slower"
-		echo "> 9: veryslow"
-		echo
-		Prompt_user num "> Please choose a transcode preset" 1 9
-		preset=$promptNum
-		 preset=0
-		fi
-	done
+	clear
+	echo
+	echo "> 1: ultrafast"
+	echo "> 2: superfast"
+	echo "> 3: veryfast"
+	echo "> 4: faster"
+	echo "> 5: fast"
+	echo '> 6: medium (RECOMMENDED)'
+	echo "> 7: slow"
+	echo "> 8: slower"
+	echo "> 9: veryslow"
+	echo
+	Prompt_user num "> Please choose a transcode preset" 1 9
+	preset=$promptNum
 	echo
 	case "$preset" in
 		1)	preset="ultrafast" ;;
