@@ -391,7 +391,7 @@ Library_scan()
 	Has_sudo
 	source $sourceFile
 	Check_api_key
-	curl -d POST http://localhost:$networkPort/Library/Refresh?api_key=$apiKey
+	curl -d POST http://localhost:$httpPort/Library/Refresh?api_key=$apiKey
 }
 
 Import_api_key()
