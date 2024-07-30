@@ -277,7 +277,7 @@ Version_switch()
 	jellyman -S
 	unlink /opt/jellyfin/jellyfin
 	ln -s /opt/jellyfin/$newVersion /opt/jellyfin/jellyfin
-	chown -Rfv $defaultUser:$defaultUser /opt/jellyfin/jellyfin
+	chown -Rf $defaultUser:$defaultUser /opt/jellyfin/jellyfin
 	Set_var currentVersion $newVersion "$sourceFile"
 	jellyman -s
 }
@@ -360,7 +360,7 @@ Import()
 		systemctl daemon-reload
 		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
 		if id "$defaultUser" &>/dev/null; then 
-			chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
+			chown -Rf $defaultUser:$defaultUser /opt/jellyfin
 			chmod -Rf 770 /opt/jellyfin
 			jellyman -e -s
 			echo "> IMPORT COMPLETE!"
