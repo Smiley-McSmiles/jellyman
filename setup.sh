@@ -10,7 +10,7 @@ sourceFile=/opt/jellyfin/config/jellyman.conf
 
 Import()
 {
-	Prompt_user file "Please enter the path to the jellyfin-backup.tar archive."
+	Prompt_user file "> Please enter the path to the jellyfin-backup.tar archive."
 	importTar=$promptFile
 
 	echo "+--------------------------------------------------------------------+"
@@ -18,8 +18,8 @@ Import()
 	echo "|      This import procedurewill erase /opt/jellyfin COMPLETELY      |"
 	echo "+--------------------------------------------------------------------+"
 
-	if Prompt_user yN "Import $importTar?"; then
-		echo "IMPORTING $importTar"
+	if Prompt_user yN "> Import $importTar?"; then
+		echo "> IMPORTING $importTar"
 		jellyman -S
 		rm -rf /opt/jellyfin
 		tar xvf $importTar -C /
@@ -49,19 +49,19 @@ Import()
 			echo "|                          'ls -l /opt/jellyfin/config/jellyman.conf'                           |"
 			echo "+-----------------------------------------------------------------------------------------------+"
 			sleep 5
-			if Prompt_user yN "Would you like to create the LINUX user $defaultUser?"; then
-				echo "Great!"
+			if Prompt_user yN "> Would you like to create the LINUX user $defaultUser?"; then
+				echo "> Great!"
 				useradd -rd /opt/jellyfin $defaultUser
 				chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
 				chmod -Rfv 770 /opt/jellyfin
 				Install_dependancies
 				jellyman -s -t
 			else
-				Prompt_user usr "Please enter a new LINUX user"
+				Prompt_user usr "> Please enter a new LINUX user"
 				defaultUser=$promptUsr
 		 
 				defaultUser=${defaultUser,,}
-				echo "Linux user = $defaultUser"
+				echo "> Linux user = $defaultUser"
 				useradd -rd /opt/jellyfin $defaultUser
 				
 				chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
@@ -72,12 +72,12 @@ Import()
 		fi
 
 	else
-		echo "Returning..."
+		echo "> Returning..."
 		return 0
 		exit
 	fi
 
-	echo "Unblocking port $httpPort and $httpsPort..."
+	echo "> Unblocking port $httpPort and $httpsPort..."
 	if [ -x "$(command -v ufw)" ]; then
 		ufw allow $httpPort/tcp
 		ufw allow $httpsPort/tcp
@@ -96,12 +96,12 @@ Import()
 	fi
 
 	
-	if Prompt_user Yn "Would you like to remove the cloned git directory $DIRECTORY?"; then
-		echo "Removing cloned git directory:$DIRECTORY..."
+	if Prompt_user Yn "> Would you like to remove the cloned git directory $DIRECTORY?"; then
+		echo "> Removing cloned git directory:$DIRECTORY..."
 		rm -rf $DIRECTORY
 		cd ~/
 	else
-		echo "Okay, keeping $DIRECTORY"
+		echo "> Okay, keeping $DIRECTORY"
 	fi
 }
 
@@ -123,13 +123,13 @@ Install_dependancies()
 	packagesNeededRHEL='ffmpeg ffmpeg-devel ffmpeg-libs git openssl bc screen curl'
 	packagesNeededArch='ffmpeg git openssl bc screen curl'
 	packagesNeededOpenSuse='ffmpeg-4 git openssl bc screen curl'
-	echo "Preparing to install needed dependancies for Jellyfin..."
+	echo "> Preparing to install needed dependancies for Jellyfin..."
 
 	if [ -f /etc/os-release ]; then
 		source /etc/os-release
 		crbOrPowertools=
 		os_detected=true
-		echo "ID=$ID"
+		echo "> ID=$ID"
 		
 		if [[ $ID_LIKE == .*"rhel".* ]] || [[ $ID == "rhel" ]]; then
 			ID=rhel
@@ -181,10 +181,10 @@ Backup()
 	fileName=current-jellyfin-data.tar
 	if [[ $(echo "${backupDirectory: -1}") == "/" ]]; then
 		tarPath=$backupDirectory$fileName
-		echo "Saving your current metadata to --> $tarPath"
+		echo "> Saving your current metadata to --> $tarPath"
 	else
 		tarPath=$backupDirectory/$fileName
-		echo "Saving your current metadata to --> $tarPath"
+		echo "> Saving your current metadata to --> $tarPath"
 	fi
 	
 	cd $currentJellyfinDirectory
@@ -197,13 +197,13 @@ Backup()
 
 Previous_install()
 {
-	echo "WARNING: THIS OPTION IS HIGHLY UNSTABLE, ONLY USE IF YOU KNOW WHAT YOU'RE DOING!!!"
+	echo "> WARNING: THIS OPTION IS HIGHLY UNSTABLE, ONLY USE IF YOU KNOW WHAT YOU'RE DOING!!!"
 	echo
-	if Prompt_user yN "Is Jellyfin CURRENTLY installed on this system?"; then
+	if Prompt_user yN "> Is Jellyfin CURRENTLY installed on this system?"; then
 		isDataThere=false
 		isConfigThere=false
 		newDirectory=false
-		Prompt_user dir "Where is Jellyfins intalled directory?"
+		Prompt_user dir "> Where is Jellyfins intalled directory?"
 		currentJellyfinDirectory=$promptDir
 		
 		#systemFileXML=$(find $currentJellyfinDirectory -name "system.xml")
@@ -220,7 +220,7 @@ Previous_install()
 			isDataThere=false
 		else
 			isDataThere=true
-			echo "Found metadata!"
+			echo "> Found metadata!"
 		fi
 
 		if [ ! -d "$currentJellyfinDirectory/config" ]; then
@@ -228,13 +228,13 @@ Previous_install()
 			isConfigThere=false
 		else
 			isConfigThere=true
-			echo "Found config!"
+			echo "> Found config!"
 		fi
 
 		
 		if ! $isDataThere || ! $isConfigThere; then
 			echo "***ERROR*** - one or more directories not found..."
-			if Prompt_user Yn "Would you like to try a different directory?"; then
+			if Prompt_user Yn "> Would you like to try a different directory?"; then
 				currentJellyfinDirectory=null
 			else
 				exit
@@ -245,13 +245,13 @@ Previous_install()
 		cd /opt/jellyfin
 		tar xvf $tarPath -C ./
 	else
-		echo "Good call.."
+		echo "> Good call.."
 	fi
 }
 
 Setup()
 {
-	echo "Fetching newest stable Jellyfin version..."
+	echo "> Fetching newest stable Jellyfin version..."
 	Get_Architecture
 	jellyfin=
 	jellyfin_archive=
@@ -268,16 +268,16 @@ Setup()
 	mkdir /opt/jellyfin /opt/jellyfin/old /opt/jellyfin/backup /opt/jellyfin/data /opt/jellyfin/cache /opt/jellyfin/config /opt/jellyfin/log /opt/jellyfin/cert
 	clear
 	Previous_install
-	Prompt_user usr "Please enter the LINUX user for Jellyfin"
+	Prompt_user usr "> Please enter the LINUX user for Jellyfin"
 	defaultUser=$promptUsr
 	while id "$defaultUser" &>/dev/null; do
-		echo "Cannot create $defaultUser as $defaultUser already exists..."
-		Prompt_user usr "Please re-enter a new LINUX user for Jellyfin"
+		echo "> Cannot create $defaultUser as $defaultUser already exists..."
+		Prompt_user usr "> Please re-enter a new LINUX user for Jellyfin"
 		defaultUser=$promptUsr
 	done
 	
 	defaultUser=${defaultUser,,}
-	echo "Linux user = $defaultUser"
+	echo "> Linux user = $defaultUser"
 	useradd -rd /opt/jellyfin $defaultUser
 
 	if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
@@ -319,12 +319,12 @@ Setup()
 
 	Install_dependancies
 
-	echo "Setting Permissions for Jellyfin..."
+	echo "> Setting Permissions for Jellyfin..."
 	chown -R $defaultUser:$defaultUser /opt/jellyfin
 	chmod u+x $jellyfinDir/jellyfin.sh
 	chmod +rx /usr/bin/jellyman
 
-	echo "Unblocking port 8096 and 8920..."
+	echo "> Unblocking port 8096 and 8920..."
 	if [ -x "$(command -v ufw)" ]; then
 		ufw allow 8096/tcp
 		ufw allow 8920/tcp
@@ -346,7 +346,7 @@ Setup()
 		jellyman -e -s
 		echo
 		echo
-		echo "DONE"
+		echo "> DONE"
 		echo
 		echo "+-------------------------------------------------------------------+"
 		echo "|                 Navigate to http://localhost:8096/                |"
@@ -374,23 +374,23 @@ Setup()
 		echo "+-------------------------------------------------------------------+"
 	fi
 	echo
-	echo "Press 'q' to exit next screen"
+	echo "> Press 'q' to exit next screen"
 	read -p " Press ENTER to continue" ENTER
 	jellyman -t
 	echo
-	if Prompt_user Yn "Would you like to remove the cloned git directory $DIRECTORY?"; then
-		echo "Removing cloned git directory:$DIRECTORY..."
+	if Prompt_user Yn "> Would you like to remove the cloned git directory $DIRECTORY?"; then
+		echo "> Removing cloned git directory:$DIRECTORY..."
 		rm -rf $DIRECTORY
 		cd ~/
 	else
-		echo "Okay, keeping $DIRECTORY"
+		echo "> Okay, keeping $DIRECTORY"
 	fi
 }
 
 Update_jellyman()
 {
 	source $sourceFile
-	echo "Updating Jellyman - The Jellyfin Manager"
+	echo "> Updating Jellyman - The Jellyfin Manager"
 	cp -f $DIRECTORY/scripts/jellyman /usr/bin/jellyman
 	cp -f $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/jellyfin.sh
 	chmod +rx /usr/bin/jellyman
@@ -438,12 +438,12 @@ Update_jellyman()
 	fi
 
 
-	if Prompt_user Yn "Would you like to remove the cloned git directory $DIRECTORY?"; then
-		echo "Removing cloned git directory:$DIRECTORY..."
+	if Prompt_user Yn "> Would you like to remove the cloned git directory $DIRECTORY?"; then
+		echo "> Removing cloned git directory:$DIRECTORY..."
 		rm -rf $DIRECTORY
 		cd ~/
 	else
-		echo "Okay, keeping $DIRECTORY"
+		echo "> Okay, keeping $DIRECTORY"
 	fi
 	echo "...complete"
 	
@@ -460,7 +460,7 @@ else
 		echo "2. Force update Jellyman"
 		echo "3. Import a jellyfin-backup.tar file"
 		echo
-		Prompt_user num "Please select the number corresponding with the option you want to select." 1 3
+		Prompt_user num "> Please select the number corresponding with the option you want to select." 1 3
 		optionNumber=$promptNum
 		echo
 	done
