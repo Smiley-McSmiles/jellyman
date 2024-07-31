@@ -36,8 +36,8 @@ Import()
 		tar xf $importTar -C /
 		source $sourceFile
 		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
-		mv -f $DIRECTORY/scripts/jellyman /usr/bin/
-		mv -f $DIRECTORY/scripts/base_functions.sh /usr/bin/
+		cp -f $DIRECTORY/scripts/jellyman /usr/bin/
+		cp -f $DIRECTORY/scripts/base_functions.sh /usr/bin/
 		chmod +rx /usr/bin/jellyman
 		chmod +rx /usr/bin/base_functions.sh
 		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/
