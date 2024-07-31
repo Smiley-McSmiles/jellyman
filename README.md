@@ -133,6 +133,7 @@ sudo ./setup.sh
 ```
 
 # Example Install
+[![Tutorial](https://img.youtube.com/vi/sXvEWvffcFc/0.jpg)](https://www.youtube.com/watch?v=sXvEWvffcFc)
 
 ```sh
 1. Start first time setup
