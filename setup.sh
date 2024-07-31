@@ -374,7 +374,7 @@ Setup()
 		echo "> DONE"
 		echo
 		echo "+-------------------------------------------------------------------+"
-		echo "|                 Navigate to http://localhost:8096/                |"
+		echo "|      Navigate to http://localhost:8096/web/#/wizardstart.html     |"
 		echo "|         in your Web Browser to claim your Jellyfin server         |"
 		echo "+-------------------------------------------------------------------+"
 		echo

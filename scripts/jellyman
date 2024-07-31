@@ -84,7 +84,6 @@ Backup_utility()
 {
 	Has_sudo
 	while true; do
-		source $sourceFile
 		clear
 		optionNumber=
 		autoBackupSwitch=
@@ -96,10 +95,12 @@ Backup_utility()
 			maxBackupNumber=$promptNum
 			systemctl enable --now jellyfin-backup.timer
 			Set_var backupDir "$backupDir" "$sourceFile" str
-			Set_var maxBackupNumber 3 "$sourceFile" str
+			Set_var maxBackupNumber $maxBackupNumber "$sourceFile" str
 			Set_var autoBackups true "$sourceFile" str
 			Set_var backupFrequency "weekly" "$sourceFile"
 		fi
+		
+		source $sourceFile
 		
 		if $autoBackups; then
 			autoBackupSwitch="ON"
