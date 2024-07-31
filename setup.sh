@@ -40,8 +40,19 @@ Import()
 		cp -f $DIRECTORY/scripts/base_functions.sh /usr/bin/
 		chmod +rx /usr/bin/jellyman
 		chmod +rx /usr/bin/base_functions.sh
-		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/
-		mv -f /opt/jellyfin/backup/jellyfin-backup.timer $jellyfinServiceLocation/
+		
+		if [ -d /usr/lib/systemd/system ]; then
+			jellyfinServiceLocation="/usr/lib/systemd/system"
+			Set_var jellyfinServiceLocation $jellyfinServiceLocation "$sourceFile" str
+			mv -f /opt/jellyfin/backup/*.service /usr/lib/systemd/system/
+			mv -f /opt/jellyfin/backup/jellyfin-backup.timer /usr/lib/systemd/system/
+		else
+			jellyfinServiceLocation="/etc/systemd/system"
+			Set_var jellyfinServiceLocation $jellyfinServiceLocation "$sourceFile" str
+			mv -f /opt/jellyfin/backup/*.service /etc/systemd/system/
+			mv -f /opt/jellyfin/backup/jellyfin-backup.timer /etc/systemd/system/
+		fi
+		
 		systemctl daemon-reload
 		
 		if [[ -n $autoBackups ]] && $autoBackups; then
