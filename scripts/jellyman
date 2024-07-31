@@ -83,86 +83,111 @@ Backup_auto()
 Backup_utility()
 {
 	Has_sudo
-	source $sourceFile
-	optionNumber=
-	autoBackupSwitch=
+	while true; do
+		source $sourceFile
+		clear
+		optionNumber=
+		autoBackupSwitch=
 
-	if [[ ! -d $backupDir ]]; then
-		Prompt_user dir "> Please enter your desired directory for backup archives"
-		backupDir="$promptDir"
-		Prompt_user num "> Please enter your desired maximum number of backup archives" 1 20 "1-20"
-		maxBackupNumber=$promptNum
-		Set_var backupDir "$backupDir" "$sourceFile" str
-		Set_var maxBackupNumber "$maxBackupNumber" "$sourceFile" str
-		systemctl enable --now jellyfin-backup.timer
-		Set_var autoBackups true "$sourceFile" str
-	fi
-	
-	if $autoBackups; then
-		autoBackupSwitch="ON"
-	else
-		autoBackupSwitch="OFF"
-	fi
-	echo
-	echo "> Automatic backups are $autoBackupSwitch"
-	echo
-	echo "> 1. Enable automatic backups"
-	echo "> 2. Disable automatic backups"
-	echo "> 3. Change backup folder"
-	echo "> 4. Change max backups"
-	echo "> 5. Change frequency of backups"
-	echo
-	Prompt_user num "> Please select the number corresponding with the option you want to select." 1 5 "1-5"
-	optionNumber=$promptNum
-	echo
-	
-	if [[ $optionNumber == 1 ]]; then
-		# enable auto-backups
-		systemctl enable --now jellyfin-backup.timer
-		Set_var autoBackups true "$sourceFile" str
-
-	elif [[ $optionNumber == 2 ]]; then
-		# disable auto-backups
-		systemctl disable --now jellyfin-backup.timer
-		Set_var autoBackups false "$sourceFile" str
-	
-	elif [[ $optionNumber == 3 ]]; then
-		# change backup folder
-		Prompt_user dir "> Please enter your desired directory for backup archives"
-		backupDir="$promptDir"
-		Set_var "backupDir" "$backupDir" "$sourceFile"
-
-	elif [[ $optionNumber == 4 ]]; then
-		# change max backups
-		Prompt_user num "> Please enter your desired maximum number of backup archives" 1 50 "1-50"
-		maxBackupNumber=$promptNum
-		Set_var "maxBackupNumber" "$maxBackupNumber" "$sourceFile"
-	
-	else
-		# change frequency of backups
-		echo "> 1. Daily backups"
-		echo "> 2. Weekly backups"
-		echo "> 3. Monthly backups"
-		echo
-		Prompt_user num "> Please select the number corresponding with the option you want to select." 1 3 "1-3"
-		_optionNumber=$promptNum
-		echo
-	
-		jellyfinBackupTimer=/usr/lib/systemd/system/jellyfin-backup.timer
-		if [[ $_optionNumber == 1 ]]; then
-			sed -i "s|OnCalendar.*|OnCalendar=*-*-* 01:00:00|g" $jellyfinBackupTimer
-			echo "> Backups will now be created every day at 1:00 AM"
-		elif [[ $_optionNumber == 2 ]]; then
-			sed -i "s|OnCalendar.*|OnCalendar=Sun *-*-* 01:00:00|g" $jellyfinBackupTimer
-			echo "> Backups will now be created every Sunday at 1:00 AM"
-		elif [[ $_optionNumber == 3 ]]; then
-			sed -i "s|OnCalendar.*|OnCalendar=*-*-01 01:00:00|g" $jellyfinBackupTimer
-			echo "> Backups will now be created on the 1st of every month at 1:00 AM"
+		if [[ ! -d $backupDir ]]; then
+			Prompt_user dir "> Please enter your desired directory for backup archives"
+			backupDir="$promptDir"
+			Prompt_user num "> Please enter your desired maximum number of backup archives" 1 20 "1-20"
+			maxBackupNumber=$promptNum
+			systemctl enable --now jellyfin-backup.timer
+			Set_var backupDir "$backupDir" "$sourceFile" str
+			Set_var maxBackupNumber 3 "$sourceFile" str
+			Set_var autoBackups true "$sourceFile" str
+			Set_var backupFrequency "weekly" "$sourceFile"
 		fi
 		
-		systemctl daemon-reload
-		systemctl restart jellyfin-backup.timer
-	fi
+		if $autoBackups; then
+			autoBackupSwitch="ON"
+		else
+			autoBackupSwitch="OFF"
+		fi
+		echo
+		echo "> Automatic backups are $autoBackupSwitch"
+		echo
+		echo "> 1. Enable automatic backups"
+		echo "> 2. Disable automatic backups"
+		echo "> 3. Change backup folder"
+		echo "> 4. Change max backups [ $maxBackupNumber ]"
+		echo "> 5. Change frequency of backups [ $backupFrequency ]"
+		echo "> 6. EXIT"
+		echo
+		Prompt_user num "> Please select the number corresponding with the option you want to select." 1 6 "1-6"
+		optionNumber=$promptNum
+		echo
+		case $optionNumber in
+			"1")
+				# enable auto-backups
+				systemctl enable --now jellyfin-backup.timer
+				Set_var autoBackups true "$sourceFile" str
+				;;
+			"2")
+				# disable auto-backups
+				systemctl disable --now jellyfin-backup.timer
+				Set_var autoBackups false "$sourceFile" str
+				;;
+			"3")
+				# change backup folder
+				if [[ -n $backupDir ]]; then
+					echo "> Current directory for backups is $backupDir"
+				fi
+				Prompt_user dir "> Please enter your desired directory for backup archives"
+				backupDir="$promptDir"
+				Set_var "backupDir" "$backupDir" "$sourceFile"
+				;;
+			"4")
+				# change max backups
+				if [[ -n $maxBackupNumber ]]; then
+					echo "> Current maximum backups allowed is $maxBackupNumber"
+				fi
+				Prompt_user num "> Please enter your desired maximum number of backup archives" 1 50 "1-50"
+				maxBackupNumber=$promptNum
+				Set_var maxBackupNumber "$maxBackupNumber" "$sourceFile"
+				;;
+			"5")
+				# change frequency of backups
+				echo "> Automatic backups will be done on a $backupFrequency basis."
+				echo
+				echo "> 1. Daily backups"
+				echo "> 2. Weekly backups"
+				echo "> 3. Monthly backups"
+				echo
+				Prompt_user num "> Please select the number corresponding with the option you want to select." 1 3 "1-3"
+				_optionNumber=$promptNum
+				echo
+				jellyfinBackupTimer=/usr/lib/systemd/system/jellyfin-backup.timer
+				case $_optionNumber in
+					"1")
+						Set_var backupFrequency "daily" "$sourceFile"
+						sed -i "s|OnCalendar.*|OnCalendar=*-*-* 01:00:00|g" $jellyfinBackupTimer
+						echo "> Backups will now be created every day at 1:00 AM"
+						read -p "> Press ENTER to exit" ENTER
+						;;
+					"2")
+						Set_var backupFrequency "weekly" "$sourceFile"
+						sed -i "s|OnCalendar.*|OnCalendar=Sun *-*-* 01:00:00|g" $jellyfinBackupTimer
+						echo "> Backups will now be created every Sunday at 1:00 AM"
+						read -p "> Press ENTER to exit" ENTER
+						;;
+					"3")
+						Set_var backupFrequency "monthly" "$sourceFile"
+						sed -i "s|OnCalendar.*|OnCalendar=*-*-01 01:00:00|g" $jellyfinBackupTimer
+						echo "> Backups will now be created on the 1st of every month at 1:00 AM"
+						read -p "> Press ENTER to exit" ENTER
+						;;
+				esac
+				systemctl daemon-reload
+				systemctl restart jellyfin-backup.timer
+				;;
+			"6")
+				exit
+				;;
+		esac
+	done
 }
 
 isCurrentVersion()
@@ -378,9 +403,11 @@ Import()
 			if Prompt_user Yn "Enable automatic backups?" 0 0 "Y/n"; then
 				systemctl enable --now jellyfin-backup.timer
 				Set_var autoBackups true "$sourceFile" str
+				Set_var "backupFrequency" "weekly" "$sourceFile"
 			else
 				systemctl enable --now jellyfin-backup.timer
 				Set_var autoBackups false "$sourceFile" str
+				Set_var "backupFrequency" "weekly" "$sourceFile"
 			fi
 		fi
 		
@@ -1113,7 +1140,7 @@ Transcode()
 	View_Transcode_Progress
 }
 
-Update-jellyman()
+Update_jellyman()
 {
 	Has_sudo
 	jellymanManFile=$(curl -sL https://raw.githubusercontent.com/Smiley-McSmiles/jellyman/main/jellyman.1)
@@ -1245,7 +1272,7 @@ if [ -n "$1" ]; then
 					 Update $2
 					 shift
 				 fi ;;
-			-U | --update-jellyman) Update-jellyman
+			-U | --update-jellyman) Update_jellyman
 				 exit ;;
 			-ub | --update-beta) Update_beta ;;
 			-v | --version) Get_jellyfin_version

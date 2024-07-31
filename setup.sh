@@ -50,9 +50,11 @@ Import()
 			if Prompt_user Yn "Enable automatic backups?" 0 0 "Y/n"; then
 				systemctl enable --now jellyfin-backup.timer
 				Set_var autoBackups true "$sourceFile" str
+				Set_var "backupFrequency" "weekly" "$sourceFile"
 			else
 				systemctl enable --now jellyfin-backup.timer
 				Set_var autoBackups false "$sourceFile" str
+				Set_var "backupFrequency" "weekly" "$sourceFile"
 			fi
 		fi
 		
@@ -119,9 +121,8 @@ Import()
 	fi
 	
 	if Prompt_user Yn "> Would you like to remove the cloned git directory $DIRECTORY?"; then
-		echo "> Removing cloned git directory:$DIRECTORY..."
+		echo "> Removing cloned git directory: $DIRECTORY..."
 		rm -rf $DIRECTORY
-		cd ~/
 	else
 		echo "> Okay, keeping $DIRECTORY"
 	fi
@@ -401,9 +402,8 @@ Setup()
 	jellyman -t
 	echo
 	if Prompt_user Yn "> Would you like to remove the cloned git directory $DIRECTORY?"; then
-		echo "> Removing cloned git directory:$DIRECTORY..."
+		echo "> Removing cloned git directory: $DIRECTORY..."
 		rm -rf $DIRECTORY
-		cd ~/
 	else
 		echo "> Okay, keeping $DIRECTORY"
 	fi
@@ -461,14 +461,12 @@ Update_jellyman()
 	fi
 
 	if [[ $_skip == "y" ]]; then
-		echo "> Removing cloned git directory:$DIRECTORY..."
+		echo "> Removing cloned git directory: $DIRECTORY..."
 		rm -rf $DIRECTORY
-		cd ~/
 	else
 		if Prompt_user Yn "> Would you like to remove the cloned git directory $DIRECTORY?"; then
-			echo "> Removing cloned git directory:$DIRECTORY..."
+			echo "> Removing cloned git directory: $DIRECTORY..."
 			rm -rf $DIRECTORY
-			cd ~/
 		else
 			echo "> Okay, keeping $DIRECTORY"
 		fi
