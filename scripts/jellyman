@@ -1263,7 +1263,7 @@ if [ -n "$1" ]; then
 					Get_jellyman_version ;;
 			-vd | --version-download) Download_version ;;
 			-vs | --version-switch) Version_switch ;;
-			-rv | --remove-version) Remove_version ;;
+			-vr | --version-remove) Remove_version ;;
 			-rc | --recertify) Recertify_https ;;
 			-rn | --rename) Rename_tv ;;
 			-ls | --library-scan) Library_scan ;;
