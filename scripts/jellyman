@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.7.7"
+jellymanVersion="v1.7.8"
 sourceFile="/opt/jellyfin/config/jellyman.conf"
 source /usr/bin/base_functions.sh
 

@@ -61,7 +61,7 @@ Import()
 		if id $defaultUser &>/dev/null; then 
 			chown -Rf $defaultUser:$defaultUser /opt/jellyfin
 			chmod -Rf 770 /opt/jellyfin
-			Install_dependancies
+			Install_dependencies
 			jellyman -e -s
 			echo "> IMPORT COMPLETE!"
 		else
@@ -79,7 +79,7 @@ Import()
 				useradd -rd /opt/jellyfin $defaultUser
 				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
 				chmod -Rf 770 /opt/jellyfin
-				Install_dependancies
+				Install_dependencies
 				jellyman -e -s -t
 			else
 				Prompt_user usr "> Please enter a new LINUX user" 0 0 "jellyfin"
@@ -91,7 +91,7 @@ Import()
 				
 				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
 				chmod -Rf 770 /opt/jellyfin
-				Install_dependancies
+				Install_dependencies
 				jellyman -e -s -t
 			fi
 		fi
@@ -140,7 +140,7 @@ Get_Architecture()
 		esac
 }
 
-Install_dependancies()
+Install_dependencies()
 {
 	packagesNeededDebian='ffmpeg git net-tools openssl bc screen curl'
 	packagesNeededRHEL='ffmpeg ffmpeg-devel ffmpeg-libs git openssl bc screen curl'
@@ -266,9 +266,9 @@ Previous_install()
 		
 		Backup $HOME
 		cd /opt/jellyfin
-		tar xvf $tarPath -C ./
+		tar xf $tarPath -C ./
 	else
-		echo "> Good call.."
+		echo ""
 	fi
 }
 
@@ -330,7 +330,8 @@ Setup()
 	cp $DIRECTORY/conf/jellyfin.conf /etc/
 	jellyfinDir=/opt/jellyfin
 	jellyfinConfigFile=$jellyfinDir/config/jellyman.conf
-	tar xvzf $DIRECTORY/$jellyfin_archive
+	echo "> Unpacking $DIRECTORY/$jellyfin_archive..."
+	tar xzf $DIRECTORY/$jellyfin_archive
 	mv -f $DIRECTORY/jellyfin /opt/jellyfin/$jellyfin
 	ln -s $jellyfinDir/$jellyfin $jellyfinDir/jellyfin
 	Set_var architecture "$architecture" "$jellyfinConfigFile" str
@@ -340,7 +341,8 @@ Setup()
 	Set_var defaultUser "$defaultUser" "$jellyfinConfigFile" str
 	Set_var jellyfinServiceLocation "$jellyfinServiceLocation" "$jellyfinConfigFile" str
 
-	Install_dependancies
+	echo "> Installing dependencies..."
+	Install_dependencies
 
 	echo "> Setting Permissions for Jellyfin..."
 	chown -R $defaultUser:$defaultUser /opt/jellyfin
@@ -353,8 +355,8 @@ Setup()
 		ufw allow 8920/tcp
 		ufw reload
 	elif [ -x "$(command -v firewall-cmd)" ]; then
-		firewall-cmd --permanent --zone=public --add-port=8096/tcp
-		firewall-cmd --permanent --zone=public --add-port=8920/tcp
+		firewall-cmd --permanent --add-port=8096/tcp
+		firewall-cmd --permanent --add-port=8920/tcp
 		firewall-cmd --reload
 	else
 		echo "+-------------------------------------------------------------------+"
@@ -411,6 +413,12 @@ Setup()
 
 Update_jellyman()
 {
+	if [[ ! -f /usr/bin/jellyman ]]; then
+		echo "> ERROR: JELLYMAN IS NOT INSTALLED, CANNOT UPDATE."
+		echo "> Please run 'sudo ./setup.sh' and choose option #1" 
+		return 1
+		exit
+	fi
 	_skip=$1
 	source $sourceFile
 	echo "> Updating Jellyman - The Jellyfin Manager"

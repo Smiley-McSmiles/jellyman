@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
 =======
 
-> v1.7.7 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
+> v1.7.8 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
 > Tested on Fedora 34-40, Ubuntu 22.04-24.04, Manjaro 21.3.6, EndeavourOS Artemis Neo/Nova/Cassini Nova, Linux Mint 21, and Rocky/Alma/RHEL Linux 8.6/9.0
 
@@ -133,69 +133,74 @@ sudo ./setup.sh
 ```
 
 # Example Install
-```
+
+```sh
 1. Start first time setup
 2. Force update Jellyman
 3. Import a jellyfin-backup.tar file
 
-Please select the number corresponding with the option you want to select.
->>> 1
-Fetching newest stable Jellyfin version...
-Is there a current install of Jellyfin on this system? [y/N] : N
+> Please select the number corresponding with the option you want to select.
+[1-3] >>> 1
 
-Please enter the default user for Jellyfin: jellyfin
+> Fetching newest stable Jellyfin version...
+> WARNING: THIS OPTION IS HIGHLY UNSTABLE, ONLY USE IF YOU KNOW WHAT YOU'RE DOING!!!
 
-Preparing to install needed dependancies for Jellyfin...
-ID=fedora
-Complete!
-Last metadata expiration check: 1:03:15 ago on Wed 24 Aug 2022 01:50:56 PM CDT.
-Package ffmpeg-5.0.1-3.fc36.x86_64 is already installed.
-Package ffmpeg-devel-5.0.1-3.fc36.x86_64 is already installed.
-Package ffmpeg-libs-5.0.1-3.fc36.x86_64 is already installed.
-Package git-2.37.2-1.fc36.x86_64 is already installed.
-Package openssl-1:3.0.5-1.fc36.x86_64 is already installed.
+> Is Jellyfin CURRENTLY installed on this system?
+[y/N] >>> no
+
+> Please enter the LINUX user for Jellyfin
+[jellyfin] >>> jellyfin
+> Linux user = jellyfin
+> Unpacking /home/smiley/jellyman/jellyfin_10.9.8-amd64.tar.gz...
+> Installing dependencies...
+> Preparing to install needed dependancies for Jellyfin...
+> ID=fedora
 Dependencies resolved.
 Nothing to do.
 Complete!
-Setting Permissions for Jellyfin...
-Unblocking port 8096 and 8920...
+Last metadata expiration check: 1:16:45 ago on Wed 31 Jul 2024 05:16:09 AM CDT.
+> Setting Permissions for Jellyfin...
+> Unblocking port 8096 and 8920...
+success
+success
+success
+
+> DONE
 
 +-------------------------------------------------------------------+
-|               Navigate to http://localhost:8096/                  |
-|        in your Web Browser to claim your Jellyfin server          |
+|                 Navigate to http://localhost:8096/                |
+|         in your Web Browser to claim your Jellyfin server         |
 +-------------------------------------------------------------------+
 
 +-------------------------------------------------------------------+
 |         To enable https please enter 'sudo jellyman -rc'          |
 |       (After you have navigated to the Jellyfin Dashboard)        |
 |                                                                   |
-|             To manage Jellyfin use 'jellyman -h'                  |
+|                To manage Jellyfin use 'jellyman -h'               |
 +-------------------------------------------------------------------+
 
-
-+-----------------------------------------------+
-|          No default directory found...        |
-|     Please enter the root directory for       |
-|              your Media Library               |
-|    DO NOT ENTER YOUR USER DIRECTORY AS IT     |
-|    WILL RESET PERMISSIONS OF THE ENTERED      |
-|       DIRECTORY TO YOUR JELLYFIN USER         |
-+-----------------------------------------------+
-/testMediaDirectory
-
+> Press 'q' to exit next screen
 ● jellyfin.service - Jellyfin Media Server - Installed by Jellyman
-     Loaded: loaded (/usr/lib/systemd/system/jellyfin.service; enabled; vendor preset: disabled)
-     Active: active (running) since Tue 2024-07-27 04:20:00 CDT; 1h ago
-   Main PID: 944 (jellyfin.sh)
-      Tasks: 18 (limit: 8736)
-     Memory: 254.3M
-        CPU: 22.173s
+     Loaded: loaded (/usr/lib/systemd/system/jellyfin.service; enabled; preset: disabled)
+    Drop-In: /usr/lib/systemd/system/service.d
+             └─10-timeout-abort.conf
+     Active: active (running) since Wed 2024-07-31 06:32:56 CDT; 5s ago
+   Main PID: 11878 (jellyfin.sh)
+      Tasks: 21 (limit: 23170)
+     Memory: 112.8M (peak: 128.1M)
+        CPU: 5.178s
      CGroup: /system.slice/jellyfin.service
-             ├─ 944 /bin/bash /opt/jellyfin/jellyfin.sh
-             └─ 947 /opt/jellyfin/jellyfin/jellyfin -d /opt/jellyfin/data -C /opt/jellyfin/cache -c /opt/jellyfin/config -l /opt/jellyfin/log --ffmpeg /usr/share/ffmpeg/ffmpeg
+             ├─11878 /bin/bash /opt/jellyfin/jellyfin.sh
+             └─11879 /opt/jellyfin/jellyfin/jellyfin -d /opt/jellyfin/data -C /opt/jellyfin/cache -c /opt/jellyfin/config -l /opt/jellyfin/log --ffmpeg /usr/bin/ffmpeg
 
-Would you like to remove the git cloned directory /home/smiley/jellyman? [Y/n] : Y
-Removing git cloned directory:/home/smiley/jellyman
+Jul 31 06:33:01 stronglap jellyfin.sh[11879]: [06:33:01] [INF] [6] MediaBrowser.MediaEncoding.Encoder.MediaEncoder: FFmpeg: /usr/bin/ffmpeg
+Jul 31 06:33:01 stronglap jellyfin.sh[11879]: [06:33:01] [INF] [6] Emby.Server.Implementations.ApplicationHost: ServerId: 264746fa848346df86e221b850267006
+Jul 31 06:33:01 stronglap jellyfin.sh[11879]: [06:33:01] [INF] [6] Emby.Server.Implementations.ApplicationHost: Core startup complete
+Jul 31 06:33:01 stronglap jellyfin.sh[11879]: [06:33:01] [INF] [6] Main: Startup complete 0:00:04.8788077
+
+> Would you like to remove the cloned git directory /home/smiley/jellyman?
+[Y/n] >>> no
+> Okay, keeping /home/smiley/jellyman
 ```
 
 # Usage
