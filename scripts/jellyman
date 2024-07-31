@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.7.8"
+jellymanVersion="v1.7.9"
 sourceFile="/opt/jellyfin/config/jellyman.conf"
 source /usr/bin/base_functions.sh
 
@@ -305,7 +305,7 @@ Version_switch()
 	echo "> $currentVersion"
 	echo
 	echo "> Jellyfin versions already downloaded:"
-	echo "> $installedVersionsClean" | cat -n
+	echo "$installedVersionsClean" | cat -n
 	echo "> $warning"
 	echo "> Please enter the number corresponding with"
 	Prompt_user num "  the version you want to install" 1 $maxNumber "1-$maxNumber"
@@ -326,6 +326,7 @@ Remove_version()
 	versionToRemoveNumber=0
 	versionToRemove=""
 	installedVersions=$(ls /opt/jellyfin/ | grep "_")
+	installedVersionsClean=$(echo "$installedVersions" | sed -r "s|j|J|g" | sed -r "s|_| v|g")
 	maxNumber=$(echo "$installedVersions" | wc -l)
 	warning=
 
@@ -334,7 +335,7 @@ Remove_version()
 	echo "> $currentVersion"
 	echo
 	echo "> Jellyfin versions already downloaded:"
-	echo "$installedVersions" | cat -n
+	echo "$installedVersionsClean" | cat -n
 	echo
 	echo "> $warning"
 	echo "> Please enter the number corresponding with"
@@ -582,19 +583,20 @@ Permissions()
 		exit
 	else
 		#Check if there is a recorded media library path for chown and chmod:
-		if ! areDirectories "${defaultPath[*]}"; then
+		if areDirectories "${defaultPath[*]}" || [[ -d $defaultPath ]] || [[ -n $defaultPath ]]; then
+			echo "> Setting permissions for ${defaultPath[*]}"
+			time $(
+				chown -Rf $defaultUser:$defaultUser ${defaultPath[*]}
+				chmod -Rf 770 ${defaultPath[*]}
+				chmod -Rf ug+X ${defaultPath[*]}
+			)
+		else
 			echo "> No default media directory found..."
 			echo "> Running sudo jellyman -md to change media directory in:"
 			Countdown 5
 			jellyman -md
 		fi
 
-		echo "> Setting permissions for ${defaultPath[*]}"
-		time $(
-			chown -Rf $defaultUser:$defaultUser ${defaultPath[*]}
-			chmod -Rf 770 ${defaultPath[*]}
-			chmod -Rf ug+X ${defaultPath[*]}
-		)
 		echo "> ...DONE"
 	fi
 }
@@ -1084,8 +1086,8 @@ Transcode()
 	echo "|        TO RUN THIS COMMAND IN 'screen' THEN PRESSING         |"
 	echo "|                       CTRL + A THEN D                        |"
 	echo "|--------------------------------------------------------------|"
-	Prompt_user dir "> Please enter the directory to the file(s)"
-	_directoryToCorrect=$promptDir
+	Prompt_user str "> Please enter the directory to the file(s)" 0 0 "directory"
+	_directoryToCorrect=$promptStr
 	echo
 	echo "> Please enter the desired GB per hour of video"
 	Prompt_user str "> EXAMPLE: 1 OR 2.5" 0 0 "float"
@@ -1158,16 +1160,21 @@ Change_Media_Directory()
 		echo
 		echo $warning
 		Prompt_user str " " 0 0 "/dir1 /dir2"
-		mediaPath=$promptStr
-		if areDirectories "$mediaPath"; then
-			continue=false
+		mediaPath="$promptStr"
+		if [[ ! -d "$mediaPath" ]]; then
+			if areDirectories "$mediaPath"; then
+				continue=false
+				Set_var defaultPath "$mediaPath" "$sourceFile" array
+				exit
+			else
+				warning="ERROR: Make sure each input is a directory!"
+				exit
+			fi
 		else
-			warning="ERROR: Make sure each input is a directory!"
+			Set_var defaultPath "$mediaPath" "$sourceFile" dir
 			exit
 		fi
 	done
-
-	Set_var defaultPath "$mediaPath" "$sourceFile" array
 }
 
 Help()

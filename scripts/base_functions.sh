@@ -128,7 +128,7 @@ Prompt_user()
 			while [[ ! -n $_str ]]; do
 				read -p "[$_inputText] >>> " "_str"
 				if [[ -n $_str ]]; then
-					promptUsr=$_str
+					promptStr=$_str
 					return 0
 				else
 					echo
