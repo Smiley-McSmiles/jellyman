@@ -877,7 +877,7 @@ Uninstall()
 	echo "|                        ******CAUTION******                        |"
 	echo "|                     Are you completely sure?                      |"
 	echo "|          This will delete all files relating to Jellyfin          |"
-	echo "|   and Jellyman, exceptthe Media Library and jellyfin-backup.tar   |"
+	echo "|   and Jellyman, except the Media Library and jellyfin-backup.tar  |"
 	echo "|-------------------------------------------------------------------|"
 	echo
 	if Prompt_user yN "> CONTINUE?"; then
