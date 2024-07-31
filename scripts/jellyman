@@ -87,7 +87,8 @@ Backup_utility()
 		clear
 		optionNumber=
 		autoBackupSwitch=
-
+		source $sourceFile
+		
 		if [[ ! -d $backupDir ]]; then
 			Prompt_user dir "> Please enter your desired directory for backup archives"
 			backupDir="$promptDir"
