@@ -1048,7 +1048,7 @@ Transcode_file()
 		Set_var previousVideo "$currentVideo" "$progressBarConf" str
 
 		echo "> Transcoding $currentVideo"
-		nice ffmpeg -y -i "$currentVideo" -c:v libx265 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
+		nice ffmpeg -y -i "$currentVideo" -c:v libsvtav1 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
 		_newVideoSize=$(du -h "$_newName.downsampled.mp4" | cut -d "/" -f 1)
 		echo "> Downsampled size: $_newVideoSize"
 		if $deleteOrNot; then
@@ -1093,36 +1093,18 @@ Transcode()
 	preset=0
 	clear
 	echo
-	echo "> 1: ultrafast"
-	echo "> 2: superfast"
-	echo "> 3: veryfast"
-	echo "> 4: faster"
-	echo "> 5: fast"
-	echo '> 6: medium (RECOMMENDED)'
-	echo "> 7: slow"
-	echo "> 8: slower"
-	echo "> 9: veryslow"
+	echo "> Please choose a transcode preset"
+	echo "> 5-8 is recommended"
 	echo
-	Prompt_user num "> Please choose a transcode preset" 1 9 "1-9"
+	Prompt_user num "> Lower values are slower but have better compression." 1 12 "1-12"
 	preset=$promptNum
-	echo
-	case "$preset" in
-		1)	preset="ultrafast" ;;
-		2)	preset="superfast" ;;
-		3)	preset="veryfast" ;;
-		4)	preset="faster" ;;
-		5)	preset="fast" ;;
-		6)	preset="medium" ;;
-		7)	preset="slow" ;;
-		8)	preset="slower" ;;
-		9)	preset="veryslow" ;;
-	esac
 	
 	crf=0
 	clear
-	echo '> Please enter a Constant Rate Factor (CRF) [20-30]'
-	echo "> 22-26 is recommended"
-	Prompt_user num "> 20 is better quality and 30 is lower quality" 20 30 "20-30"
+	echo '> Please enter a Constant Rate Factor (CRF) [1-63]'
+	echo "> 25-35 is recommended"
+	echo
+	Prompt_user num "> Lower values correspond to higher quality but greater file size" 1 63 "1-63"
 	crf=$promptNum
 	echo
 	if Prompt_user yN "> Would you like to delete the original file(s) after transcode?"; then
