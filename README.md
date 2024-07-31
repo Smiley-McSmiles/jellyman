@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
 =======
 
-> v1.7.6 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
+> v1.7.7 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
 > Tested on Fedora 34-40, Ubuntu 22.04-24.04, Manjaro 21.3.6, EndeavourOS Artemis Neo/Nova/Cassini Nova, Linux Mint 21, and Rocky/Alma/RHEL Linux 8.6/9.0
 
@@ -213,7 +213,7 @@ COMMANDS:
 -d, --disable                Disable Jellyfin on System Start.
 -e, --enable                 Enable Jellyfin on System Start.
 -h, --help                   Print this Help.
--i, --import                 [FILE.tar] Input file to Import jellyfin-backup.tar.
+-i, --import                 [FILE.tar - optional] Input file to Import jellyfin-backup.tar.
 -p, --permissions            [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
 -r, --restart                Restart Jellyfin.
 -s, --start                  Start Jellyfin.
@@ -248,10 +248,11 @@ EXAMPLE:
 ### In case Jellyman wont upgrade itself
 
 ```shell
-git clone https://github.com/Smiley-McSmiles/jellyman
+git clone https://github.com/Smiley-McSmiles/jellyman.git
 cd jellyman
 chmod ug+x setup.sh
 sudo ./setup.sh -U
+cd ~/
 ```
 
 ### License

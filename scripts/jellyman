@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.7.6"
+jellymanVersion="v1.7.7"
 sourceFile="/opt/jellyfin/config/jellyman.conf"
 source /usr/bin/base_functions.sh
 
@@ -14,22 +14,22 @@ Backup()
 	# Backup /opt/jellyfin to passed directory
 	backupDirectory="$1"
 	tarPath=
-	_date=$(date +%m%d%Y%H%M)
+	_date=$(date +%m-%d-%Y-%H:%M)
 	fileName=jellyfin-backup-$_date.tar
-	mkdir /opt/jellyfin/backup
-	cp /usr/bin/jellyman /opt/jellyfin/backup/
-	cp /usr/bin/base_functions.sh /opt/jellyfin/backup/
+	if [[ ! -d /opt/jellyfin/backup ]]; then
+		mkdir /opt/jellyfin/backup
+	fi
 	cp /etc/jellyfin.conf /opt/jellyfin/backup/
 	cp $jellyfinServiceLocation/jellyfin* /opt/jellyfin/backup/
+	
 	if [[ $(echo "${backupDirectory: -1}") == "/" ]]; then
 		tarPath="$backupDirectory$fileName"
-		echo "$tarPath"
 	else
 		tarPath="$backupDirectory/$fileName"
-		echo "$tarPath"
 	fi
 
-	echo "Running backup, this may take some time..."
+	echo "> $tarPath"
+	echo "> Running backup, this may take some time..."
 	time tar cf "$tarPath" /opt/jellyfin
 	USER1=$(stat -c '%U' "$backupDirectory")
 	chown -f $USER1:$USER1 "$tarPath"
@@ -43,9 +43,9 @@ Backup()
 	echo "|           sudo ./setup.sh and choose option 3          |"
 	echo "+--------------------------------------------------------+"
 	echo
-	echo "Your backup is:"
+	echo "> Your backup is:"
 	tarSize=$(du -h "$tarPath")
-	echo "Size: $tarSize"
+	echo "> Size: $tarSize"
 	return 0
 	exit
 }
@@ -55,7 +55,7 @@ Backup_auto()
 	Has_sudo
 	source $sourceFile
 	if [[ ! -n $backupDir ]]; then
-		echo "ERROR: AUTO-BACKUPS HAVE NOT BEEN SETUP. PLEASE RUN 'jellyman -bu'"
+		echo "> ERROR: AUTO-BACKUPS HAVE NOT BEEN SETUP. PLEASE RUN 'jellyman -bu'"
 		exit
 	else
 		jellyman -b "$backupDir"
@@ -67,10 +67,10 @@ Backup_auto()
 		tarCount=$(echo "$tarList" | wc -l)
 
 		while [[ $tarCount -gt $maxBackupNumber ]]; do
-			echo "There are $tarCount backups."
-			echo "Since there are more than $maxBackupNumber backups..."
-			echo "Jellyman is removing $oldestTar"
-			# echo "NewBackup=$newestTar"
+			echo "> There are $tarCount backups."
+			echo "> Since there are more than $maxBackupNumber backups..."
+			echo "> Jellyman is removing $oldestTar"
+			# echo "> NewBackup=$newestTar"
 			rm -f "$oldestTar"
 			tarList=$(ls -1 "$backupDir"/*.tar)
 			newestTar=$(echo "$tarList" | tail -n 1)
@@ -83,74 +83,111 @@ Backup_auto()
 Backup_utility()
 {
 	Has_sudo
-	source $sourceFile
-	optionNumber=
+	while true; do
+		source $sourceFile
+		clear
+		optionNumber=
+		autoBackupSwitch=
 
-	if [[ ! -d $backupDir ]]; then
-		Prompt_user dir "Please enter your desired directory for backup archives"
-		backupDir="$promptDir"
-		Prompt_user num "Please enter your desired maximum number of backup archives" 1 20
-		maxBackupNumber=$promptNum
-		echo "backupDir=$backupDir" >> $sourceFile
-		echo "maxBackupNumber=$maxBackupNumber" >> $sourceFile
-		systemctl enable --now jellyfin-backup.timer
-	fi
-
-	echo "1. Enable automatic backups"
-	echo "2. Disable automatic backups"
-	echo "3. Change backup folder"
-	echo "4. Change max backups"
-	echo "5. Change frequency of backups"
-	echo
-	Prompt_user num "Please select the number corresponding with the option you want to select." 1 5
-	optionNumber=$promptNum
-	echo
-	
-	if [[ $optionNumber == 1 ]]; then
-		# enable auto-backups
-		systemctl enable --now jellyfin-backup.timer
-
-	elif [[ $optionNumber == 2 ]]; then
-		# disable auto-backups
-		systemctl disable --now jellyfin-backup.timer
-	
-	elif [[ $optionNumber == 3 ]]; then
-		# change backup folder
-		Prompt_user dir "Please enter your desired directory for backup archives"
-		backupDir="$promptDir"
-		Change_variable "backupDir" "$backupDir" "$sourceFile"
-
-	elif [[ $optionNumber == 4 ]]; then
-		# change max backups
-		Prompt_user num "Please enter your desired maximum number of backup archives" 1 50
-		maxBackupNumber=$promptNum
-		Change_variable "maxBackupNumber" "$maxBackupNumber" "$sourceFile"
-	
-	else
-		# change frequency of backups
-		echo "1. Daily backups"
-		echo "2. Weekly backups"
-		echo "3. Monthly backups"
-		echo
-		Prompt_user num "Please select the number corresponding with the option you want to select." 1 3
-		_optionNumber=$promptNum
-		echo
-	
-		jellyfinBackupTimer=/usr/lib/systemd/system/jellyfin-backup.timer
-		if [[ $_optionNumber == 1 ]]; then
-			sed -i "s|OnCalendar.*|OnCalendar=*-*-* 01:00:00|g" $jellyfinBackupTimer
-			echo "Backups will now be created every day at 1:00 AM"
-		elif [[ $_optionNumber == 2 ]]; then
-			sed -i "s|OnCalendar.*|OnCalendar=Sun *-*-* 01:00:00|g" $jellyfinBackupTimer
-			echo "Backups will now be created every Sunday at 1:00 AM"
-		elif [[ $_optionNumber == 3 ]]; then
-			sed -i "s|OnCalendar.*|OnCalendar=*-*-01 01:00:00|g" $jellyfinBackupTimer
-			echo "Backups will now be created on the 1st of every month at 1:00 AM"
+		if [[ ! -d $backupDir ]]; then
+			Prompt_user dir "> Please enter your desired directory for backup archives"
+			backupDir="$promptDir"
+			Prompt_user num "> Please enter your desired maximum number of backup archives" 1 20 "1-20"
+			maxBackupNumber=$promptNum
+			systemctl enable --now jellyfin-backup.timer
+			Set_var backupDir "$backupDir" "$sourceFile" str
+			Set_var maxBackupNumber 3 "$sourceFile" str
+			Set_var autoBackups true "$sourceFile" str
+			Set_var backupFrequency "weekly" "$sourceFile"
 		fi
 		
-		systemctl daemon-reload
-		systemctl restart jellyfin-backup.timer
-	fi
+		if $autoBackups; then
+			autoBackupSwitch="ON"
+		else
+			autoBackupSwitch="OFF"
+		fi
+		echo
+		echo "> Automatic backups are $autoBackupSwitch"
+		echo
+		echo "> 1. Enable automatic backups"
+		echo "> 2. Disable automatic backups"
+		echo "> 3. Change backup folder"
+		echo "> 4. Change max backups [ $maxBackupNumber ]"
+		echo "> 5. Change frequency of backups [ $backupFrequency ]"
+		echo "> 6. EXIT"
+		echo
+		Prompt_user num "> Please select the number corresponding with the option you want to select." 1 6 "1-6"
+		optionNumber=$promptNum
+		echo
+		case $optionNumber in
+			"1")
+				# enable auto-backups
+				systemctl enable --now jellyfin-backup.timer
+				Set_var autoBackups true "$sourceFile" str
+				;;
+			"2")
+				# disable auto-backups
+				systemctl disable --now jellyfin-backup.timer
+				Set_var autoBackups false "$sourceFile" str
+				;;
+			"3")
+				# change backup folder
+				if [[ -n $backupDir ]]; then
+					echo "> Current directory for backups is $backupDir"
+				fi
+				Prompt_user dir "> Please enter your desired directory for backup archives"
+				backupDir="$promptDir"
+				Set_var "backupDir" "$backupDir" "$sourceFile"
+				;;
+			"4")
+				# change max backups
+				if [[ -n $maxBackupNumber ]]; then
+					echo "> Current maximum backups allowed is $maxBackupNumber"
+				fi
+				Prompt_user num "> Please enter your desired maximum number of backup archives" 1 50 "1-50"
+				maxBackupNumber=$promptNum
+				Set_var maxBackupNumber "$maxBackupNumber" "$sourceFile"
+				;;
+			"5")
+				# change frequency of backups
+				echo "> Automatic backups will be done on a $backupFrequency basis."
+				echo
+				echo "> 1. Daily backups"
+				echo "> 2. Weekly backups"
+				echo "> 3. Monthly backups"
+				echo
+				Prompt_user num "> Please select the number corresponding with the option you want to select." 1 3 "1-3"
+				_optionNumber=$promptNum
+				echo
+				jellyfinBackupTimer=/usr/lib/systemd/system/jellyfin-backup.timer
+				case $_optionNumber in
+					"1")
+						Set_var backupFrequency "daily" "$sourceFile"
+						sed -i "s|OnCalendar.*|OnCalendar=*-*-* 01:00:00|g" $jellyfinBackupTimer
+						echo "> Backups will now be created every day at 1:00 AM"
+						read -p "> Press ENTER to exit" ENTER
+						;;
+					"2")
+						Set_var backupFrequency "weekly" "$sourceFile"
+						sed -i "s|OnCalendar.*|OnCalendar=Sun *-*-* 01:00:00|g" $jellyfinBackupTimer
+						echo "> Backups will now be created every Sunday at 1:00 AM"
+						read -p "> Press ENTER to exit" ENTER
+						;;
+					"3")
+						Set_var backupFrequency "monthly" "$sourceFile"
+						sed -i "s|OnCalendar.*|OnCalendar=*-*-01 01:00:00|g" $jellyfinBackupTimer
+						echo "> Backups will now be created on the 1st of every month at 1:00 AM"
+						read -p "> Press ENTER to exit" ENTER
+						;;
+				esac
+				systemctl daemon-reload
+				systemctl restart jellyfin-backup.timer
+				;;
+			"6")
+				exit
+				;;
+		esac
+	done
 }
 
 isCurrentVersion()
@@ -158,11 +195,11 @@ isCurrentVersion()
 	source $sourceFile
 	jellyfinVersionToDownload=$1
 	if [[ $jellyfinVersionToDownload == $currentVersion ]]; then
-		echo "The installed version of Jellyfin matches the newest version available."
-		echo "Current Jellyfin version installed: $currentVersion"
+		echo "> The installed version of Jellyfin matches the newest version available."
+		echo "> Current Jellyfin version installed: $currentVersion"
 		return 0
 	else
-		echo "Newer Jellyfin version found..."
+		echo "> Newer Jellyfin version found..."
 		return 1
 	fi
 }
@@ -172,8 +209,8 @@ isInstalledVersion()
 	jellyfinVersionToDownload=$1
 	
 	if [ -d /opt/jellyfin/$jellyfinVersionToDownload ]; then
-		echo "The version to download matches an already installed version."
-		echo "Please use 'jellyman -vs' to switch Jellyfin versions."
+		echo "> The version to download matches an already installed version."
+		echo "> Please use 'jellyman -vs' to switch Jellyfin versions."
 		return 0
 	else
 		return 1
@@ -192,10 +229,10 @@ Check_disk_free()
 		echo "|    WILL RESET PERMISSIONS OF THE ENTERED      |"
 		echo "|       DIRECTORY TO YOUR JELLYFIN USER         |"
 		echo "+-----------------------------------------------+"
-		Prompt_user dir "Enter a valid directory"
+		Prompt_user dir "> Enter a valid directory"
 		defaultPath="$promptDir"
 		defaultPath=($defaultPath)
-		Change_variable defaultPath $defaultPath "$sourceFile" array
+		Set_var defaultPath $defaultPath "$sourceFile" array
 		df -h ${defaultPath[*]}
 	else 
 		df -h ${defaultPath[*]}
@@ -228,15 +265,15 @@ Download_version()
 	warning=""
 
 	clear
-	echo "**WARNING** If Jellyfin v10.9.0 or later has been installed, it is impossible to revert to older versions as they will no longer be supported by Jellyman"
-	echo "Current Jellyfin version installed"
-	echo "$currentVersion"
+	echo "> **WARNING** If Jellyfin v10.9.0 or later has been installed, it is impossible to revert to older versions as they will no longer be supported by Jellyman"
+	echo "> Current Jellyfin version installed"
+	echo "> $currentVersion"
 	echo
-	echo "Please select a stable version:"
+	echo "> Please select a stable version:"
 	echo $warning
-	echo "$versionListNumbered"
-	echo "Please enter the number corresponding with"
-	Prompt_user num "the version you want to install" 1 $maxNumber
+	echo "> $versionListNumbered"
+	echo "> Please enter the number corresponding with"
+	Prompt_user num "  the version you want to install" 1 $maxNumber "1-$maxNumber"
 	versionToSwitchNumber=$promptNum
 	newVersionNumber=$(echo "$versionList" | head -n $versionToSwitchNumber | tail -n 1)
 
@@ -246,7 +283,7 @@ Download_version()
 	else
 		newVersionNumberNoLetters=$(echo "$newVersionNumber" | sed -r "s|v||g")
 		newVersionHyphen=$(echo "$newVersionNumberNoLetters"-)
-		echo "https://repo.jellyfin.org/files/server/linux/stable/$newVersionNumber/$architecture/jellyfin_$newVersionHyphen$architecture.tar.gz"
+		echo "> https://repo.jellyfin.org/files/server/linux/stable/$newVersionNumber/$architecture/jellyfin_$newVersionHyphen$architecture.tar.gz"
 		jellyman -u "https://repo.jellyfin.org/files/server/linux/stable/$newVersionNumber/$architecture/jellyfin_$newVersionHyphen$architecture.tar.gz"
 	fi
 }
@@ -262,21 +299,21 @@ Version_switch()
 	warning=
 
 	clear
-	echo "Current Jellyfin version installed"
-	echo "$currentVersion"
+	echo "> Current Jellyfin version installed"
+	echo "> $currentVersion"
 	echo
-	echo "Jellyfin versions already downloaded:"
-	echo "$installedVersionsClean" | cat -n
-	echo "$warning"
-	echo "Please enter the number corresponding with"
-	Prompt_user num "the version you want to install" 1 $maxNumber
+	echo "> Jellyfin versions already downloaded:"
+	echo "> $installedVersionsClean" | cat -n
+	echo "> $warning"
+	echo "> Please enter the number corresponding with"
+	Prompt_user num "  the version you want to install" 1 $maxNumber "1-$maxNumber"
 	versionToSwitchNumber=$promptNum
 	newVersion=$(echo "$installedVersions" | head -n $versionToSwitchNumber | tail -n 1)
 	jellyman -S
 	unlink /opt/jellyfin/jellyfin
 	ln -s /opt/jellyfin/$newVersion /opt/jellyfin/jellyfin
-	chown -Rfv $defaultUser:$defaultUser /opt/jellyfin/jellyfin
-	Change_variable currentVersion $newVersion "$sourceFile"
+	chown -Rf $defaultUser:$defaultUser /opt/jellyfin/jellyfin
+	Set_var currentVersion $newVersion "$sourceFile"
 	jellyman -s
 }
 
@@ -291,15 +328,15 @@ Remove_version()
 	warning=
 
 	clear
-	echo "Current Jellyfin version installed"
-	echo "$currentVersion"
+	echo "> Current Jellyfin version installed"
+	echo "> $currentVersion"
 	echo
-	echo "Jellyfin versions already downloaded:"
+	echo "> Jellyfin versions already downloaded:"
 	echo "$installedVersions" | cat -n
 	echo
-	echo "$warning"
-	echo "Please enter the number corresponding with"
-	Prompt_user num "the version you want to ERASE" 1 $maxNumber
+	echo "> $warning"
+	echo "> Please enter the number corresponding with"
+	Prompt_user num "  the version you want to ERASE" 1 $maxNumber "1-$maxNumber"
 	versionToSwitchNumber=$promptNum
 	versionToRemove=$(echo "$installedVersions" | head -n $versionToRemoveNumber | tail -n 1)
 	warning="ERROR: Please select one of the numbers provided!"
@@ -310,7 +347,7 @@ before removing $versionToRemove"
 		versionToRemoveNumber=0
 	fi
 
-	echo "Removing /opt/jellyfin/$versionToRemove"
+	echo "> Removing /opt/jellyfin/$versionToRemove"
 	Countdown 5
 	rm -rfv /opt/jellyfin/$versionToRemove
 }
@@ -320,30 +357,65 @@ Import()
 	Has_sudo
 	source $sourceFile
 	importTar=$1
+	importDir=
 	
-	Prompt_user file "Please enter the path to the jellyfin-backup.tar archive."
-	importTar=$promptFile
+	if [[ ! -n $importTar ]]; then
+		if [[ -n $backupDir ]]; then
+			importDir=$backupDir	
+		else
+			Prompt_user dir "> Please enter the directory to the jellyfin-backup.tar archive(s)." 0 0 "/path/to/backup(s)"
+			importDir=$promptDir
+		fi
+		
+		listOfBackups=$(ls -1 $importDir | grep "jellyfin-backup".*".tar")
+		listOfBackupsNumbered=$(echo "$listOfBackups" | cat -n)
+		numberOfBackups=$(echo "$listOfBackups" | wc -l)
+		echo "$listOfBackupsNumbered"
+		Prompt_user num "> Please enter the number corresponding with the archive you wish to import." 1 $numberOfBackups "1-$numberOfBackups"
+		backupToImportNumber=$promptNum
+		backupToImport=$(echo "$listOfBackups" | head -n $backupToImportNumber | tail -n 1)
+		importTar="$importDir/$backupToImport"
+	fi
+	
 	echo
 	echo "+--------------------------------------------------------------------+"
 	echo "|                        ******CAUTION******                         |"
 	echo "|      This import procedurewill erase /opt/jellyfin COMPLETELY      |"
 	echo "+--------------------------------------------------------------------+"
 
-	if Prompt_user yN "Import $importTar?"; then
-		echo "IMPORTING $importTar"
+	if Prompt_user yN "> Import $importTar?"; then
+		echo "> IMPORTING $importTar"
 		jellyman -S
-		rm -rf /opt/jellyfin
-		tar xvf $importTar -C /
-		clear
+
+		if [[ -d /opt/jellyfin ]]; then
+			rm -rf /opt/jellyfin
+		fi
+
+		tar xf $importTar -C /
 		source $sourceFile
+		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
 		mv -f /opt/jellyfin/backup/*.service $jellyfinServiceLocation/
 		mv -f /opt/jellyfin/backup/jellyfin-backup.timer $jellyfinServiceLocation/
 		systemctl daemon-reload
-		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
+		if [[ -n $autoBackups ]] && $autoBackups; then
+			systemctl enable --now jellyfin-backup.timer
+		else
+			if Prompt_user Yn "Enable automatic backups?" 0 0 "Y/n"; then
+				systemctl enable --now jellyfin-backup.timer
+				Set_var autoBackups true "$sourceFile" str
+				Set_var "backupFrequency" "weekly" "$sourceFile"
+			else
+				systemctl enable --now jellyfin-backup.timer
+				Set_var autoBackups false "$sourceFile" str
+				Set_var "backupFrequency" "weekly" "$sourceFile"
+			fi
+		fi
+		
 		if id "$defaultUser" &>/dev/null; then 
-			chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-			chmod -Rfv 770 /opt/jellyfin
+			chown -Rf $defaultUser:$defaultUser /opt/jellyfin
+			chmod -Rf 770 /opt/jellyfin
 			jellyman -e -s
+			echo "> IMPORT COMPLETE!"
 		else
 			clear
 			echo "+-----------------------------------------------------------------------------------------------+"
@@ -354,33 +426,32 @@ Import()
 			echo "|                   You may want to see who owns that configuration file with:                  |"
 			echo "|                          'ls -l /opt/jellyfin/config/jellyman.conf'                           |"
 			echo "+-----------------------------------------------------------------------------------------------+"
-			sleep 5
-			if Prompt_user yN "Would you like to create the LINUX user $defaultUser?"; then
-				echo "Great!"
+			if Prompt_user yN "> Would you like to create the LINUX user $defaultUser?"; then
+				echo "> Great!"
 				useradd -rd /opt/jellyfin $defaultUser
-				chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-				chmod -Rfv 770 /opt/jellyfin
-				jellyman -s -t
+				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
+				chmod -Rf 770 /opt/jellyfin
+				jellyman -e -s -t
 			else
-				Prompt_user usr "Please enter a new LINUX user."
+				Prompt_user usr "> Please enter a new LINUX user." 0 0 "jellyfin"
 				defaultUser=$promptUsr
 				while id "$defaultUser" &>/dev/null; do
-					echo "Cannot create $defaultUser as $defaultUser already exists..."
-					Prompt_user usr "Please re-enter a new default Linux user for Jellyfin"
+					echo "> Cannot create $defaultUser as $defaultUser already exists..."
+					Prompt_user usr "> Please re-enter a new default Linux user for Jellyfin"
 					defaultUser=$promptUsr
 				 done
 		 
 				defaultUser=${defaultUser,,}
-				echo "Linux user = $defaultUser"
+				echo "> Linux user = $defaultUser"
 				useradd -rd /opt/jellyfin $defaultUser
 				
-				chown -Rfv $defaultUser:$defaultUser /opt/jellyfin
-				chmod -Rfv 770 /opt/jellyfin
+				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
+				chmod -Rf 770 /opt/jellyfin
 				jellyman -e -s -t
 			fi
 		fi
 	else
-		echo "Returning..."
+		echo "> Returning..."
 		return 0
 		exit
 	fi
@@ -391,19 +462,19 @@ Library_scan()
 	Has_sudo
 	source $sourceFile
 	Check_api_key
-	curl -d POST http://localhost:$networkPort/Library/Refresh?api_key=$apiKey
+	curl -d POST http://localhost:$httpPort/Library/Refresh?api_key=$apiKey
 }
 
 Import_api_key()
 {
 	Has_sudo
-	echo "Create a API key by signing into Jellyfin, going to Dashboard, then"
-	echo "clicking on API Keys under the Advanced section on the left."
+	echo "> Create a API key by signing into Jellyfin, going to Dashboard, then"
+	echo "> clicking on API Keys under the Advanced section on the left."
 	echo
-	Prompt_user str "Please paste your API Key"
+	Prompt_user str "> Please paste your API Key" 0 0 "API key"
 	newAPIKey=$promptStr
-	echo "Logging new api key."
-	Change_variable apiKey $newAPIKey "$sourceFile"
+	echo "> Logging new api key."
+	Set_var apiKey $newAPIKey "$sourceFile"
 }
 
 Check_api_key()
@@ -411,8 +482,7 @@ Check_api_key()
 	Has_sudo
 	source $sourceFile
 	if [[ ! -n $apiKey ]]; then
-		echo "***ERROR***"
-		echo "NO API KEY FOUND, RUN 'sudo jellyman -ik' TO IMPORT A NEW KEY!"
+		echo "> ERROR: NO API KEY FOUND, RUN 'sudo jellyman -ik' TO IMPORT A NEW KEY!"
 		return 1
 		exit
 	else
@@ -425,18 +495,18 @@ Http_port_change()
 	Has_sudo
 	source $sourceFile
 	echo
-	echo "Default http port is 8096"
+	echo "> Default http port is 8096"
 	if Is_jellyfin_setup; then
-		Prompt_user num "Please enter the new http network port for Jellyfin" 1 100000
+		Prompt_user num "> Please enter the new http network port for Jellyfin" 1000 100000 "http port"
 		port=$promptNum
 		oldPort=$httpPort
-		Change_variable httpPort $port "$sourceFile"
+		Set_var httpPort $port "$sourceFile"
 		jellyman -S
-		Change_xml_variable InternalHttpPort "$port" "/opt/jellyfin/config/network.xml"
-		Change_xml_variable PublicHttpPort "$port" "/opt/jellyfin/config/network.xml"
+		Set_xml_var InternalHttpPort "$port" "/opt/jellyfin/config/network.xml"
+		Set_xml_var PublicHttpPort "$port" "/opt/jellyfin/config/network.xml"
 		jellyman -s
-		echo "Unblocking port $port"
-		echo "Blocking previous port $oldPort"
+		echo "> Unblocking port $port"
+		echo "> Blocking previous port $oldPort"
 		if [ -x "$(command -v ufw)" ]; then
 			ufw allow $port
 			ufw deny $oldPort
@@ -446,7 +516,8 @@ Http_port_change()
 			firewall-cmd --permanent --remove-port=$oldPort/tcp
 			firewall-cmd --reload
 		else
-			echo "FAILED TO OPEN PORT $port! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
+			echo "> ERROR: FAILED TO OPEN PORT $port!"
+			echo "> REASON: NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!"
 		fi
 	else
 		exit
@@ -458,17 +529,17 @@ Https_port_change()
 	Has_sudo
 	source $sourceFile
 	if Is_jellyfin_setup; then
-		echo "Default https port is 8920"
-		Prompt_user num "Please enter the new https network port for Jellyfin" 1 100000
+		echo "> Default https port is 8920"
+		Prompt_user num "> Please enter the new https network port for Jellyfin" 1000 100000 "https port"
 		port=$promptNum
 		oldPort=$httpsPort
-		Change_variable httpsPort $port "$sourceFile"
+		Set_var httpsPort $port "$sourceFile"
 		jellyman -S
-		Change_xml_variable InternalHttpsPort "$port" "/opt/jellyfin/config/network.xml"
-		Change_xml_variable PublicHttpsPort "$port" "/opt/jellyfin/config/network.xml"
+		Set_xml_var InternalHttpsPort "$port" "/opt/jellyfin/config/network.xml"
+		Set_xml_var PublicHttpsPort "$port" "/opt/jellyfin/config/network.xml"
 		jellyman -s
-		echo "Unblocking port $port"
-		echo "Blocking previous port $oldPort"
+		echo "> Unblocking port $port"
+		echo "> Blocking previous port $oldPort"
 		if [ -x "$(command -v ufw)" ]; then
 			ufw allow $port
 			ufw deny $oldPort
@@ -478,7 +549,8 @@ Https_port_change()
 			firewall-cmd --permanent --remove-port=$oldPort/tcp
 			firewall-cmd --reload
 		else
-			echo "FAILED TO OPEN PORT $port! ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
+			echo "> ERROR: FAILED TO OPEN PORT $port!"
+			echo "> REASON: NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!";
 		fi
 	else
 		exit
@@ -495,33 +567,33 @@ Permissions()
 
 	if [[ -d "$1" ]]; then
 		directoryToFix=$1
-		echo "Setting permissions for "$directoryToFix""
+		echo "> Setting permissions for "$directoryToFix""
 		time $(
-			chown -R $defaultUser:$defaultUser "$directoryToFix"
-			chmod -R 770 "$directoryToFix"
-			chmod -R ug+X "$directoryToFix"
+			chown -Rf $defaultUser:$defaultUser "$directoryToFix"
+			chmod -Rf 770 "$directoryToFix"
+			chmod -Rf ug+X "$directoryToFix"
 		)
-		echo "...DONE"
+		echo "> ...DONE"
 	elif [[ ! -d "$1" ]] && [[ -n "$1" ]]; then
-		echo "$1 is not a directory. Please enter a absolute path to your media"
-		echo "EXITING..."
+		echo "> $1 is not a directory. Please enter a absolute path to your media"
+		echo "> EXITING..."
 		exit
 	else
 		#Check if there is a recorded media library path for chown and chmod:
 		if ! areDirectories "${defaultPath[*]}"; then
-			echo "No default media directory found..."
-			echo "Running sudo jellyman -md to change media directory in:"
+			echo "> No default media directory found..."
+			echo "> Running sudo jellyman -md to change media directory in:"
 			Countdown 5
 			jellyman -md
 		fi
 
-		echo "Setting permissions for ${defaultPath[*]}"
+		echo "> Setting permissions for ${defaultPath[*]}"
 		time $(
-			chown -R $defaultUser:$defaultUser ${defaultPath[*]}
-			chmod -R 770 ${defaultPath[*]}
-			chmod -R ug+X ${defaultPath[*]}
+			chown -Rf $defaultUser:$defaultUser ${defaultPath[*]}
+			chmod -Rf 770 ${defaultPath[*]}
+			chmod -Rf ug+X ${defaultPath[*]}
 		)
-		echo "...DONE"
+		echo "> ...DONE"
 	fi
 }
 
@@ -546,7 +618,7 @@ Update()
 	newJellyfinArchive=""
 	
 	if [[ $1 == *"://"* ]] ; then 
-		echo "Fetching custom Jellyfin version..."
+		echo "> Fetching custom Jellyfin version..."
 		customVersionLink=$1
 		customVersion=$(echo $customVersionLink | rev | cut -d/ -f1 | rev)
 		jellyfin_archive=$customVersion
@@ -559,24 +631,28 @@ Update()
 		fi
 		
 		if [[ $fileType != "$architecture.tar.gz" ]]; then
-			echo "Supplied URL does not point to a $architecture.tar.gz.. EXITING..."
+			echo "> Supplied URL does not point to a $architecture.tar.gz.. EXITING..."
 			exit
 		fi
-	
-		mkdir /opt/jellyfin/update
+		
+		if [[ ! -d /opt/jellyfin/update ]]; then
+			mkdir /opt/jellyfin/update
+		fi
 		wget -P /opt/jellyfin/update/ $customVersionLink
 	
 	else
-		echo "Getting current version from repository..."
-		mkdir /opt/jellyfin/update
+		echo "> Getting current version from repository..."
+		if [[ ! -d /opt/jellyfin/update ]]; then
+			mkdir /opt/jellyfin/update
+		fi
 		stableReleases=$(curl -sL https://repo.jellyfin.org/?path=/server/linux/latest-stable/$architecture/)
 		jellyfin_archive=$(echo "$stableReleases" | grep -Po jellyfin_[^_]+-$architecture.tar.gz | head -1)
 		jellyfin=$(echo "$jellyfin_archive" | sed -r "s|-$architecture.tar.gz||g")
 		newJellyfinArchive=$(echo "$jellyfin"-$architecture.tar.gz)
 		
-		echo "jellyfin_archive = $jellyfin_archive"
-		echo "jellyfin = $jellyfin"
-		echo "currentVersion = $currentVersion"
+		# echo "jellyfin_archive = $jellyfin_archive"
+		# echo "jellyfin = $jellyfin"
+		# echo "currentVersion = $currentVersion"
 		if ! isCurrentVersion $jellyfin && ! isInstalledVersion $jellyfin; then
 			wget -O /opt/jellyfin/update/$newJellyfinArchive https://repo.jellyfin.org/files/server/linux/latest-stable/$architecture/$jellyfin_archive
 		else
@@ -585,25 +661,24 @@ Update()
 	fi
 	
 	new_jellyfin_version=$(echo $jellyfin | sed -r 's/jellyfin_//g')
-	echo "Unpacking $jellyfin_archive to /opt/jellyfin/$jellyfin"
+	echo "> Unpacking $jellyfin_archive to /opt/jellyfin/$jellyfin"
 	jellyman -S
 	unlink /opt/jellyfin/jellyfin
 	tar xvzf /opt/jellyfin/update/$newJellyfinArchive -C /opt/jellyfin/
 	
-	if [ -n "$(ls -A /opt/jellyfin/jellyfin/ 2>/dev/null)" ]
-		then
-		  mv -f /opt/jellyfin/jellyfin /opt/jellyfin/$jellyfin
-		else
-		  echo "Directory does not contain files..."
+	if [ -n "$(ls -A /opt/jellyfin/jellyfin/ 2>/dev/null)" ]; then
+			mv -f /opt/jellyfin/jellyfin /opt/jellyfin/$jellyfin
+	else
+			echo "> Directory does not contain files..."
 	fi
 
 	ln -s /opt/jellyfin/$jellyfin /opt/jellyfin/jellyfin
-	echo "Removing $jellyfin_archive"
+	echo "> Removing $jellyfin_archive"
 	rm -rfv /opt/jellyfin/update
 
 	chown -R $defaultUser:$defaultUser /opt/jellyfin
-	echo "Jellyfin updated to version $new_jellyfin_version"
-	Change_variable currentVersion $jellyfin "$sourceFile"
+	echo "> Jellyfin updated to version $new_jellyfin_version"
+	Set_var currentVersion $jellyfin "$sourceFile"
 	jellyman -s -t
 }
 
@@ -624,42 +699,40 @@ Update_beta()
 	warning=""
 	
 	if [[ ! $betasAvailable == .*"tar.gz".* ]]; then
-		echo "Sorry, no betas are available right now..."
+		echo "> Sorry, no betas are available right now..."
 		exit
 	fi
 
-	while (( $versionSelected > $maxNumber )) || (( $versionSelected < 1 )); do
-		clear
-		echo "Available betas:"
-		echo $warning
-		echo "$jellyfinNumbered"
-		echo "Select which version to install"
-		read -p ">>> [1-$maxNumber] : " versionSelected
-		Prompt_user num "Select which version to install" 1 $maxNumber
-		versionSelected=$promptNum
-		newVersionName=$(echo "$jellyfinArchives" | head -n $versionSelected | tail -n 1 | sed -r "s|-$architecture.tar.gz||g")
-		newVersionNumber=$(echo $newVersionName | sed -r 's/jellyfin_//g')
-		if isCurrentVersion $newVersionName || isInstalledVersion $newVersionName; then
-			warning="ERROR: That Jellyfin version is already installed!"
-			echo "Press CTRL+C to exit..."
-		else
-			newVersionArchive=$(echo "$jellyfinArchives" | head -n $versionSelected | tail -n 1)
-			echo "Getting $newVersionArchive..."
-			wget -O /opt/jellyfin/update/$newVersionName https://repo.jellyfin.org/files/server/linux/latest-unstable/$architecture/$newVersionArchive
-			echo "Unpacking $newVersionArchive to /opt/jellyfin/..."
-			tar xvzf /opt/jellyfin/update/$newVersionArchive -C /opt/jellyfin/
-			jellyman -S
-			unlink /opt/jellyfin/jellyfin
-			ln -s /opt/jellyfin/$newVersionName /opt/jellyfin/jellyfin
-			echo "Removing $newVersionArchive"
-			rm -rfv /opt/jellyfin/update
+	clear
+	echo "> Available betas:"
+	echo $warning
+	echo "$jellyfinNumbered"
+	echo
 
-			chown -R $defaultUser:$defaultUser /opt/jellyfin
-			echo "Jellyfin updated to version $newVersionNumber"
-			Change_variable currentVersion $newVersionName "$sourceFile"
-			jellyman -s -t
-		fi
-	done
+	Prompt_user num "> Select which version to install" 1 $maxNumber "1-$maxNumber"
+	versionSelected=$promptNum
+	newVersionName=$(echo "$jellyfinArchives" | head -n $versionSelected | tail -n 1 | sed -r "s|-$architecture.tar.gz||g")
+	newVersionNumber=$(echo $newVersionName | sed -r 's/jellyfin_//g')
+	if isCurrentVersion $newVersionName || isInstalledVersion $newVersionName; then
+		warning="> ERROR: That Jellyfin version is already installed!"
+		echo "> Press CTRL+C to exit..."
+	else
+		newVersionArchive=$(echo "$jellyfinArchives" | head -n $versionSelected | tail -n 1)
+		echo "> Getting $newVersionArchive..."
+		wget -O /opt/jellyfin/update/$newVersionName https://repo.jellyfin.org/files/server/linux/latest-unstable/$architecture/$newVersionArchive
+		echo "> Unpacking $newVersionArchive to /opt/jellyfin/..."
+		tar xvzf /opt/jellyfin/update/$newVersionArchive -C /opt/jellyfin/
+		jellyman -S
+		unlink /opt/jellyfin/jellyfin
+		ln -s /opt/jellyfin/$newVersionName /opt/jellyfin/jellyfin
+		echo "> Removing $newVersionArchive"
+		rm -rfv /opt/jellyfin/update
+
+		chown -R $defaultUser:$defaultUser /opt/jellyfin
+		echo "> Jellyfin updated to version $newVersionNumber"
+		Set_var currentVersion $newVersionName "$sourceFile"
+		jellyman -s -t
+	fi
 }
 
 
@@ -694,10 +767,10 @@ Recertify_https()
 		rm -fv /opt/jellyfin/cert/*
 		openssl req -x509 -newkey rsa:4096 -keyout /opt/jellyfin/cert/privkey.pem -out /opt/jellyfin/cert/cert.pem -days 365 -nodes -subj '/CN=jellyfin.lan'
 		openssl pkcs12 -export -out /opt/jellyfin/cert/jellyfin.pfx -inkey /opt/jellyfin/cert/privkey.pem -in /opt/jellyfin/cert/cert.pem -passout pass:
-		echo "Enabling https..."
+		echo "> Enabling https..."
 		jellyman -S
-		Change_xml_variable EnableHttps "true" "/opt/jellyfin/config/network.xml"
-		Change_xml_variable CertificatePath "/opt/jellyfin/cert/jellyfin.pfx" "/opt/jellyfin/config/network.xml"
+		Set_xml_var EnableHttps "true" "/opt/jellyfin/config/network.xml"
+		Set_xml_var CertificatePath "/opt/jellyfin/cert/jellyfin.pfx" "/opt/jellyfin/config/network.xml"
 		chown -Rf $defaultUser:$defaultUser /opt/jellyfin/cert
 		chmod -Rf 770 /opt/jellyfin/cert
 		jellyman -s
@@ -732,14 +805,14 @@ Rename_tv()
 		echo "|      NAMES ARE IN THE SAME LOCATION IN THE DIRECTORY         |"
 		echo "|--------------------------------------------------------------|"
 		echo
-		Prompt_user dir "Please enter a directory"
+		Prompt_user dir "> Please enter a directory"
 		directoryToCorrect=$promptDir
 		clear
 		nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
 		if [ -f "$nameOfTestFile" ]; then
 			loop=false
 		else
-			echo "Path does not exist, please try again."
+			echo "> Path does not exist, please try again."
 		fi
 	done
 	
@@ -754,17 +827,17 @@ Rename_tv()
 
 	while [ $number -lt $testDirCount ]; do
 		testName=$(echo $nameOfTestFile | cut -d "/" -f $iteration)
-		echo "$number : $testName"
+		echo "> $number : $testName"
 		iteration=$(($iteration + 1))
 		
 		number=$(($number + 1))	
 	done
 	
-	echo "Please enter the number that corresponds with the show's name above"
+	echo "> Please enter the number that corresponds with the show's name above"
 	read directoryNumber
 	directoryNumber=$(($directoryNumber + 1))
 	nameOfShow=$(dirname "$directoryToCorrect" | cut -d "/" -f $directoryNumber)
-	echo "You chose $nameOfShow"
+	echo "> You chose $nameOfShow"
 
 	for item in $directoryToCorrect
 	do
@@ -776,8 +849,8 @@ Rename_tv()
 				episodeNumber=$(echo "$item" | grep -oE '[sS][0-9][0-9][eE][0-9][0-9]')
 				mv "$item" "$nameOfDirectory/$nameOfShow $episodeNumber.$extensionOfFile"
 				newItemName="$nameOfDirectory/$nameOfShow $episodeNumber.$extensionOfFile"
-				echo "item:"
-				echo "$item"
+				echo "> item:"
+				echo "> $item"
 				#echo "Directory:"
 				#echo "$nameOfDirectory"
 				#echo "Name Of Show:"
@@ -786,10 +859,10 @@ Rename_tv()
 				#echo "$episodeNumber"
 				#echo "extension of file:"
 				#echo "$extensionOfFile"
-				echo "New Name:"
-				echo "$newItemName"
-				chown -fv $defaultUser:$defaultUser "$newItemName"
-				chmod -fv 770 "$newItemName"
+				echo "> New Name:"
+				echo "> $newItemName"
+				chown -f $defaultUser:$defaultUser "$newItemName"
+				chmod -f 770 "$newItemName"
 				echo
 			fi
 	done
@@ -807,11 +880,11 @@ Uninstall()
 	echo "|   and Jellyman, exceptthe Media Library and jellyfin-backup.tar   |"
 	echo "|-------------------------------------------------------------------|"
 	echo
-	if Prompt_user yN "CONTINUE?"; then
-		echo "Goodbye..."
-		echo "Removing Jellyfin and Jellyman in:"
+	if Prompt_user yN "> CONTINUE?"; then
+		echo "> Goodbye..."
+		echo "> Removing Jellyfin and Jellyman in:"
 		Countdown 5
-			echo "Blocking port 8096 and 8920..."
+		echo "> Blocking ports 8096 and 8920..."
 		if [ -x "$(command -v ufw)" ]; then
 			ufw deny $httpPort/tcp
 			ufw deny $httpsPort/tcp
@@ -828,14 +901,20 @@ Uninstall()
 			echo "|          ERROR NO 'ufw' OR 'firewall-cmd' COMMAND FOUND!          |"
 			echo "|-------------------------------------------------------------------|"
 		fi
+		
+		echo "> Disabling and stopping Jellyfin..."
 		jellyman -d -S
 		systemctl disable --now jellyfin-backup.timer
-		rm -fv /etc/jellyfin.conf $jellyfinServiceLocation/jellyfin*
-		rm -rfv /opt/jellyfin
+		echo "> Deleting /etc/jellyfin.conf and $jellyfinServiceLocation/jellyfin.service..."
+		rm -f /etc/jellyfin.conf $jellyfinServiceLocation/jellyfin*
+		echo "> Deleting LINUX user $defaultUser"
 		userdel -f $defaultUser
-		rm -fv /usr/bin/base_functions.sh /usr/bin/jellyman
+		echo "> Deleting the /opt/jellyfin directory..."
+		rm -rf /opt/jellyfin
+		echo "> Deleting Jellyman..."
+		rm -f /usr/bin/base_functions.sh /usr/bin/jellyman
 	else
-		echo "Phew! That was a close one!"
+		echo "> Phew! That was a close one!"
 	fi
 }
 
@@ -875,15 +954,15 @@ Progress_bar()
 
 		printf "\rTranscoded : [$currentState/$totalState] [${_fill// /#}${_empty// /-}] ${_progress}%%"
 		printf "\nTranscoding File : $previousVideo \n"
-		echo "Original Size    : $previousVideoSizeMB MB"
-		echo "New Size         : $currentVideoSizeMB MB"
-		echo "Percentave Saved : $sizeSavingsPercent"
+		echo "> Original Size    : $previousVideoSizeMB MB"
+		echo "> New Size         : $currentVideoSizeMB MB"
+		echo "> Percentave Saved : $sizeSavingsPercent"
 
 		if [ $currentState -eq $totalState ]; then
 			printf '\nFinished!\n'
 		fi
 	else
-		echo "loading..."
+		echo "> loading..."
 	fi
 }
 
@@ -893,8 +972,8 @@ View_Transcode_Progress()
 		clear
 		Progress_bar
 		echo
-		echo "CTRL+C to exit progress bar"
-		echo "'jellyman -tcp' to bring back Transcode Progress"
+		echo "> CTRL+C to exit progress bar"
+		echo "> 'jellyman -tcp' to bring back Transcode Progress"
 		sleep 3
 	done
 }
@@ -918,18 +997,18 @@ Qualify_Transcode()
 		fi
 		_videoRatio=$(bc -l <<< "$_videoSizeGB/$_videoTimeHours")
 		if [ 1 -eq "$(echo "$_videoRatio > $desiredGBperHour" | bc)" ]; then
-			echo "Transcoding $videoToEdit ..."
+			echo "> Transcoding $videoToEdit ..."
 			_newName=$(echo $videoToEdit | rev | cut -d "." -f 2 | rev)
-			echo "Video time in Hours: $_videoTimeHours"
-			echo "Video size GB:  $_videoSizeGB"
-			echo "Current GB/Hour: $_videoRatio"
+			echo "> Video time in Hours: $_videoTimeHours"
+			echo "> Video size GB: $_videoSizeGB"
+			echo "> Current GB/Hour: $_videoRatio"
 			echo "$videoToEdit" >> $qualifiedVideos
 		else
-			echo "$videoToEdit is less than $desiredGBperHour GB/Hour, skipping..."
+			echo "> $videoToEdit is less than $desiredGBperHour GB/Hour, skipping..."
 		fi
 	else
 		_file=$(echo $videoToEdit | rev | cut -d "/" -f 1 | rev)
-		echo "$_file is not a video, skipping..."
+		echo "> $_file is not a video, skipping..."
 	fi
 }
 
@@ -962,21 +1041,21 @@ Transcode_file()
 #		echo "$_progress" > $progressBarFile
 
 		echo '#!/bin/bash' > "$progressBarConf"
-		echo "startState=$_progressIteration" >> "$progressBarConf"
-		echo "maxState=$totalVideos" >> "$progressBarConf"
-		echo "currentVideo=\"$_newName.downsampled.mp4\"" >> "$progressBarConf"
-		echo "previousVideo=\"$currentVideo\"" >> "$progressBarConf"
+		Set_var startState "$_progressIteration" "$progressBarConf" str
+		Set_var maxState "$totalVideos" "$progressBarConf" str
+		Set_var currentVideo "$_newName.downsampled.mp4" "$progressBarConf" str
+		Set_var previousVideo "$currentVideo" "$progressBarConf" str
 
-		echo "Transcoding $currentVideo"
+		echo "> Transcoding $currentVideo"
 		nice ffmpeg -y -i "$currentVideo" -c:v libx265 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
 		_newVideoSize=$(du -h "$_newName.downsampled.mp4" | cut -d "/" -f 1)
-		echo "Downsampled size: $_newVideoSize"
+		echo "> Downsampled size: $_newVideoSize"
 		if $deleteOrNot; then
-		  echo "DELETING $currentVideo IN: "
-		  Countdown 10
-		  rm -v "$currentVideo"
-		  mv -v "$_newName.downsampled.mp4" "$_newName.mp4"
-	  fi
+			echo "> DELETING $currentVideo IN: "
+			Countdown 10
+			rm -v "$currentVideo"
+			mv -v "$_newName.downsampled.mp4" "$_newName.mp4"
+		fi
 	done
 
 	sed -i "s|startState=.*|startState=$totalVideos|g" "$progressBarConf"
@@ -1003,33 +1082,28 @@ Transcode()
 	echo "|        TO RUN THIS COMMAND IN 'screen' THEN PRESSING         |"
 	echo "|                       CTRL + A THEN D                        |"
 	echo "|--------------------------------------------------------------|"
-	Prompt_user dir "Please enter the path to the file(s)"
+	Prompt_user dir "> Please enter the directory to the file(s)"
 	_directoryToCorrect=$promptDir
 	echo
-	echo "Please enter the desired GB per hour of video"
-	Prompt_user str "EXAMPLE: 1 OR 2.5"
+	echo "> Please enter the desired GB per hour of video"
+	Prompt_user str "> EXAMPLE: 1 OR 2.5" 0 0 "float"
 	desiredGBperHour=$promptStr
 	
 	preset=0
-	while [ $preset -gt 9 ] || [ $preset -lt 1 ]; do
-		clear
-		echo
-		echo "1: ultrafast"
-		echo "2: superfast"
-		echo "3: veryfast"
-		echo "4: faster"
-		echo "5: fast"
-		echo '6: medium (RECOMMENDED)'
-		echo "7: slow"
-		echo "8: slower"
-		echo "9: veryslow"
-		echo
-		echo "Please choose a transcode preset"
-		read -p ">>> [1-9] : " preset
-		if [[ ! $preset == [1-9] ]]; then
-		 preset=0
-		fi
-	done
+	clear
+	echo
+	echo "> 1: ultrafast"
+	echo "> 2: superfast"
+	echo "> 3: veryfast"
+	echo "> 4: faster"
+	echo "> 5: fast"
+	echo '> 6: medium (RECOMMENDED)'
+	echo "> 7: slow"
+	echo "> 8: slower"
+	echo "> 9: veryslow"
+	echo
+	Prompt_user num "> Please choose a transcode preset" 1 9 "1-9"
+	preset=$promptNum
 	echo
 	case "$preset" in
 		1)	preset="ultrafast" ;;
@@ -1045,12 +1119,12 @@ Transcode()
 	
 	crf=0
 	clear
-	echo 'Please enter a Constant Rate Factor (CRF) [20-30]'
-	echo "22-26 is recommended"
-	Prompt_user num "20 is better quality and 30 is lower quality" 20 30
+	echo '> Please enter a Constant Rate Factor (CRF) [20-30]'
+	echo "> 22-26 is recommended"
+	Prompt_user num "> 20 is better quality and 30 is lower quality" 20 30 "20-30"
 	crf=$promptNum
 	echo
-	if Prompt_user yN "Would you like to delete the original file(s) after transcode?"; then
+	if Prompt_user yN "> Would you like to delete the original file(s) after transcode?"; then
 		deleteOrNot=true
 	else
 		deleteOrNot=false
@@ -1066,16 +1140,16 @@ Transcode()
 	View_Transcode_Progress
 }
 
-Update-jellyman()
+Update_jellyman()
 {
 	Has_sudo
 	jellymanManFile=$(curl -sL https://raw.githubusercontent.com/Smiley-McSmiles/jellyman/main/jellyman.1)
 	currentJellymanVersion=$(echo $jellymanManFile | grep " - v" | cut -d "v" -f2 | cut -d " " -f1)
 	if [[ "v$currentJellymanVersion" == $jellymanVersion ]]; then
-		echo "Jellyman is up to date. No new versions available."
+		echo "> Jellyman is up to date. No new versions available."
 		exit
 	else
-		echo "Updating Jellyman - The Jellyfin Manager from $jellymanVersion to v$currentJellymanVersion"
+		echo "> Updating Jellyman - The Jellyfin Manager from $jellymanVersion to v$currentJellymanVersion"
 		git clone https://github.com/Smiley-McSmiles/jellyman
 		cd jellyman
 		chmod ug+x setup.sh
@@ -1099,7 +1173,7 @@ Change_Media_Directory()
 		echo "|---------------------------------------------------------|"
 		echo
 		echo $warning
-		Prompt_user str " "
+		Prompt_user str " " 0 0 "/dir1 /dir2"
 		mediaPath=$promptStr
 		if areDirectories "$mediaPath"; then
 			continue=false
@@ -1109,7 +1183,7 @@ Change_Media_Directory()
 		fi
 	done
 
-	Change_variable defaultPath "$mediaPath" "$sourceFile" array
+	Set_var defaultPath "$mediaPath" "$sourceFile" array
 }
 
 Help()
@@ -1126,7 +1200,7 @@ Help()
 	echo "-d, --disable                Disable Jellyfin on System Start."
 	echo "-e, --enable                 Enable Jellyfin on System Start."
 	echo "-h, --help                   Print this Help."
-	echo "-i, --import                 [FILE.tar] Input file to Import jellyfin-backup.tar."
+	echo "-i, --import                 [FILE.tar - optional] Input file to Import jellyfin-backup.tar."
 	echo "-p, --permissions            [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory."
 	echo "-r, --restart                Restart Jellyfin."
 	echo "-s, --start                  Start Jellyfin."
@@ -1187,7 +1261,7 @@ if [ -n "$1" ]; then
 				 else
 					 Permissions $2
 					 shift 
-				 fi  ;;
+				 fi ;;
 			-r | --restart) systemctl restart jellyfin.service ;;
 			-s | --start) systemctl start jellyfin.service ;;
 			-S | --stop) systemctl stop jellyfin.service ;;
@@ -1198,7 +1272,7 @@ if [ -n "$1" ]; then
 					 Update $2
 					 shift
 				 fi ;;
-			-U | --update-jellyman) Update-jellyman
+			-U | --update-jellyman) Update_jellyman
 				 exit ;;
 			-ub | --update-beta) Update_beta ;;
 			-v | --version) Get_jellyfin_version
@@ -1223,13 +1297,13 @@ if [ -n "$1" ]; then
 			-X | --uninstall) Uninstall ;;
 			--dev_func) Dev_func "$2"
 									shift ;;
-			*) echo "Option $1 not recognized" 
+			*) echo "> ERROR: Option $1 not recognized" 
 				Help ;;
 		esac
 		shift
 	done
 else
-	echo "No commands found."
+	echo "> No commands found."
 	Help
 	exit
 fi
