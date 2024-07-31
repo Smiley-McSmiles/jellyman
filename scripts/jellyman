@@ -339,7 +339,7 @@ Remove_version()
 	echo "> $warning"
 	echo "> Please enter the number corresponding with"
 	Prompt_user num "  the version you want to ERASE" 1 $maxNumber "1-$maxNumber"
-	versionToRemove=$promptNum
+	versionToRemoveNumber=$promptNum
 	versionToRemove=$(echo "$installedVersions" | head -n $versionToRemoveNumber | tail -n 1)
 	warning="ERROR: Please select one of the numbers provided!"
 	if isCurrentVersion $versionToRemove; then
