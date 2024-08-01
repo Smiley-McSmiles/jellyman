@@ -1,11 +1,8 @@
 #!/bin/bash
 
-promptDir=null
-promptFile=null
-promptNum=null
-promptUsr=null
-promptStr=null
-Prompt_user()
+declare -g promptResult=null
+
+PromptUser()
 {
 	# prompt types = [Yn,yN,dir,file,num,usr,str]
 	_promptType=$1
@@ -64,7 +61,7 @@ Prompt_user()
 			while [[ ! -d $_dir ]]; do
 				read -p "[$_inputText] >>> " "_dir"
 				if [[ -d $_dir ]]; then
-					promptDir="$_dir"
+					promptResult="$_dir"
 					return 0
 				else
 					echo
@@ -79,7 +76,7 @@ Prompt_user()
 			while [[ ! -f $_file ]]; do
 				read -p "[$_inputText] >>> " "_file"
 				if [[ -f $_file ]]; then
-					promptFile="$_file"
+					promptResult="$_file"
 					return 0
 				else
 					echo
@@ -98,7 +95,7 @@ Prompt_user()
 					_num=null
 					echo "ERROR: Input must be between $_minNumber and $_maxNumber"
 				elif [[ $_num =~ ^[0-9]+$ ]]; then
-					promptNum=$_num
+					promptResult=$_num
 					return 0
 				else
 					echo
@@ -113,7 +110,7 @@ Prompt_user()
 			while [[ "$_usr" =~ [A-Z] ]] || [[ "$_usr" =~ \ |\' ]] || [[ "$_usr" == "" ]]; do
 				read -p "[$_inputText] >>> " "_usr"
 				if [[ ! "$_usr" =~ [A-Z] ]] && [[ ! "$_usr" =~ \ |\' ]] && [[ ! "$_usr" == "" ]]; then
-					promptUsr=$_usr
+					promptResult=$_usr
 					return 0
 				else
 					echo
@@ -128,7 +125,7 @@ Prompt_user()
 			while [[ ! -n $_str ]]; do
 				read -p "[$_inputText] >>> " "_str"
 				if [[ -n $_str ]]; then
-					promptStr=$_str
+					promptResult=$_str
 					return 0
 				else
 					echo
@@ -141,43 +138,43 @@ Prompt_user()
 		;;
 	esac
 # Default yes
-# if Prompt_user Yn "Example yes or no question?" 0 0 "Y/n"; then
+# if PromptUser Yn "Example yes or no question?" 0 0 "Y/n"; then
 #	echo "pass"
 # else
 #	echo "fail"
 # fi
 
 # Default no
-# if Prompt_user yN "Example yes or no question?" 0 0 "y/N"; then
+# if PromptUser yN "Example yes or no question?" 0 0 "y/N"; then
 #	echo "pass"
 # else
 #	echo "fail"
 # fi
 
 # Check for directory, return directory
-# Prompt_user dir "Enter a valid directory" 0 0 "/path/to/directory"
-# echo "Directory entered = $promptDir"
+# PromptUser dir "Enter a valid directory" 0 0 "/path/to/directory"
+# echo "Directory entered = $promptResult"
 
 # Check for file, return file
-# Prompt_user file "Enter a valid file" 0 0 "/path/to/file"
-# echo "File entered = $promptFile"
+# PromptUser file "Enter a valid file" 0 0 "/path/to/file"
+# echo "File entered = $promptResult"
 
 # Check if number, return number entered
-# Prompt_user num "Enter a valid number" minNumber maxNumber "$minNumber-$maxNumber"
-# echo "Number entered = $promptNum"
+# PromptUser num "Enter a valid number" minNumber maxNumber "$minNumber-$maxNumber"
+# echo "Number entered = $promptResult"
 
 # Check username for uppercase or spaces, return username
-# Prompt_user usr "Enter a valid username" 0 0 "username"
-# echo "Username entered = $promptUsr"
+# PromptUser usr "Enter a valid username" 0 0 "username"
+# echo "Username entered = $promptResult"
 
 # Check if string variable is not empty, return string
-# Prompt_user str "Enter a string" 0 0 "string"
-# echo "String entered = $promptStr"
+# PromptUser str "Enter a string" 0 0 "string"
+# echo "String entered = $promptResult"
 }
 
-Set_var()
+SetVar()
 {
-	# Set_var testVar "newVarContent" "fileToChange" varType
+	# SetVar testVar "newVarContent" "fileToChange" varType
 	varToChange=$1
 	newVarContent=$2
 	fileToChange=$3
@@ -199,9 +196,9 @@ Set_var()
 	fi
 }
 
-Del_var()
+DelVar()
 {
-	# Del_var varToDelete fileToChange
+	# DelVar varToDelete fileToChange
 	varToDelete=$1
 	fileToChange=$2
 	if ( ! grep -q $varToChange "$fileToChange" ); then
@@ -213,7 +210,7 @@ Del_var()
 	fi
 }
 
-Set_xml_var()
+SetXmlVar()
 {
 	# Change_xml_variable testVar "newVarContent" "fileToChange"
 	varToChange=$1
@@ -229,7 +226,7 @@ Set_xml_var()
 	fi
 }
 
-isVideo()
+IsVideo()
 {
 	_video=$1
 	if [[ $_video == *"."[mMaA][kKvVpP][iIvV4] ]]; then
@@ -251,7 +248,7 @@ Countdown()
 	printf "\n"
 }
 
-Has_sudo()
+HasSudo()
 {
 	if [ "$EUID" -ne 0 ]; then
 		echo "ERROR: Permission denied for $USER"
@@ -263,7 +260,7 @@ Has_sudo()
 	fi
 }
 
-areDirectories()
+AreDirectories()
 {
 	directoriesToCheck="$1"
 	isDirectory=true
