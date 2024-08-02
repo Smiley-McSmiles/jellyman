@@ -7,7 +7,7 @@
 .B Jellyman - a Jellyfin Manager for the Jellyfin generic linux amd64.tar.gz package
 
 .SH VERSION
-.B Jellyman - The Jellyfin Manager - v1.7.9
+.B Jellyman - The Jellyfin Manager - v1.8.0
 
 .SH SYNOPSIS
 .B jellyman
@@ -23,6 +23,12 @@ is a set of scripts to install/manage and update the jellyfin-combined tar.gz ge
 .SS COMMANDS
 .TP
 .B -b, --backup                 [DIRECTORY] Input directory to output backup archive.
+.BR
+    ├── jellyman -b "/path/to/backup/directory" will output a jellyfin-backup.tar to that directory.
+.BR
+    ├── jellyman -ba will perform an automatic backup. But only if automatic backups are set up.
+.BR
+    └── jellyman -bu will launch the automatic backup setup utility.
 .TP
 .B -ba, --backup-auto           Perform an automatic backup.
 .TP
@@ -35,10 +41,14 @@ is a set of scripts to install/manage and update the jellyfin-combined tar.gz ge
 .B -h, --help                   Print this Help.
 .TP
 .B -i, --import                 [FILE.tar - optional] Input file to Import jellyfin-backup.tar.
-└── This will only work if on your new OS/setup you have your Media directories exactly the same as your old OS/setup.
+.BR
+    ├── Media metadata will only import if your new OS/setup and old OS/setup media folders are exactly the same.
+.BR
+    └── User and Web-UI configurations will still import just fine however.
 .TP
 .B -p, --permissions            [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
-└── Uses 'chmod -R 770' on your media directory.
+.BR
+    └── Uses 'chmod -R 770' on your media directory.
 .TP
 .B -r, --restart                Restart Jellyfin.
 .TP
@@ -49,23 +59,30 @@ is a set of scripts to install/manage and update the jellyfin-combined tar.gz ge
 .B -t, --status                 Status of Jellyfin.
 .TP
 .B -u, --update-jellyfin        [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
-└── NOTE - Supplied URL has to end with jellyfin_xx.x.x-<ARCHITECTURE>.tar.gz
+.BR
+    └── NOTE - Supplied URL has to end with jellyfin_xx.x.x-<ARCHITECTURE>.tar.gz
 .TP
 .B -U, --update-jellyman        Update Jellyman - The CLI Tool.
-└── Checks and downloads most recent version from GitHub.
+.BR
+    └── Checks and downloads most recent version from GitHub.
 .TP
 .B -ub, --update-beta           Update Jellyfin to the most recent Beta.
 .TP
 .B -v, --version                Get the current installed version of Jellyfin.
 .TP
 .B -vd, --version-download      Download an available Jellyfin version from the stable repository.
-└── Provides a list of currently installed versions of Jellyfin for you to download.
+.BR
+    └── Provides a list of currently installed versions of Jellyfin for you to download.
 .TP
 .B -vs, --version-switch        Switch Jellyfin version for another previously installed version.
-└── Provides a list of currently installed versions of Jellyfin for you to switch to.
+.BR
+    └── Provides a list of currently installed versions of Jellyfin for you to switch to.
 .TP
 .B -rv, --remove-version        Remove a Jellyfin version.
-└── Provides a list of currently installed versions of Jellyfin for you to remove.
+.BR
+    └── Provides a list of currently installed versions of Jellyfin for you to remove.
+.TP
+.B -vl, --view-log              Choose from a list of logs to view.
 .TP
 .B -rc, --recertify             Removes old https certifications and creates new ones for the next 365 days.
 .TP
@@ -81,14 +98,25 @@ is a set of scripts to install/manage and update the jellyfin-combined tar.gz ge
 .TP
 .B -md, --media-directory       Change the Media Directory for Jellyman.
 .TP
-.B -tc, --transcode             Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
+.B -tc, --transcode             Transcode a file/directory with a GB per hour filter.
+.BR
+    ├── 1.5GB/hr is recommended for 1080p.
+.BR
+    ├── 3GB/hr is recommended for 4k.
+.BR
+    ├── Now uses AV1 codec (No HDR).
+.BR
+    └── Please be careful as this can delete media files.
+.BR
+        └── Select [no] to keep original files to preserve your media.
 .TP
-.B -tcp, --transcode-progress   View the progress of current transcode
+.B -tcp, --transcode-progress   View the progress of current transcode.
 .TP
 .B -tcs, --transcode-stop       Stop the current transcode process.
 .TP
 .B -X, --uninstall              Uninstall Jellyfin and Jellyman Completely.
-└── Ignores the Media Directory.
+.BR
+    └── Ignores the Media Directory.
 
 .SH EXAMPLE
 .TP
@@ -110,14 +138,16 @@ is a set of scripts to install/manage and update the jellyfin-combined tar.gz ge
 .SH URL TO NEW VERSIONS
 .PP
 List of supported official Jellyfin packages:
+.PP
 https://repo.jellyfin.org/files/server/linux/stable/
 
 .SH COPYRIGHT
 .PP
-Copyright 2021 Smiley McSmiles. All rights reserved
+Copyright 2021-2024 WOOSAH (Smiley McSmiles). All rights reserved
+.PP
 https://www.github.com/Smiley-McSmiles/jellyman
 
 .SH CREDITS
 .PP
-Jellyman and this man page was created by Smiley McSmiles <SmileyMcSmiles@Proton.me>
+Jellyman and this man page was created by WOOSAH <WOOSAAH@Proton.me>
 

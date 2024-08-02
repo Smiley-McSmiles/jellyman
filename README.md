@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
 =======
 
-> v1.7.9 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
+> v1.8.0 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
 > Tested on Fedora 34-40, Ubuntu 22.04-24.04, Manjaro 21.3.6, EndeavourOS Artemis Neo/Nova/Cassini Nova, Linux Mint 21, and Rocky/Alma/RHEL Linux 8.6/9.0
 
@@ -10,6 +10,16 @@
 # Description
 
 Jellyman is a lightweight BASH CLI (Command Line Interface) tool for installing and managing Jellyfin. Most notably, The ability to download and install the Jellyfin Media Server and switch between already downloaded versions of Jellyfin on the fly. As well as create a full backup (automatically or manually) so you can move or import all your metadata and user information to another machine.
+
+# Getting Started
+
+```sh
+git clone https://github.com/Smiley-McSmiles/jellyman
+cd jellyman
+chmod ug+x setup.sh
+sudo ./setup.sh
+cd ~/
+```
 
 # Features
 
@@ -99,7 +109,7 @@ Jellyman is a lightweight BASH CLI (Command Line Interface) tool for installing 
 ```
     └── Uses 'chmod -R 770' on your media directory.
 ```
-* **Get Version** - Get the current installed version of Jellyfin.
+* **Get Version** - Get the current installed version of Jellyfin and Jellyman.
 * **Remove Version** - Remove a specific version of Jellyfin
 ```
     └── Provides a list of currently installed versions of Jellyfin for you to remove.
@@ -112,24 +122,24 @@ Jellyman is a lightweight BASH CLI (Command Line Interface) tool for installing 
 ```
     └── Provides a list of currently installed versions of Jellyfin for you to switch to.
 ```
+* **View Logs** - Select from a list of logs to view.
 * **Recertify https** - Removes old https certifications and creates new **self signed** keys for the next 365 days. 
 * **Rename TV** - Batch renaming script for TV shows.
 * **Library Scan** - Tell Jellyfin to scan your media library.
-* **Change Port** - Change Jellyfins network port - Default = 8096.
+* **Change Port** - Change Jellyfins network ports.
 * **Change Media Directory** - Changes the Media Directory/Directories for Jellyman.
 * **Import API Key** - Import a new API key.
-* **Transcode** - Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
+* **Transcode** - Transcode a file/directory with a GB per hour filter.
+```
+    ├── 1.5GB/hr is recommended for 1080p.
+    ├── 3GB/hr is recommended for 4k.
+    ├── Now uses AV1 codec (No HDR).
+    └── Please be careful as this can delete media files.
+         └──Select [no] to delete original files to preserve your media.
+```
 * **Uninstall** - Uninstalls Jellyfin and Jellyman completely 
 ```
     └── Does not remove backup archives or media files.
-```
-# Getting Started
-
-```sh
-git clone https://github.com/Smiley-McSmiles/jellyman
-cd jellyman
-chmod ug+x setup.sh
-sudo ./setup.sh
 ```
 
 # Example Install
@@ -146,7 +156,7 @@ sudo ./setup.sh
 [1-3] >>> 1
 
 > Fetching newest stable Jellyfin version...
-> WARNING: THIS OPTION IS HIGHLY UNSTABLE, ONLY USE IF YOU KNOW WHAT YOU'RE DOING!!!
+> WARNING: THIS OPTION IS HIGHLY UNSTABLE, ONLY USE IF YOU KNOW WHAT YOU ARE DOING!!!
 
 > Is Jellyfin CURRENTLY installed on this system?
 [y/N] >>> no
@@ -237,12 +247,12 @@ COMMANDS:
 -rc, --recertify             Removes old https certifications and creates new ones for the next 365 days.
 -rn, --rename                Batch renaming script for TV shows.
 -ls, --library-scan          Tell Jellyfin to scan your media library.
--cp, --change-http           Change Jellyfins http network port - Default = 8096
+-cp, --change-http           Change Jellyfins http network port - Default = 8096.
 -cps, --change-https         Change Jellyfins https network port - Default = 8920.
 -ik, --import-key            Import an API key
 -md, --media-directory       Change the Media Directory for Jellyman.
--tc, --transcode             Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
--tcp, --transcode-progress   View progress of the Transcode
+-tc, --transcode             Transcode a file/directory with a GB per hour filter (1.5GB is recommended).
+-tcp, --transcode-progress   View progress of the Transcode.
 -tcs, --transcode-stop       Stop the current transcode process.
 -X, --uninstall              Uninstall Jellyfin and Jellyman Completely.
 
