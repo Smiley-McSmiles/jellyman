@@ -32,12 +32,12 @@ helpList="
 -vl   --view-log             Choose from a list of logs to view.
 -rc,  --recertify            Removes old https certifications and creates new ones for the next 365 days.
 -rn,  --rename               Batch renaming script for TV shows.
--cp,  --change-http          Change Jellyfins http network port - Default = 8096
+-cp,  --change-http          Change Jellyfins http network port - Default = 8096.
 -cps, --change-https         Change Jellyfins https network port - Default = 8920.
--ik,  --import-key           Import an API key
+-ik,  --import-key           Import an API key.
 -md,  --media-directory      Change the Media Directory for Jellyman.
--tc,  --transcode            Transcode a file/directory with a GB per hour filter (1.5GB is recommended)
--tcp, --transcode-progress   View progress of the Transcode
+-tc,  --transcode            Transcode a file/directory with a GB per hour filter (1.5GB is recommended).
+-tcp, --transcode-progress   View progress of the Transcode.
 -tcs, --transcode-stop       Stop the current transcode process.
 -X,   --uninstall            Uninstall Jellyfin and Jellyman Completely.
 
