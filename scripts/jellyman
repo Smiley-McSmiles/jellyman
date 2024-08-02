@@ -5,7 +5,7 @@ sourceFile="/opt/jellyfin/config/jellyman.conf"
 source /usr/bin/base_functions.sh
 helpList="
 > Jellyman - The Jellyfin Manager $jellymanVersion
-- Created by Smiley McSmiles
+- Created by WOOSAH (Smiley McSmiles)
 
 > Syntax: jellyman -[COMMAND] [PARAMETER]
 > COMMANDS:
