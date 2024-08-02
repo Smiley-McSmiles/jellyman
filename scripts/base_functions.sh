@@ -289,3 +289,25 @@ AreDirectories()
 #fi
 }
 
+Log()
+{
+	# Log "ERROR | ERROR MESSAGE" $logFile
+	_errorMessage=$1
+	_logFile=$2
+	_logFileNoDir=$(echo "$_logFile" | rev | cut -d / -f 1 | rev)
+	_logFileDir=$(echo "$_logFile" | sed -r "s|$_logFileNoDir||g")
+	_date="[ $(date) ] |"
+
+	echo "$_date $_errorMessage" >> $_logFile
+	# echo "$_errorMessage"
+
+	USER1=$(stat -c '%U' "$_logFileDir")
+	chown -f $USER1:$USER1 $_logFile
+	chmod -f 770 $_logFile
+
+	_logFileLines=$(wc -l $_logFile | cut -d " " -f 1)
+
+	if [ $_logFileLines -ge 1000 ]; then
+		sed -i '1d' $_logFile
+	fi
+}
