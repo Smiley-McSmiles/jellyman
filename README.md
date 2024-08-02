@@ -146,7 +146,7 @@ sudo ./setup.sh
 [1-3] >>> 1
 
 > Fetching newest stable Jellyfin version...
-> WARNING: THIS OPTION IS HIGHLY UNSTABLE, ONLY USE IF YOU KNOW WHAT YOU'RE DOING!!!
+> WARNING: THIS OPTION IS HIGHLY UNSTABLE, ONLY USE IF YOU KNOW WHAT YOU ARE DOING!!!
 
 > Is Jellyfin CURRENTLY installed on this system?
 [y/N] >>> no
