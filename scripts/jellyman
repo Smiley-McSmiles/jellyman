@@ -1,8 +1,9 @@
 #!/bin/bash
-jellymanVersion="v1.8.0"
-logFile=/opt/jellyfin/log/jellyman.log
+jellymanVersion="v1.8.1"
+logDir=/opt/jellyfin/log
+logFile=$logDir/jellyman.log
 sourceFile="/opt/jellyfin/config/jellyman.conf"
-source /usr/bin/base_functions.sh
+source /usr/bin/jellyman-functions
 helpList="
 > Jellyman - The Jellyfin Manager $jellymanVersion
 - Created by WOOSAH (Smiley McSmiles)
@@ -109,7 +110,7 @@ BackupAuto()
 	else
 		jellyman -b "$backupDir"
 
-		tarList=$(ls -1 "$backupDir"/*.tar)
+		tarList=$(ls -1 "$backupDir"/jellyfin-backup*.tar)
 		newestTar=$(echo "$tarList" | tail -n 1)
 		oldestTar=$(echo "$tarList" | head -n 1)
 		tarCount=$(echo "$tarList" | wc -l)
@@ -121,7 +122,7 @@ BackupAuto()
 			echo "> Jellyman is removing $oldestTar"
 			# echo "> NewBackup=$newestTar"
 			rm -f "$oldestTar"
-			tarList=$(ls -1 "$backupDir"/*.tar)
+			tarList=$(ls -1 "$backupDir"/jellyfin-backup*.tar)
 			newestTar=$(echo "$tarList" | tail -n 1)
 			oldestTar=$(echo "$tarList" | head -n 1)
 			tarCount=$(echo "$tarList" | wc -l)
@@ -436,20 +437,15 @@ Import()
 		if [[ -n $backupDir ]]; then
 			importDir=$backupDir	
 		else
-			PromptUser dir "> Please enter the directory to the jellyfin-backup.tar archive(s)." 0 0 "/path/to/backup(s)"
+			PromptUser dir "> Please enter the directory to your jellyfin-backup.tar archives." 0 0 "/path/to/backups"
 			importDir=$promptResult
 		fi
-		
-		listOfBackups=$(ls -1 $importDir | grep "jellyfin-backup".*".tar")
-		listOfBackupsNumbered=$(echo "$listOfBackups" | cat -n)
-		numberOfBackups=$(echo "$listOfBackups" | wc -l)
-		echo "$listOfBackupsNumbered"
-		PromptUser num "> Please enter the number corresponding with the archive you wish to import." 1 $numberOfBackups "1-$numberOfBackups"
-		backupToImportNumber=$promptResult
-		backupToImport=$(echo "$listOfBackups" | head -n $backupToImportNumber | tail -n 1)
+
+		PresentList "$importDir" "> Please enter the number corresponding with the archive you wish to import." "jellyfin-backup"
+		backupToImport=$presentListResult
 		importTar="$importDir/$backupToImport"
 	fi
-	
+
 	echo
 	echo "+--------------------------------------------------------------------+"
 	echo "|                        ******CAUTION******                         |"
@@ -457,9 +453,7 @@ Import()
 	echo "+--------------------------------------------------------------------+"
 
 	if PromptUser yN "> Import $importTar?"; then
-		echo "test1"
 		Log "IMPORT | Initiating import of $importTar" $logFile
-		echo "test2"
 		oldDefaultUser=$defaultUser
 		echo "> IMPORTING $importTar"
 		jellyman -S -d
@@ -543,21 +537,6 @@ Import()
 		return 0
 		exit
 	fi
-}
-
-ViewLog()
-{
-	HasSudo
-	logDir=/opt/jellyfin/log
-
-	listOfLogs=$(ls -1 $logDir)
-	listOfLogsNumbered=$(echo "$listOfLogs" | cat -n)
-	numberOfLogs=$(echo "$listOfLogs" | wc -l)
-	echo "$listOfLogsNumbered"
-	PromptUser num "> Please enter the number corresponding with the log you wish to view." 1 $numberOfLogs "1-$numberOfLogs"
-	logToViewNumber=$promptResult
-	logToView=$(echo "$listOfLogs" | head -n $logToViewNumber | tail -n 1)
-	less -FS $logDir/$logToView
 }
 
 LibraryScan()
@@ -1022,7 +1001,7 @@ Uninstall()
 		echo "> Deleting the /opt/jellyfin directory..."
 		rm -rf /opt/jellyfin
 		echo "> Deleting Jellyman..."
-		rm -f /usr/bin/base_functions.sh /usr/bin/jellyman
+		rm -f /usr/bin/jellyman-functions /usr/bin/jellyman
 	else
 		echo "> Phew! That was a close one!"
 	fi
@@ -1195,7 +1174,7 @@ Transcode()
 	echo "|        TO RUN THIS COMMAND IN 'screen' THEN PRESSING         |"
 	echo "|                       CTRL + A THEN D                        |"
 	echo "|--------------------------------------------------------------|"
-	PromptUser str "> Please enter the directory to the file(s)" 0 0 "directory"
+	PromptUser str "> Please enter the directory to the files to transcode" 0 0 "directory"
 	_directoryToCorrect=$promptResult
 	echo
 	echo "> Please enter the desired GB per hour of video"
@@ -1219,7 +1198,7 @@ Transcode()
 	PromptUser num "> Lower values correspond to higher quality but greater file size" 1 63 "1-63"
 	crf=$promptResult
 	echo
-	if PromptUser yN "> Would you like to delete the original file(s) after transcode?"; then
+	if PromptUser yN "> Would you like to delete the original file after transcode?"; then
 		deleteOrNot=true
 	else
 		deleteOrNot=false
@@ -1236,13 +1215,13 @@ Transcode()
 	ViewTranscodeProgress
 }
 
-Update_jellyman()
+UpdateJellyman()
 {
 	HasSudo
 	jellymanManFile=$(curl -sL https://raw.githubusercontent.com/Smiley-McSmiles/jellyman/main/jellyman.1)
 	currentJellymanVersion=$(echo $jellymanManFile | grep " - v" | cut -d "v" -f2 | cut -d " " -f1)
 	if [[ "v$currentJellymanVersion" == $jellymanVersion ]]; then
-		echo "> Jellyman is up to date. No new versions available."
+		echo "> Jellyman v$jellymanVersion is up to date. No new versions available."
 		Log "ERROR | UPDATE-JELLYMAN | Tried to update Jellyman, but Jellyman is already at the current version" $logFile
 		exit
 	else
@@ -1291,6 +1270,24 @@ ChangeMediaDirectory()
 	done
 }
 
+Control(){
+	HasSudo
+	source $sourceFile
+
+	case "$1" in
+		start) systemctl start jellyfin
+         	Log "JELLYMAN | Started Jellyfin" $logFile ;;
+		stop) systemctl stop jellyfin
+         	Log "JELLYMAN | Stopped Jellyfin" $logFile ;;
+		enable) systemctl enable jellyfin
+         	Log "JELLYMAN | Enabled Jellyfin" $logFile ;;
+		disable) systemctl disable jellyfin
+         	Log "JELLYMAN | Disabled Jellyfin" $logFile ;;
+		restart) systemctl restart jellyfin
+         	Log "JELLYMAN | Restarted Jellyfin" $logFile ;;
+	esac
+}
+
 Help()
 {
 	# Display Help
@@ -1313,12 +1310,8 @@ if [ -n "$1" ]; then
 				 shift ;;
 			-ba | --backup-auto) BackupAuto ;;
 			-bu | --backup-utility) BackupUtility ;;
-			-d | --disable) HasSudo
-						systemctl disable jellyfin.service
-						Log "JELLYMAN | Disabled Jellyfin" $logFile ;;
-			-e | --enable) HasSudo
-						systemctl enable jellyfin.service
-						Log "JELLYMAN | Enabled Jellyfin" $logFile ;;
+			-d | --disable) Control "disable" ;;
+			-e | --enable) Control "enable" ;;
 			-h | --help) Help ;;
 			-i | --import) Import "$2"
 				 shift ;;
@@ -1328,15 +1321,9 @@ if [ -n "$1" ]; then
 					 Permissions $2
 					 shift 
 				 fi ;;
-			-r | --restart) HasSudo
-						systemctl restart jellyfin.service
-						Log "JELLYMAN | Restarted Jellyfin" $logFile ;;
-			-s | --start) HasSudo
-						systemctl start jellyfin.service
-						Log "JELLYMAN | Started Jellyfin" $logFile ;;
-			-S | --stop) HasSudo
-						systemctl stop jellyfin.service
-						Log "JELLYMAN | Stopped Jellyfin" $logFile ;;
+			-r | --restart) Control "restart" ;;
+			-s | --start) Control "start" ;;
+			-S | --stop) Control "stop" ;;
 			-t | --status) Status ;;
 			-u | --update-jellyfin) if [[ "$2" == "-"* ]]; then
 					 Update
@@ -1344,7 +1331,7 @@ if [ -n "$1" ]; then
 					 Update $2
 					 shift
 				 fi ;;
-			-U | --update-jellyman) Update_jellyman
+			-U | --update-jellyman) UpdateJellyman
 				 exit ;;
 			-ub | --update-beta) UpdateBeta ;;
 			-v | --version) GetJellyfinVersion
@@ -1352,7 +1339,8 @@ if [ -n "$1" ]; then
 			-vd | --version-download) VersionDownload ;;
 			-vs | --version-switch) VersionSwitch ;;
 			-vr | --version-remove) VersionRemove ;;
-			-vl | --view-log) ViewLog;;
+			-vl | --view-log) HasSudo
+				 ViewLog "$logDir" ;;
 			-rc | --recertify) RecertifyHttps ;;
 			-rn | --rename) RenameTv ;;
 			-ls | --library-scan) LibraryScan ;;
@@ -1370,13 +1358,13 @@ if [ -n "$1" ]; then
 			-X | --uninstall) Uninstall ;;
 			--CallFunc) CallFunc "$2"
 									shift ;;
-			*) echo "> ERROR: Option $1 not recognized" 
+			*) echo "> ERROR: Command $1 not recognized"
 				Help ;;
 		esac
 		shift
 	done
 else
-	echo "> No commands found."
+	echo "> ERROR: No commands were found!"
 	Help
 	exit
 fi
