@@ -1,5 +1,5 @@
 [Unit]
-Description="Run jellyfin-service.service once a week on Sunday"
+Description="Run jellyfin-backup.service once a week on Sunday"
 
 [Timer]
 OnCalendar=Sun *-*-* 01:00:00

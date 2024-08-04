@@ -1,6 +1,6 @@
 #!/bin/bash
 DIRECTORY=$(cd `dirname $0` && pwd)
-source $DIRECTORY/scripts/base_functions.sh
+source $DIRECTORY/scripts/jellyman-functions
 hasSudoAccess=
 architecture=
 osDetected=
@@ -42,12 +42,12 @@ Import()
 		tar xf $importTar -C /
 		source $sourceFile
 		mv -f $logFile /opt/jellyfin/log/
-		logFile=/opt/jellyfin/jellyman_import.log
+		logFile=/opt/jellyfin/log/jellyman_import.log
 		mv -f /opt/jellyfin/backup/jellyfin.conf /etc/
 		cp -f $DIRECTORY/scripts/jellyman /usr/bin/
-		cp -f $DIRECTORY/scripts/base_functions.sh /usr/bin/
+		cp -f $DIRECTORY/scripts/jellyman-functions /usr/bin/
 		chmod +rx /usr/bin/jellyman
-		chmod +rx /usr/bin/base_functions.sh
+		chmod +rx /usr/bin/jellyman-functions
 		
 		if [ -d /usr/lib/systemd/system ]; then
 			jellyfinServiceLocation="/usr/lib/systemd/system"
@@ -340,8 +340,8 @@ Setup()
 	fi
 
 	cp $DIRECTORY/scripts/jellyman /usr/bin/
-	cp $DIRECTORY/scripts/base_functions.sh /usr/bin/
-	chmod +rx /usr/bin/base_functions.sh
+	cp $DIRECTORY/scripts/jellyman-functions /usr/bin/
+	chmod +rx /usr/bin/jellyman-functions
 	cp $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/
 	touch $sourceFile
 	jellyfinServiceLocation=
@@ -468,8 +468,8 @@ Update_jellyman()
 	cp -f $DIRECTORY/scripts/jellyman /usr/bin/jellyman
 	cp -f $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/jellyfin.sh
 	chmod +rx /usr/bin/jellyman
-	cp $DIRECTORY/scripts/base_functions.sh /usr/bin/
-	chmod +rx /usr/bin/base_functions.sh
+	cp $DIRECTORY/scripts/jellyman-functions /usr/bin/
+	chmod +rx /usr/bin/jellyman-functions
 	
 	# deletes all empty lines in $sourcefile
 	sed -i '/^ *$/d' $sourceFile
@@ -509,6 +509,10 @@ Update_jellyman()
 		architecture=
 		GetArchitecture
 		SetVar architecture "$architecture" "$sourceFile" str
+	fi
+
+	if [[ -f /usr/bin/base_functions.sh ]]; then
+		rm -f /usr/bin/base_functions.sh
 	fi
 
 	if [[ $_skip == "y" ]]; then
