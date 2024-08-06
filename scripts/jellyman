@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.8.1"
+jellymanVersion="v1.8.2"
 logDir=/opt/jellyfin/log
 logFile=$logDir/jellyman.log
 sourceFile="/opt/jellyfin/config/jellyman.conf"
@@ -893,7 +893,7 @@ RenameTv()
 		echo "|      NAMES ARE IN THE SAME LOCATION IN THE DIRECTORY         |"
 		echo "|--------------------------------------------------------------|"
 		echo
-		PromptUser dir "> Please enter a directory"
+		PromptUser str "> Please enter a directory"
 		directoryToCorrect=$promptResult
 		clear
 		nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
