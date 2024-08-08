@@ -296,7 +296,7 @@ InstallJellyfinFfmpeg(){
 	mkdir /usr/lib/jellyfin-ffmpeg
 	wget -O jellyfin-ffmpeg.tar.xz "$jellyfinFfmpegRepo/$jellyfinFfmpegArchive"
 	tar xf jellyfin-ffmpeg*.tar.xz -C /usr/lib/jellyfin-ffmpeg/
-	SetVar FFMPEGDIR "/usr/lib/jellyfin-ffmpeg" "/opt/jellyfin/jellyfin.sh" str
+	SetVar FFMPEGDIR "/usr/lib/jellyfin-ffmpeg/ffmpeg" "/opt/jellyfin/jellyfin.sh" str
 	Log "JELLYFIN-FFMPEG | Downloaded $jellyfinFfmpegRepo/$jellyfinFfmpegArchive" $logFile
 }
 
