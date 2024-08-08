@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.8.1"
+jellymanVersion="v1.8.2"
 logDir=/opt/jellyfin/log
 logFile=$logDir/jellyman.log
 sourceFile="/opt/jellyfin/config/jellyman.conf"
@@ -893,7 +893,7 @@ RenameTv()
 		echo "|      NAMES ARE IN THE SAME LOCATION IN THE DIRECTORY         |"
 		echo "|--------------------------------------------------------------|"
 		echo
-		PromptUser dir "> Please enter a directory"
+		PromptUser str "> Please enter a directory" 0 0 "directory"
 		directoryToCorrect=$promptResult
 		clear
 		nameOfTestFile=$(ls -1 $directoryToCorrect | head -1)
@@ -1074,7 +1074,14 @@ QualifyTranscode()
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 
 	videoSize=$(du -h "$videoToEdit" | cut -d "/" -f 1)
-	videoDuration=$(ffprobe -i "$videoToEdit" -show_entries format=duration -v quiet -of csv="p=0" | cut -d "." -f 1)
+	videoInformation=$(ffprobe -v quiet -show_streams "$videoToEdit")
+	videoWidth=$(ffprobe -v quiet -show_streams -select_streams v:0 $currentVideo | grep ^width= | cut -d "=" -f 2)
+	videoDuration=$(echo "$videoInformation" | grep "duration=" | cut -d "=" -f 2 | cut -d "." -f 1 | head -n 1)
+
+	if [[ $videoWidth -gt 1920 ]]; then
+		desiredGBperHour=$(echo "$desiredGBperHour*2.5" | bc)
+	fi
+
 	if IsVideo "$videoToEdit"; then
 		_videoSizeGB=null
 		_videoTimeHours=$(bc -l <<< "$videoDuration/3600")
@@ -1138,7 +1145,15 @@ TranscodeFile()
 		SetVar previousVideo "$currentVideo" "$progressBarConf" str
 
 		echo "> Transcoding $currentVideo"
-		nice ffmpeg -y -i "$currentVideo" -c:v libsvtav1 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
+
+		_videoTransfer=$(ffprobe -v quiet -show_streams -select_streams v:0 $currentVideo | grep ^color_transfer= | cut -d "=" -f 2)
+		if [[ $_videoTransfer == "arib-std-b67" ]] || [[ $_videoTransfer == "smpte2084" ]]; then
+			Log "TRANSCODE-FILE | File $currentVideo is HDR" $logFile
+			nice ffmpeg -y -i "$currentVideo" -c:v libsvtav1 -c:a copy -movflags +faststart -pix_fmt yuv420p10le -colorspace bt2020nc -color_trc smpte2084 -color_primaries bt2020 -crf $crf "$_newName.downsampled.mp4"
+		else
+			Log "TRANSCODE-FILE | File $currentVideo is not HDR" $logFile
+			nice ffmpeg -y -i "$currentVideo" -c:v libsvtav1 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
+		fi
 		_newVideoSize=$(du -h "$_newName.downsampled.mp4" | cut -d "/" -f 1)
 		echo "> Downsampled size: $_newVideoSize"
 		if $deleteOrNot; then
@@ -1158,7 +1173,7 @@ TranscodeFile()
 
 Transcode()
 {
-	echo "|--------------------------------------------------------------|"
+	echo "+--------------------------------------------------------------+"
 	echo "|                        ***WARNING***                         |"
 	echo "|          Please enter the directory to transcode             |"
 	echo "|                        For example:                          |"
@@ -1170,28 +1185,29 @@ Transcode()
 	echo "|                    a season of a show                        |"
 	echo "|                                                              |"
 	echo "|       BE ADVISED, IF YOU'RE TRANSCODING MULTIPLE FILES,      |"
-	echo "|       THIS IS GOING TO TAKE A WHILE, IT IS RECOMMENDED       |"
-	echo "|        TO RUN THIS COMMAND IN 'screen' THEN PRESSING         |"
-	echo "|                       CTRL + A THEN D                        |"
-	echo "|--------------------------------------------------------------|"
+	echo "|               THIS IS GOING TO TAKE A WHILE!                 |"
+	echo "+--------------------------------------------------------------+"
 	PromptUser str "> Please enter the directory to the files to transcode" 0 0 "directory"
 	_directoryToCorrect=$promptResult
 	echo
-	echo "> Please enter the desired GB per hour of video"
-	PromptUser str "> EXAMPLE: 1 OR 2.5" 0 0 "float"
+	echo "> Please enter the desired GB per hour of video (For 1080p)"
+	echo "> 4K video GB/hour is 1080p GB/hour multiplied by 2.5."
+	PromptUser str "> EXAMPLE: 2 OR 2.5" 0 0 "Recommended:2-4"
 	desiredGBperHour=$promptResult
 	
 	preset=0
-	clear
+	echo
+	echo "---------------------------------------------------"
 	echo
 	echo "> Please choose a transcode preset"
 	echo "> 5-8 is recommended"
-	echo
 	PromptUser num "> Lower values are slower but have better compression." 1 12 "1-12"
 	preset=$promptResult
 	
 	crf=0
-	clear
+	echo
+	echo "---------------------------------------------------"
+	echo
 	echo '> Please enter a Constant Rate Factor (CRF) [1-63]'
 	echo "> 25-35 is recommended"
 	echo
