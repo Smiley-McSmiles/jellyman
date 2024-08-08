@@ -1,5 +1,9 @@
 # CHANGELOG.md for https://GitHub.com/Smiley-McSmiles/jellyman
 
+# Jellyman v1.8.3
+## Additions
+- Jellyman setup and update now installs the latest jellyfin-ffmpeg archive by default.
+
 # Jellyman v1.8.2
 ## Fixes
 - `jellyman -rn` was broken due to the wrong PromptUser type
@@ -9,6 +13,13 @@
 
 ## Additions
 - `CHANGELOG.md` has been added.
+
+# Jellyman v1.8.1
+## Changes
+- Changed base_functions.sh to jellyman-functions for conflict reasons
+- Changed how the ViewLog works in the code.
+- Added a function in jellyman-functions for PresentList (Handles presenting lists and logs the selected item in the list
+- Changed some error language.
 
 # Jellyman v1.8.0
 ## Additions

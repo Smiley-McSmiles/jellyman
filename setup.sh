@@ -8,8 +8,7 @@ currentJellyfinDirectory=null
 tarPath=
 sourceFile=/opt/jellyfin/config/jellyman.conf
 
-Import()
-{
+Import(){
 	logFile=/tmp/jellyman_import.log
 	touch $logFile
 	PromptUser dir "> Please enter the directory to the jellyfin-backup.tar archive(s)." 0 0 "/path/to/backup(s)"
@@ -153,8 +152,7 @@ Import()
 	fi
 }
 
-GetArchitecture()
-{
+GetArchitecture(){
 	cpuArchitectureFull=$(uname -m)
 		case "$cpuArchitectureFull" in
 				x86_64) architecture="amd64" ;;
@@ -165,8 +163,7 @@ GetArchitecture()
 		esac
 }
 
-InstallDependencies()
-{
+InstallDependencies(){
 	packagesNeededDebian='ffmpeg git net-tools openssl bc screen curl'
 	packagesNeededRHEL='ffmpeg ffmpeg-devel ffmpeg-libs git openssl bc screen curl'
 	packagesNeededArch='ffmpeg git openssl bc screen curl'
@@ -195,18 +192,13 @@ InstallDependencies()
 		
 			case "$ID" in
 				fedora)	dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
-								dnf install $packagesNeededRHEL -y ;;
-				rhel)		 dnf install epel-release -y
-								dnf config-manager --set-enabled $crbOrPowertools
-								dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
-								dnf install $packagesNeededRHEL -y ;;
-				debian)	apt install $packagesNeededDebian -y ;;
-				ubuntu)	apt install $packagesNeededDebian -y ;;
-				linuxmint) apt install $packagesNeededDebian -y ;;
-				elementary) apt install $packagesNeededDebian -y ;;
-				arch)		 pacman -Syu $packagesNeededArch ;;
-				endeavouros) pacman -Syu $packagesNeededArch ;;
-				manjaro)	 pacman -Syu $packagesNeededArch ;;
+					dnf install $packagesNeededRHEL -y ;;
+				rhel) dnf install epel-release -y
+					dnf config-manager --set-enabled $crbOrPowertools
+					dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
+					dnf install $packagesNeededRHEL -y ;;
+				debian | ubuntu | linuxmint | elementary) apt install $packagesNeededDebian -y ;;
+				arch | endeavouros | manjaro) pacman -Syu $packagesNeededArch ;;
 				opensuse*) zypper install $packagesNeededOpenSuse ;;
 			esac
 	else
@@ -223,8 +215,7 @@ InstallDependencies()
 	fi
 }
 
-Backup()
-{
+Backup(){
 	backupDirectory=$1
 	fileName=current-jellyfin-data.tar
 	if [[ $(echo "${backupDirectory: -1}") == "/" ]]; then
@@ -243,8 +234,7 @@ Backup()
 }
 
 
-PreviousInstall()
-{
+PreviousInstall(){
 	echo "> WARNING: THIS OPTION IS HIGHLY UNSTABLE, ONLY USE IF YOU KNOW WHAT YOU'RE DOING!!!"
 	echo
 	if PromptUser yN "> Is Jellyfin CURRENTLY installed on this system?"; then
@@ -297,8 +287,18 @@ PreviousInstall()
 	fi
 }
 
-Setup()
-{
+InstallJellyfinFfmpeg(){
+	GetArchitecture
+	echo "> Fetching newest jellyfin-ffmpeg archive..."
+	jellyfinFfmpegRepo="https://repo.jellyfin.org/files/ffmpeg/linux/latest-6.x/$architecture"
+	jellyfinFfmpegArchive=$(curl -fsSL "https://repo.jellyfin.org/?path=/ffmpeg/linux/latest-6.x/$architecture" | grep -o "jellyfin".*".tar.xz" | head -n 1 | cut -d"'" -f1)
+	mkdir /usr/lib/jellyfin-ffmpeg
+	wget -O jellyfin-ffmpeg.tar.xz "$jellyfinFfmpegRepo/$jellyfinFfmpegArchive" -C /usr/lib/jellyfin-ffmpeg/
+	SetVar FFMPEGDIR "/usr/lib/jellyfin-ffmpeg" "$jellyfinConfigFile" str
+	Log "JELLYFIN-FFMPEG | Downloaded $jellyfinFfmpegRepo/$jellyfinFfmpegArchive"
+}
+
+Setup(){
 	logFile=/tmp/jellyman_setup.log
 	echo "> Fetching newest stable Jellyfin version..."
 	GetArchitecture
@@ -316,6 +316,7 @@ Setup()
 		Log "SETUP | Using local $jellyfin_archive" $logFile
 	fi
 	
+	InstallJellyfinFfmpeg
 	mkdir /opt/jellyfin /opt/jellyfin/old /opt/jellyfin/backup /opt/jellyfin/data /opt/jellyfin/cache /opt/jellyfin/config /opt/jellyfin/log /opt/jellyfin/cert
 	mv $logFile /opt/jellyfin/log
 	logFile=/opt/jellyfin/log/jellyman_setup.log
@@ -449,8 +450,7 @@ Setup()
 	fi
 }
 
-Update_jellyman()
-{
+Update_jellyman(){
 	logFile=/opt/jellyfin/log/jellyman_update.log
 
 	if [[ ! -f /usr/bin/jellyman ]]; then
@@ -461,6 +461,11 @@ Update_jellyman()
 		return 1
 		exit
 	fi
+
+	if [[ ! -d /usr/lib/jellyfin-ffmpeg ]]; then
+		InstallJellyfinFfmpeg
+	fi
+
 	_skip=$1
 	source $sourceFile
 	echo "> Updating Jellyman - The Jellyfin Manager"
