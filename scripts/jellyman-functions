@@ -17,9 +17,9 @@ PromptUser()
 	_num=null
 	_usr=NULL
 	_str=
-	
+
 	echo "$_promptText"
-	
+
 	case $_promptType in
 		"Yn")
 			if [[ ! -n $_inputText ]]; then
@@ -188,7 +188,7 @@ SetVar()
 		echo "$varToChange=$newVarContent" >> $fileToChange
 	else
 		if [[ ! -n $varToChange ]] || [[ ! -n $newVarContent ]]; then
-			echo "Function Change_variable requires 3 parameters: varToChange newVarContent fileToChange"
+			echo "Function SetVar requires 3 parameters: varToChange newVarContent fileToChange"
 			return 1
 			exit
 		elif [[ $varType == "array" ]]; then

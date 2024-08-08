@@ -288,14 +288,16 @@ PreviousInstall(){
 }
 
 InstallJellyfinFfmpeg(){
+	logFile=$1
 	GetArchitecture
 	echo "> Fetching newest jellyfin-ffmpeg archive..."
 	jellyfinFfmpegRepo="https://repo.jellyfin.org/files/ffmpeg/linux/latest-6.x/$architecture"
 	jellyfinFfmpegArchive=$(curl -fsSL "https://repo.jellyfin.org/?path=/ffmpeg/linux/latest-6.x/$architecture" | grep -o "jellyfin".*".tar.xz" | head -n 1 | cut -d"'" -f1)
 	mkdir /usr/lib/jellyfin-ffmpeg
-	wget -O jellyfin-ffmpeg.tar.xz "$jellyfinFfmpegRepo/$jellyfinFfmpegArchive" -C /usr/lib/jellyfin-ffmpeg/
-	SetVar FFMPEGDIR "/usr/lib/jellyfin-ffmpeg" "$jellyfinConfigFile" str
-	Log "JELLYFIN-FFMPEG | Downloaded $jellyfinFfmpegRepo/$jellyfinFfmpegArchive"
+	wget -O jellyfin-ffmpeg.tar.xz "$jellyfinFfmpegRepo/$jellyfinFfmpegArchive"
+	tar xf jellyfin-ffmpeg*.tar.xz -C /usr/lib/jellyfin-ffmpeg/
+	SetVar FFMPEGDIR "/usr/lib/jellyfin-ffmpeg" "/opt/jellyfin/jellyfin.sh" str
+	Log "JELLYFIN-FFMPEG | Downloaded $jellyfinFfmpegRepo/$jellyfinFfmpegArchive" $logFile
 }
 
 Setup(){
@@ -316,7 +318,6 @@ Setup(){
 		Log "SETUP | Using local $jellyfin_archive" $logFile
 	fi
 	
-	InstallJellyfinFfmpeg
 	mkdir /opt/jellyfin /opt/jellyfin/old /opt/jellyfin/backup /opt/jellyfin/data /opt/jellyfin/cache /opt/jellyfin/config /opt/jellyfin/log /opt/jellyfin/cert
 	mv $logFile /opt/jellyfin/log
 	logFile=/opt/jellyfin/log/jellyman_setup.log
@@ -344,6 +345,7 @@ Setup(){
 	cp $DIRECTORY/scripts/jellyman-functions /usr/bin/
 	chmod +rx /usr/bin/jellyman-functions
 	cp $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/
+	InstallJellyfinFfmpeg "$logFile"
 	touch $sourceFile
 	jellyfinServiceLocation=
 	
@@ -463,7 +465,7 @@ Update_jellyman(){
 	fi
 
 	if [[ ! -d /usr/lib/jellyfin-ffmpeg ]]; then
-		InstallJellyfinFfmpeg
+		InstallJellyfinFfmpeg "$logFile"
 	fi
 
 	_skip=$1
@@ -471,7 +473,6 @@ Update_jellyman(){
 	echo "> Updating Jellyman - The Jellyfin Manager"
 	Log "UPDATE | Jellyman started update" $logFile
 	cp -f $DIRECTORY/scripts/jellyman /usr/bin/jellyman
-	cp -f $DIRECTORY/scripts/jellyfin.sh /opt/jellyfin/jellyfin.sh
 	chmod +rx /usr/bin/jellyman
 	cp $DIRECTORY/scripts/jellyman-functions /usr/bin/
 	chmod +rx /usr/bin/jellyman-functions
