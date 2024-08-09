@@ -1133,7 +1133,7 @@ TranscodeFile()
 	while [ ! $iteration -eq $totalVideos ]; do
 		iteration=$(($iteration + 1))
 		currentVideo=$(cat "$qualifiedVideos" | head -n $iteration | tail -n 1)
-		_newName=$(echo $currentVideo | rev | cut -d "." -f 2 | rev)
+		_newName=$(echo "$currentVideo" | rev | cut -d "." -f 2 | rev)
 		_progressIteration=$(($iteration - 1))
 #		_progress=$(ProgressBar $_progressIteration $totalVideos)
 #		echo "$_progress" > $progressBarFile
