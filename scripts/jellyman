@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.8.4"
+jellymanVersion="v1.8.5"
 logDir=/opt/jellyfin/log
 logFile=$logDir/jellyman.log
 sourceFile="/opt/jellyfin/config/jellyman.conf"
@@ -1133,7 +1133,8 @@ TranscodeFile()
 	while [ ! $iteration -eq $totalVideos ]; do
 		iteration=$(($iteration + 1))
 		currentVideo=$(cat "$qualifiedVideos" | head -n $iteration | tail -n 1)
-		_newName=$(echo "$currentVideo" | rev | cut -d "." -f 2 | rev)
+		_extension=$(echo "$currentVideo" | rev | cut -d "." -f 1 | rev)
+		_newName=$(echo "$currentVideo" | sed "s|.$_extension||g")
 		_progressIteration=$(($iteration - 1))
 #		_progress=$(ProgressBar $_progressIteration $totalVideos)
 #		echo "$_progress" > $progressBarFile
