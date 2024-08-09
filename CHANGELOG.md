@@ -1,5 +1,9 @@
 # CHANGELOG.md for https://GitHub.com/Smiley-McSmiles/jellyman
 
+# Jellyman v1.8.4
+- Fix for `jellyman -tcp` with files including '( )'
+- Fix for `jellyman -tc` with some files having multiple 'steams' and getting wrong width and duration information.
+
 # Jellyman v1.8.3
 ## Additions
 - Jellyman setup and update now installs the latest jellyfin-ffmpeg archive by default.
