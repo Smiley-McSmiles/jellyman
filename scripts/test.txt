@@ -1,0 +1,1 @@
+testVar='this (is) [a] {test}'

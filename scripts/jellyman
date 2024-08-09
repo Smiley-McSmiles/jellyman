@@ -1165,7 +1165,7 @@ TranscodeFile()
 		fi
 	done
 
-	sed -i "s|startState=.*|startState=$totalVideos|g" "$progressBarConf"
+	SetVar startState "$totalVideos" "$progressBarConf" str
 	sleep 10
 	rm $qualifiedVideos
 	exit
