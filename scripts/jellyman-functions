@@ -195,7 +195,7 @@ SetVar()
 			sed -i "s|$varToChange=.*|$varToChange=\($newVarContent\)|g" $fileToChange
 			return 0
 		else
-			sed -i "s|$varToChange=.*|$varToChange=$newVarContent|g" $fileToChange
+			sed -i "s|$varToChange=.*|$varToChange='$newVarContent'|g" $fileToChange
 			return 0
 		fi
 	fi
