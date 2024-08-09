@@ -1074,9 +1074,9 @@ QualifyTranscode()
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 
 	videoSize=$(du -h "$videoToEdit" | cut -d "/" -f 1)
-	videoInformation=$(ffprobe -v quiet -show_streams "$videoToEdit")
-	videoWidth=$(ffprobe -v quiet -show_streams -select_streams v:0 $currentVideo | grep ^width= | cut -d "=" -f 2)
-	videoDuration=$(echo "$videoInformation" | grep "duration=" | cut -d "=" -f 2 | cut -d "." -f 1 | head -n 1)
+	videoInformation=$(ffprobe -v quiet -show_streams -output_format ini "$videoToEdit")
+	videoWidth=$(echo "$videoInformation" | grep ^width=[0-9] | cut -d "=" -f 2 | head -n 1)
+	videoDuration=$(echo "$videoInformation" | grep ^duration=[0-9] | cut -d "=" -f 2 | cut -d "." -f 1 | head -n 1)
 
 	if [[ $videoWidth -gt 1920 ]]; then
 		desiredGBperHour=$(echo "$desiredGBperHour*2.5" | bc)
@@ -1143,6 +1143,10 @@ TranscodeFile()
 		SetVar maxState "$totalVideos" "$progressBarConf" str
 		SetVar currentVideo "$_newName.downsampled.mp4" "$progressBarConf" str
 		SetVar previousVideo "$currentVideo" "$progressBarConf" str
+		# Ghost in the shell fix
+		sed -i "s|=|='|g" "$progressBarConf"
+		sed -i "/=/ s/$/'/" "$progressBarConf"
+		# End ghost in the shell fix
 
 		echo "> Transcoding $currentVideo"
 

@@ -2,6 +2,7 @@
 
 # Jellyman v1.8.4
 - Fix for `jellyman -tcp` with files including '( )'
+- Fix for `jellyman -tc` with some files having multiple 'steams' and getting wrong width and duration information.
 
 # Jellyman v1.8.3
 ## Additions
