@@ -1,5 +1,15 @@
 # CHANGELOG.md for https://GitHub.com/Smiley-McSmiles/jellyman
 
+# Jellyman v1.8.7
+## Changes
+- Many language and readability changes to `jellyman -tc` and `-tcp`
+
+## Additions
+- User can now choose which encoder they want to use in the guided `jellyman -tc` encoder
+- Support for GPU encoding with `jellyman -tc`
+- Encoding now fully preserves subtitle streams.
+- Encoder moved to the `.mkv` container
+
 # Jellyman v1.8.6
 ## Fixes
 - Fix for `jellyman -tc` not recognizing HDR in file names with spaces.

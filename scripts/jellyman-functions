@@ -173,6 +173,13 @@ PromptUser()
 # echo "String entered = $promptResult"
 }
 
+RoundNumber()
+{
+	_number="$1"
+	_numberRounded=$(bc <<< "($_number+.5)/1")
+	echo "$_numberRounded"
+}
+
 SetVar()
 {
 	# SetVar testVar "newVarContent" "fileToChange" varType
