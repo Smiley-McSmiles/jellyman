@@ -1026,44 +1026,80 @@ CallFunc()
 
 ProgressBar()
 {
+	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 	progressBarConf="/tmp/jellyman_transcode.conf"
-	if [ -f $progressBarConf ]; then
-		source $progressBarConf
-		currentState=$startState
-		totalState=$maxState
-		currentVideoSizeMB=$(du -m "$currentVideo" | cut -d "	" -f 1)
-		previousVideoSizeMB=$(du -m "$previousVideo" | cut -d "	" -f 1)
-		sizeSavingsPercent=$(bc -l <<< "$currentVideoSizeMB/$previousVideoSizeMB*100")
-		sizeSavingsPercent=$(bc -l <<< "100-$sizeSavingsPercent" | cut -c 1-4)'%'
-		let _progress=(${currentState}*100/${totalState}*100)/100
-		let _done=(${_progress}*4)/10
-		let _left=40-$_done
-		_fill=$(printf "%${_done}s")
-		_empty=$(printf "%${_left}s")
+	progressBarInfo="/tmp/jellyman_transcode_info"
+	ffReport="/tmp/ffreport.log"
+	while true; do
+		if [[ -f $progressBarConf ]]; then
+			source $progressBarConf
+			_progressBarFull='[#######################################]'
+			_progressBarEmpty='[                                       ]'
+			currentState=$startState
+			totalState=$maxState
+			ffmpegReport="$(tail -n 1 $ffReport | rev | cut -c 1-100 | rev)"
+			currentEncodeSpeed=$(echo "$ffmpegReport" | grep -o "speed=.*x" | cut -d "=" -f 2)
+			currentEncodeTime=$(echo "$ffmpegReport" | grep -o "time=.*[0-9] " | cut -d "=" -f 2)
+			currentEncodeFps=$(echo "$ffmpegReport" | grep -o "fps=.*q" | grep -o "[0-9].*[0-9]")
+			currentVideoFrames=$(echo "$ffmpegReport" | grep -o "frame=.*f" | grep -o "[0-9].*[0-9]")
+			currentVideoSizeMB=$(du -m "$currentVideo" | cut -d "	" -f 1)
+			previousVideoSizeMB=$(du -m "$previousVideo" | cut -d "	" -f 1)
+			sizeSavingsPercent=$(bc -l <<< "$currentVideoSizeMB/$previousVideoSizeMB*100")
+			sizeSavingsPercent=$(bc -l <<< "100-$sizeSavingsPercent" | cut -c 1-4)'%'
 
-		printf "\rTranscoded : [$currentState/$totalState] [${_fill// /#}${_empty// /-}] ${_progress}%%"
-		printf "\nTranscoding File : $previousVideo \n"
-		echo "> Original Size    : $previousVideoSizeMB MB"
-		echo "> New Size         : $currentVideoSizeMB MB"
-		echo "> Percentave Saved : $sizeSavingsPercent"
+			if ! [[ $currentVideoFrames =~ ^[0-9]+$ ]]; then
+				currentVideoFrames=1
+			fi
 
-		if [ $currentState -eq $totalState ]; then
-			printf '\nFinished!\n'
+			#currentVideoFrames=$(bc -l <<< "$currentVideoFrames/3.35")
+			_progress=$(bc -l <<< "($currentVideoFrames/$previousVideoFrames)*100")
+			_done=$(bc <<< "($_progress*4)/10")
+			_done=$(RoundNumber "$_done")
+			_left=$(bc <<< "40-$_done")
+			_left=$(RoundNumber "$_left")
+			_durationPercent=$(RoundNumber "$_progress")'%'
+			_progressBar1=$(echo "[$_durationPercent] ${_progressBarFull:0:$_done}${_progressBarEmpty:$_done:41}")
+
+			echo "> Transcoding          : $_progressBar1" > $progressBarInfo
+			echo "> Files Transcoded     : [$currentState/$totalState]" >> $progressBarInfo
+			echo "> Transcoding File     : $previousVideo" >> $progressBarInfo
+			echo "> Current encode time  : $currentEncodeTime" >> $progressBarInfo
+			echo "> Current encode speed : $currentEncodeSpeed" >> $progressBarInfo
+			echo "> Current encode fps   : $currentEncodeFps" >> $progressBarInfo
+			echo "> Frames encoded       : $currentVideoFrames" >> $progressBarInfo
+			echo "> Original Size        : $previousVideoSizeMB MB" >> $progressBarInfo
+			echo "> New Size             : $currentVideoSizeMB MB" >> $progressBarInfo
+			echo "> Percentage Saved     : $sizeSavingsPercent" >> $progressBarInfo
+			echo "" >> $progressBarInfo
+			echo "> Press 'CTRL + C' to exit" >> $progressBarInfo
+			echo "> Enter 'jellyman -tcp' to bring back this page" >> $progressBarInfo
+#			echo "## Debug start"
+#			echo ">> previousVideoFrames = $previousVideoFrames" >> $progressBarInfo
+#			echo "##Debug end"
+
+			if [[ $currentState -eq $totalState ]]; then
+				rm -f $qualifiedVideos
+				rm -f $progressBarConf
+				#rm -f $ffReport
+				Log "PROGRESS-BAR | Transcodes finished!" $logFile
+				echo "Finished!" >> $progressBarInfo
+				exit
+			fi
+			Countdown 2
+		else
+			echo "> loading..." > $progressBarInfo
+			Countdown 2
 		fi
-	else
-		echo "> loading..."
-	fi
+	done
 }
 
 ViewTranscodeProgress()
 {
+	progressBarInfo="/tmp/jellyman_transcode_info"
 	while true; do
 		clear
-		ProgressBar
-		echo
-		echo "> CTRL+C to exit progress bar"
-		echo "> 'jellyman -tcp' to bring back Transcode Progress"
-		sleep 3
+		cat "$progressBarInfo"
+		sleep 2
 	done
 }
 
@@ -1113,19 +1149,27 @@ TranscodeStop()
 {
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 	progressBarConf="/tmp/jellyman_transcode.conf"
+	progressBarInfo="/tmp/jellyman_transcode_info"
+	ffReportLog="/tmp/ffreport.log"
+
 	screen -XS jellyman_transcode quit
+	screen -XS jellyman_progress quit
 	Log "TRANSCODE-STOP | Stopped transcodes" $logFile
-	rm $qualifiedVideos
-	rm $progressBarConf
+	rm -f $qualifiedVideos
+	rm -f $progressBarConf
+	rm -f $progressBarInfo
+	#rm -f $ffReportLog
 }
 
 TranscodeFile()
 {
-	deleteOrNot=$1
-	preset=$2
-	crf=$3
+	encoder=$1
+	deleteOrNot=$2
+	preset=$3
+	crf=$4
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 	progressBarConf="/tmp/jellyman_transcode.conf"
+	ffReportLog="/tmp/ffreport.log"
 	totalVideos=$(cat "$qualifiedVideos" | wc -l)
 	iteration=0
 	currentVideo=
@@ -1136,14 +1180,20 @@ TranscodeFile()
 		_extension=$(echo "$currentVideo" | rev | cut -d "." -f 1 | rev)
 		_newName=$(echo "$currentVideo" | sed "s|.$_extension||g")
 		_progressIteration=$(($iteration - 1))
+		_videoInfo=$(ffprobe -v quiet -show_streams -print_format ini $currentVideo)
+		_videoDuration=$(echo "$_videoInfo" | grep duration=[0-9] | head -n 1 | cut -d "=" -f 2)
+		_videoFps=$(echo "$_videoInfo" | grep avg_frame_rate=[0-9][0-9] | head -n 1 | cut -d "=" -f 2)
+		_previousVideoFrames=$(bc <<< "$_videoDuration*$_videoFps")
+		_previousVideoFrames=$(RoundNumber "$_previousVideoFrames")
 #		_progress=$(ProgressBar $_progressIteration $totalVideos)
 #		echo "$_progress" > $progressBarFile
 
 		echo '#!/bin/bash' > "$progressBarConf"
 		SetVar startState "$_progressIteration" "$progressBarConf" str
 		SetVar maxState "$totalVideos" "$progressBarConf" str
-		SetVar currentVideo "$_newName.downsampled.mp4" "$progressBarConf" str
+		SetVar currentVideo "$_newName.downsampled.mkv" "$progressBarConf" str
 		SetVar previousVideo "$currentVideo" "$progressBarConf" str
+		SetVar previousVideoFrames "$_previousVideoFrames" "$progressBarConf" str
 		# Ghost in the shell fix
 		sed -i "s|=|='|g" "$progressBarConf"
 		sed -i "/=/ s/$/'/" "$progressBarConf"
@@ -1154,19 +1204,21 @@ TranscodeFile()
 		_videoTransfer=$(ffprobe -v quiet -show_streams -select_streams v:0 "$currentVideo" | grep ^color_transfer= | cut -d "=" -f 2)
 		if [[ $_videoTransfer == "arib-std-b67" ]] || [[ $_videoTransfer == "smpte2084" ]]; then
 			Log "TRANSCODE-FILE | File $currentVideo is HDR" $logFile
-			nice ffmpeg -y -i "$currentVideo" -c:v libsvtav1 -c:a copy -movflags +faststart -pix_fmt yuv420p10le -colorspace bt2020nc -color_trc smpte2084 -color_primaries bt2020 -crf $crf "$_newName.downsampled.mp4"
+			rm -f $ffReportLog
+			FFREPORT=file=/tmp/ffreport.log:level=32 ffmpeg -y -i "$currentVideo" -c:v $encoder -c:a ac3 -map 0 -c:s copy -movflags +faststart -pix_fmt yuv420p10le -colorspace bt2020nc -color_trc smpte2084 -color_primaries bt2020 -preset $preset -crf $crf "$_newName.downsampled.mkv"
 		else
 			Log "TRANSCODE-FILE | File $currentVideo is not HDR" $logFile
-			nice ffmpeg -y -i "$currentVideo" -c:v libsvtav1 -c:a copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mp4"
+			rm -f $ffReportLog
+			FFREPORT=file=/tmp/ffreport.log:level=32 ffmpeg -y -i "$currentVideo" -c:v $encoder -c:a ac3 -map 0 -c:s copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mkv"
 		fi
-		_newVideoSize=$(du -h "$_newName.downsampled.mp4" | cut -d "/" -f 1)
+		_newVideoSize=$(du -h "$_newName.downsampled.mkv" | cut -d "/" -f 1)
 		echo "> Downsampled size: $_newVideoSize"
 		if $deleteOrNot; then
 			echo "> DELETING $currentVideo IN:"
 			Countdown 10
 			rm -v "$currentVideo"
-			mv -v "$_newName.downsampled.mp4" "$_newName.mp4"
-			Log "TRANSCODE-FILE | Replaced $currentVideo with $_newName.downsampled.mp4" $logFile
+			mv -v "$_newName.downsampled.mkv" "$_newName.mkv"
+			Log "TRANSCODE-FILE | Replaced $currentVideo with $_newName.downsampled.mkv" $logFile
 		fi
 	done
 
@@ -1199,39 +1251,127 @@ Transcode()
 	echo "> 4K video GB/hour is 1080p GB/hour multiplied by 2.5."
 	PromptUser str "> EXAMPLE: 2 OR 2.5" 0 0 "Recommended:2-4"
 	desiredGBperHour=$promptResult
-	
+	encoder=
 	preset=0
-	echo
-	echo "---------------------------------------------------"
-	echo
-	echo "> Please choose a transcode preset"
-	echo "> 5-8 is recommended"
-	PromptUser num "> Lower values are slower but have better compression." 1 12 "1-12"
-	preset=$promptResult
-	
 	crf=0
+
 	echo
 	echo "---------------------------------------------------"
 	echo
-	echo '> Please enter a Constant Rate Factor (CRF) [1-63]'
-	echo "> 25-35 is recommended"
+	echo "Please select your preferred encoder"
 	echo
-	PromptUser num "> Lower values correspond to higher quality but greater file size" 1 63 "1-63"
-	crf=$promptResult
+	echo "1.  h.264 (libx264 CPU)"
+	echo "2.  h.264 (h264_amf AMD GPU)"
+	echo "3.  h.264 (h264_nvenc NVIDIA NVENC GPU)"
+	echo "4.  h.264 (h264_vaapi VAAPI GPU)"
+	echo "5.  h.265 (libx265 CPU) <- Recommended"
+	echo "6.  h.265 (hevc_amf AMD GPU)"
+	echo "7.  h.265 (hevc_nvenc NVIDIA NVENC GPU)"
+	echo "8.  h.265 (hevc_vaapi VAAPI GPU)"
+	echo "9.  AV1   (libsvtav1 CPU)"
+	echo "10. AV1   (av1_amf AMD GPU)"
+	echo "11. AV1   (av1_nvenc NVIDIA NVENC GPU)"
+	echo "12. AV1   (av1_vaapi VAAPI GPU)"
 	echo
+	PromptUser num "> h.265 is generally recommended." 1 12 "1-12"
+	encoder=$promptResult
+
+	case "$encoder" in
+		1) encoder=libx264 ;;
+		2) encoder=h264_amf ;;
+		3) encoder=h264_nvenc ;;
+		4) encoder=h264_vaapi ;;
+		5) encoder=libx265 ;;
+		6) encoder=hevc_amf ;;
+		7) encoder=hevc_nvenc ;;
+		8) encoder=hevc_vaapi ;;
+		9) encoder=libsvtav1 ;;
+		10) encoder=av1_amf ;;
+		11) encoder=av1_nvenc ;;
+		12) encoder=av1_vaapi ;;
+	esac
+
+	case "$encoder" in
+		libx264 | h264_amf | h264_nvenc | h264_vaapi | libx265 | hevc_amf | hevc_nvenc | hevc_vaapi)
+			echo
+			echo "---------------------------------------------------"
+			echo
+			echo "> Please choose a transcode preset"
+			echo
+			echo "1. ultrafast"
+			echo "2. superfast"
+			echo "3. veryfast"
+			echo "4. faster    *"
+			echo "5. fast      *"
+			echo "6. medium    *"
+			echo "7. slow      *"
+			echo "8. slower"
+			echo "9. veryslow"
+			echo
+			echo "> 4-7 is recommended"
+			PromptUser num "> Slower values are slower but have better compression." 1 9 "1-9"
+			preset=$promptResult
+
+			case "$preset" in
+				1) preset=ultrafast ;;
+				2) preset=superfast ;;
+				3) preset=veryfast ;;
+				4) preset=faster ;;
+				5) preset=fast ;;
+				6) preset=medium ;;
+				7) preset=slow ;;
+				8) preset=slower ;;
+				9) preset=veryslow ;;
+			esac
+			echo
+			echo "---------------------------------------------------"
+			echo
+			echo '> Please enter a Constant Rate Factor (CRF) [1-51]'
+			echo "> 17-28 is recommended"
+			echo
+			PromptUser num "> Lower values correspond to higher quality but greater file size" 1 51 "1-51"
+			crf=$promptResult
+			echo
+			echo "---------------------------------------------------"
+			echo
+		;;
+		libsvtav1 | av1_amf | av1_nvenc | av1_vaapi)
+			echo
+			echo "---------------------------------------------------"
+			echo
+			echo "> Please choose a transcode preset"
+			echo "> 5-8 is recommended"
+			PromptUser num "> Lower values are slower but have better compression." 1 12 "1-12"
+			preset=$promptResult
+			echo
+			echo "---------------------------------------------------"
+			echo
+			echo '> Please enter a Constant Rate Factor (CRF) [1-63]'
+			echo "> 19-30 is recommended"
+			echo
+			PromptUser num "> Lower values correspond to higher quality but greater file size" 1 63 "1-63"
+			crf=$promptResult
+		;;
+	esac
+
 	if PromptUser yN "> Would you like to delete the original file after transcode?"; then
 		deleteOrNot=true
 	else
 		deleteOrNot=false
 	fi
+
+	echo
+	echo "---------------------------------------------------"
+	echo
 	
 	for item in $_directoryToCorrect
 	do
 		QualifyTranscode "$item" $desiredGBperHour
 	done
 
-	screen -dmS jellyman_transcode jellyman --CallFunc "TranscodeFile $deleteOrNot $preset $crf"
-	Log "TRANSCODE | directoryToCorrect=$_directoryToCorrect, preset=$preset, crf=$crf, deleteOrNot=$deleteOrNot" $logFile
+	Log "TRANSCODE | directoryToCorrect=$_directoryToCorrect, encoder=$encoder preset=$preset, crf=$crf, deleteOrNot=$deleteOrNot" $logFile
+	screen -dmS jellyman_transcode jellyman --CallFunc "TranscodeFile $encoder $deleteOrNot $preset $crf"
+	screen -dmS jellyman_progress jellyman --CallFunc "ProgressBar"
 	sleep 1
 	ViewTranscodeProgress
 }
