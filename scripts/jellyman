@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.8.7"
+jellymanVersion="v1.8.8"
 logDir=/opt/jellyfin/log
 logFile=$logDir/jellyman.log
 sourceFile="/opt/jellyfin/config/jellyman.conf"
@@ -1026,6 +1026,9 @@ CallFunc()
 
 ProgressBar()
 {
+	encoderType="$1"
+	preset="$2"
+	crf="$3"
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 	progressBarConf="/tmp/jellyman_transcode.conf"
 	progressBarInfo="/tmp/jellyman_transcode_info"
@@ -1033,49 +1036,65 @@ ProgressBar()
 	while true; do
 		if [[ -f $progressBarConf ]]; then
 			source $progressBarConf
-			_progressBarFull='[#######################################]'
-			_progressBarEmpty='[                                       ]'
+			_progressBarFull='########################################'
+			_progressBarEmpty='                                        '
+			previousVideoLength=$(echo "$previousVideo" | wc -c)
 			currentState=$startState
 			totalState=$maxState
+			totalPercentDone=$(bc -l <<< "($currentState/$totalState)*100")
+			totalPercentDone=$(RoundNumber "$totalPercentDone")
 			ffmpegReport="$(tail -n 1 $ffReport | rev | cut -c 1-100 | rev)"
-			currentEncodeSpeed=$(echo "$ffmpegReport" | grep -o "speed=.*x" | cut -d "=" -f 2)
+			currentEncodeSpeed=$(echo "$ffmpegReport" | grep -o "speed=.*x" | cut -d "=" -f 2 | sed "s| ||g")
 			currentEncodeTime=$(echo "$ffmpegReport" | grep -o "time=.*[0-9] " | cut -d "=" -f 2)
 			currentEncodeFps=$(echo "$ffmpegReport" | grep -o "fps=.*q" | grep -o "[0-9].*[0-9]")
 			currentVideoFrames=$(echo "$ffmpegReport" | grep -o "frame=.*f" | grep -o "[0-9].*[0-9]")
 			currentVideoSizeMB=$(du -m "$currentVideo" | cut -d "	" -f 1)
 			previousVideoSizeMB=$(du -m "$previousVideo" | cut -d "	" -f 1)
 			sizeSavingsPercent=$(bc -l <<< "$currentVideoSizeMB/$previousVideoSizeMB*100")
-			sizeSavingsPercent=$(bc -l <<< "100-$sizeSavingsPercent" | cut -c 1-4)'%'
+			sizeSavingsPercent=$(bc -l <<< "100-$sizeSavingsPercent" | cut -c 1-4)
 
 			if ! [[ $currentVideoFrames =~ ^[0-9]+$ ]]; then
 				currentVideoFrames=1
 			fi
 
-			#currentVideoFrames=$(bc -l <<< "$currentVideoFrames/3.35")
+			if [[ $previousVideoLength -gt 48 ]]; then
+				previousVideo="..."$(echo "$previousVideo" | rev | cut -c 1-45 | rev)
+			fi
+
 			_progress=$(bc -l <<< "($currentVideoFrames/$previousVideoFrames)*100")
-			_done=$(bc <<< "($_progress*4)/10")
+			_progressPercent=$(bc -l <<< "$_progress*0.01")
+			_projectedSavePercent=$(bc -l <<< "$previousVideoSizeMB*$_progressPercent")
+			_projectedSavePercent=$(bc -l <<< "$currentVideoSizeMB/$_projectedSavePercent")
+			_projectedSavePercent=$(bc -l <<< "(1-$_projectedSavePercent)*100")
+			_projectedSavePercent=$(RoundNumber "$_projectedSavePercent")
+			_projectedMBSaved=$(bc -l <<< "$previousVideoSizeMB*($_projectedSavePercent*0.01)")
+			_projectedMBSaved=$(RoundNumber "$_projectedMBSaved")
+			_projectedMB=$(bc <<< "$previousVideoSizeMB-$_projectedMBSaved")
+			_done=$(bc -l <<< "($_progress*4)/10")
 			_done=$(RoundNumber "$_done")
-			_left=$(bc <<< "40-$_done")
+			_left=$(bc -l <<< "40-$_done")
 			_left=$(RoundNumber "$_left")
 			_progressPercent=$(RoundNumber "$_progress")'%'
-			_progressBar1=$(echo "[$_progressPercent] ${_progressBarFull:0:$_done}${_progressBarEmpty:$_done:41}")
+			_progressBar1=$(echo "[$_progressPercent] [${_progressBarFull:0:$_done}${_progressBarEmpty:$_done:40}]")
 
 			echo "> Transcoding          : $_progressBar1" > $progressBarInfo
-			echo "> Files Transcoded     : [$currentState/$totalState]" >> $progressBarInfo
+			echo "> Files Transcoded     : [$currentState/$totalState] - [$totalPercentDone%]" >> $progressBarInfo
 			echo "> Transcoding File     : $previousVideo" >> $progressBarInfo
+			echo "> File quality         : $videoWidth $isHDR | $previousVideoCodec --> $encoderType | preset: $preset, CRF: $crf" >> $progressBarInfo
 			echo "> Current encode time  : $currentEncodeTime" >> $progressBarInfo
 			echo "> Current encode speed : $currentEncodeSpeed" >> $progressBarInfo
 			echo "> Current encode fps   : $currentEncodeFps" >> $progressBarInfo
 			echo "> Frames encoded       : $currentVideoFrames" >> $progressBarInfo
 			echo "> Original Size        : $previousVideoSizeMB MB" >> $progressBarInfo
 			echo "> New Size             : $currentVideoSizeMB MB" >> $progressBarInfo
-			echo "> Percentage Saved     : $sizeSavingsPercent" >> $progressBarInfo
+			echo "> Percentage Saved     : $sizeSavingsPercent%" >> $progressBarInfo
+			echo "> Projected % saved    : $_projectedSavePercent%" >> $progressBarInfo
+			echo "> Projected MB saved   : $_projectedMBSaved MB" >> $progressBarInfo
+			echo "> Projected Final Size : $_projectedMB MB" >> $progressBarInfo
 			echo "" >> $progressBarInfo
 			echo "> Press 'CTRL + C' to exit" >> $progressBarInfo
 			echo "> Enter 'jellyman -tcp' to bring back this page" >> $progressBarInfo
-#			echo "## Debug start"
-#			echo ">> previousVideoFrames = $previousVideoFrames" >> $progressBarInfo
-#			echo "##Debug end"
+			echo "> Enter 'jellyman -tcs' to STOP the transcode process" >> $progressBarInfo
 
 			if [[ $currentState -eq $totalState ]]; then
 				rm -f $qualifiedVideos
@@ -1098,6 +1117,10 @@ ViewTranscodeProgress()
 	progressBarInfo="/tmp/jellyman_transcode_info"
 	while true; do
 		clear
+		if [[ ! -f "$progressBarInfo" ]]; then
+			echo "> No transcodes are in progress."
+			exit
+		fi
 		cat "$progressBarInfo"
 		sleep 2
 	done
@@ -1181,6 +1204,8 @@ TranscodeFile()
 		_newName=$(echo "$currentVideo" | sed "s|.$_extension||g")
 		_progressIteration=$(($iteration - 1))
 		_videoInfo=$(ffprobe -v quiet -show_streams -print_format ini "$currentVideo")
+		_videoCodec=$(echo "$_videoInfo" | grep codec_name | head -n 1 | cut -d "=" -f 2)
+		_videoWidth=$(echo "$_videoInfo" | grep ^width=[0-9] | cut -d "=" -f 2 | head -n 1)
 		_videoDuration=$(echo "$_videoInfo" | grep duration=[0-9] | head -n 1 | cut -d "=" -f 2)
 		_videoFps=$(echo "$_videoInfo" | grep avg_frame_rate=[0-9][0-9] | head -n 1 | cut -d "=" -f 2)
 		_previousVideoFrames=$(bc <<< "$_videoDuration*$_videoFps")
@@ -1194,6 +1219,20 @@ TranscodeFile()
 		SetVar currentVideo "$_newName.downsampled.mkv" "$progressBarConf" str
 		SetVar previousVideo "$currentVideo" "$progressBarConf" str
 		SetVar previousVideoFrames "$_previousVideoFrames" "$progressBarConf" str
+		SetVar previousVideoCodec "$_videoCodec" "$progressBarConf" str
+
+		case "$_videoWidth" in
+			640) _videoWidth="360p" ;;
+			860) _videoWidth="480p" ;;
+			1280) _videoWidth="720p" ;;
+			1920) _videoWidth="1080p" ;;
+			3840) _videoWidth="4K" ;;
+			*) _videoWidth=$(bc <<< "$_videoWidth/(16/9)")
+				_videoWidth=$(RoundNumber "$_videoWidth")"p" ;;
+		esac
+
+		SetVar videoWidth "$_videoWidth" "$progressBarConf" str
+
 		# Ghost in the shell fix
 		sed -i "s|=|='|g" "$progressBarConf"
 		sed -i "/=/ s/$/'/" "$progressBarConf"
@@ -1204,10 +1243,12 @@ TranscodeFile()
 		_videoTransfer=$(ffprobe -v quiet -show_streams -select_streams v:0 "$currentVideo" | grep ^color_transfer= | cut -d "=" -f 2)
 		if [[ $_videoTransfer == "arib-std-b67" ]] || [[ $_videoTransfer == "smpte2084" ]]; then
 			Log "TRANSCODE-FILE | File $currentVideo is HDR" $logFile
+			SetVar isHDR "HDR" "$progressBarConf" str
 			rm -f $ffReportLog
 			FFREPORT=file=/tmp/ffreport.log:level=32 ffmpeg -y -i "$currentVideo" -c:v $encoder -c:a ac3 -map 0 -c:s copy -movflags +faststart -pix_fmt yuv420p10le -colorspace bt2020nc -color_trc smpte2084 -color_primaries bt2020 -preset $preset -crf $crf "$_newName.downsampled.mkv"
 		else
 			Log "TRANSCODE-FILE | File $currentVideo is not HDR" $logFile
+			SetVar isHDR "SDR" "$progressBarConf" str
 			rm -f $ffReportLog
 			FFREPORT=file=/tmp/ffreport.log:level=32 ffmpeg -y -i "$currentVideo" -c:v $encoder -c:a ac3 -map 0 -c:s copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mkv"
 		fi
@@ -1219,6 +1260,8 @@ TranscodeFile()
 			rm -v "$currentVideo"
 			mv -v "$_newName.downsampled.mkv" "$_newName.mkv"
 			Log "TRANSCODE-FILE | Replaced $currentVideo with $_newName.downsampled.mkv" $logFile
+		else
+			Log "TRANSCODE-FILE | Finished trancode $_newName.downsampled.mkv" $logFile
 		fi
 	done
 
@@ -1252,6 +1295,7 @@ Transcode()
 	PromptUser str "> EXAMPLE: 2 OR 2.5" 0 0 "Recommended:2-4"
 	desiredGBperHour=$promptResult
 	encoder=
+	encoderType=
 	preset=0
 	crf=0
 
@@ -1277,18 +1321,30 @@ Transcode()
 	encoder=$promptResult
 
 	case "$encoder" in
-		1) encoder=libx264 ;;
-		2) encoder=h264_amf ;;
-		3) encoder=h264_nvenc ;;
-		4) encoder=h264_vaapi ;;
-		5) encoder=libx265 ;;
-		6) encoder=hevc_amf ;;
-		7) encoder=hevc_nvenc ;;
-		8) encoder=hevc_vaapi ;;
-		9) encoder=libsvtav1 ;;
-		10) encoder=av1_amf ;;
-		11) encoder=av1_nvenc ;;
-		12) encoder=av1_vaapi ;;
+		1) encoder=libx264
+			encoderType="h.264" ;;
+		2) encoder=h264_amf
+			encoderType="h.264" ;;
+		3) encoder=h264_nvenc
+			encoderType="h.264" ;;
+		4) encoder=h264_vaapi
+			encoderType="h.264" ;;
+		5) encoder=libx265
+			encoderType="h.265" ;;
+		6) encoder=hevc_amf
+			encoderType="h.265" ;;
+		7) encoder=hevc_nvenc
+			encoderType="h.265" ;;
+		8) encoder=hevc_vaapi
+			encoderType="h.265" ;;
+		9) encoder=libsvtav1
+			encoderType="AV1" ;;
+		10) encoder=av1_amf
+			encoderType="AV1" ;;
+		11) encoder=av1_nvenc
+			encoderType="AV1" ;;
+		12) encoder=av1_vaapi
+			encoderType="AV1" ;;
 	esac
 
 	case "$encoder" in
@@ -1371,7 +1427,7 @@ Transcode()
 
 	Log "TRANSCODE | directoryToCorrect=$_directoryToCorrect, encoder=$encoder preset=$preset, crf=$crf, deleteOrNot=$deleteOrNot" $logFile
 	screen -dmS jellyman_transcode jellyman --CallFunc "TranscodeFile $encoder $deleteOrNot $preset $crf"
-	screen -dmS jellyman_progress jellyman --CallFunc "ProgressBar"
+	screen -dmS jellyman_progress jellyman --CallFunc "ProgressBar $encoderType $preset $crf"
 	sleep 1
 	ViewTranscodeProgress
 }
