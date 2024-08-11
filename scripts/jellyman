@@ -1057,8 +1057,8 @@ ProgressBar()
 			_done=$(RoundNumber "$_done")
 			_left=$(bc <<< "40-$_done")
 			_left=$(RoundNumber "$_left")
-			_durationPercent=$(RoundNumber "$_progress")'%'
-			_progressBar1=$(echo "[$_durationPercent] ${_progressBarFull:0:$_done}${_progressBarEmpty:$_done:41}")
+			_progressPercent=$(RoundNumber "$_progress")'%'
+			_progressBar1=$(echo "[$_progressPercent] ${_progressBarFull:0:$_done}${_progressBarEmpty:$_done:41}")
 
 			echo "> Transcoding          : $_progressBar1" > $progressBarInfo
 			echo "> Files Transcoded     : [$currentState/$totalState]" >> $progressBarInfo
@@ -1180,7 +1180,7 @@ TranscodeFile()
 		_extension=$(echo "$currentVideo" | rev | cut -d "." -f 1 | rev)
 		_newName=$(echo "$currentVideo" | sed "s|.$_extension||g")
 		_progressIteration=$(($iteration - 1))
-		_videoInfo=$(ffprobe -v quiet -show_streams -print_format ini $currentVideo)
+		_videoInfo=$(ffprobe -v quiet -show_streams -print_format ini "$currentVideo")
 		_videoDuration=$(echo "$_videoInfo" | grep duration=[0-9] | head -n 1 | cut -d "=" -f 2)
 		_videoFps=$(echo "$_videoInfo" | grep avg_frame_rate=[0-9][0-9] | head -n 1 | cut -d "=" -f 2)
 		_previousVideoFrames=$(bc <<< "$_videoDuration*$_videoFps")
