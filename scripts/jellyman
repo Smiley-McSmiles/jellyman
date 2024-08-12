@@ -682,7 +682,7 @@ Permissions()
 				Log "PERMISSIONS | Set permissions with chown $defaultUser:$defaultUser ${defaultPath[*]}" $logFile
 			)
 		else
-			Log "ERROR | PERMISSIONS | User tried to set permissions, but function could not find the defaultDir" $logFile
+			Log "ERROR | PERMISSIONS | User tried to set permissions, but function could not find the defaultPath" $logFile
 			echo "> No default media directory found..."
 			echo "> Running sudo jellyman -md to change media directory in:"
 			Countdown 5
@@ -1029,6 +1029,7 @@ ProgressBar()
 	encoderType="$1"
 	preset="$2"
 	crf="$3"
+	deleteOrNot=$4
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 	progressBarConf="/tmp/jellyman_transcode.conf"
 	progressBarInfo="/tmp/jellyman_transcode_info"
@@ -1077,30 +1078,33 @@ ProgressBar()
 			_progressPercent=$(RoundNumber "$_progress")'%'
 			_progressBar1=$(echo "[$_progressPercent] [${_progressBarFull:0:$_done}${_progressBarEmpty:$_done:40}]")
 
-			echo "> Transcoding          : $_progressBar1" > $progressBarInfo
-			echo "> Files Transcoded     : [$currentState/$totalState] - [$totalPercentDone%]" >> $progressBarInfo
-			echo "> Transcoding File     : $previousVideo" >> $progressBarInfo
-			echo "> File quality         : $videoWidth $isHDR | $previousVideoCodec --> $encoderType | preset: $preset, CRF: $crf" >> $progressBarInfo
-			echo "> Current encode time  : $currentEncodeTime" >> $progressBarInfo
-			echo "> Current encode speed : $currentEncodeSpeed" >> $progressBarInfo
-			echo "> Current encode fps   : $currentEncodeFps" >> $progressBarInfo
-			echo "> Frames encoded       : $currentVideoFrames" >> $progressBarInfo
-			echo "> Original Size        : $previousVideoSizeMB MB" >> $progressBarInfo
-			echo "> New Size             : $currentVideoSizeMB MB" >> $progressBarInfo
-			echo "> Percentage Saved     : $sizeSavingsPercent%" >> $progressBarInfo
-			echo "> Projected % saved    : $_projectedSavePercent%" >> $progressBarInfo
-			echo "> Projected MB saved   : $_projectedMBSaved MB" >> $progressBarInfo
-			echo "> Projected Final Size : $_projectedMB MB" >> $progressBarInfo
-			echo "" >> $progressBarInfo
-			echo "> Press 'CTRL + C' to exit" >> $progressBarInfo
-			echo "> Enter 'jellyman -tcp' to bring back this page" >> $progressBarInfo
-			echo "> Enter 'jellyman -tcs' to STOP the transcode process" >> $progressBarInfo
+			echo "
+> Transcoding          : $_progressBar1
+> Files Transcoded     : [$currentState/$totalState] - [$totalPercentDone%]
+> Transcoding File     : $previousVideo
+> File quality         : $videoWidth $isHDR | $previousVideoCodec --> $encoderType | preset: $preset, CRF: $crf
+> Current encode time  : $currentEncodeTime
+> Current encode speed : $currentEncodeSpeed
+> Current encode fps   : $currentEncodeFps
+> Frames encoded       : $currentVideoFrames
+> Original Size        : $previousVideoSizeMB MB
+> New Size             : $currentVideoSizeMB MB
+> Percentage Saved     : $sizeSavingsPercent%
+> Projected % saved    : $_projectedSavePercent%
+> Projected MB saved   : $_projectedMBSaved MB
+> Projected Final Size : $_projectedMB MB
+> Delete original file : $deleteOrNot
+
+> Press 'CTRL + C' to exit
+> Enter 'jellyman -tcp' to bring back this page
+> Enter 'jellyman -tcs' to STOP the transcode process" > $progressBarInfo
 
 			if [[ $currentState -eq $totalState ]]; then
 				rm -f $qualifiedVideos
 				rm -f $progressBarConf
 				#rm -f $ffReport
 				Log "PROGRESS-BAR | Transcodes finished!" $logFile
+				echo
 				echo "Finished!" >> $progressBarInfo
 				exit
 			fi
@@ -1379,31 +1383,29 @@ Transcode()
 				8) preset=slower ;;
 				9) preset=veryslow ;;
 			esac
+
 			echo
 			echo "---------------------------------------------------"
 			echo
 			echo '> Please enter a Constant Rate Factor (CRF) [1-51]'
-			echo "> 17-28 is recommended"
+			echo "> 16-24 is recommended"
 			echo
 			PromptUser num "> Lower values correspond to higher quality but greater file size" 1 51 "1-51"
 			crf=$promptResult
-			echo
-			echo "---------------------------------------------------"
-			echo
 		;;
 		libsvtav1 | av1_amf | av1_nvenc | av1_vaapi)
 			echo
 			echo "---------------------------------------------------"
 			echo
 			echo "> Please choose a transcode preset"
-			echo "> 5-8 is recommended"
+			echo "> 4-8 is recommended"
 			PromptUser num "> Lower values are slower but have better compression." 1 12 "1-12"
 			preset=$promptResult
 			echo
 			echo "---------------------------------------------------"
 			echo
 			echo '> Please enter a Constant Rate Factor (CRF) [1-63]'
-			echo "> 19-30 is recommended"
+			echo "> 8-16 is recommended"
 			echo
 			PromptUser num "> Lower values correspond to higher quality but greater file size" 1 63 "1-63"
 			crf=$promptResult
@@ -1427,7 +1429,7 @@ Transcode()
 
 	Log "TRANSCODE | directoryToCorrect=$_directoryToCorrect, encoder=$encoder preset=$preset, crf=$crf, deleteOrNot=$deleteOrNot" $logFile
 	screen -dmS jellyman_transcode jellyman --CallFunc "TranscodeFile $encoder $deleteOrNot $preset $crf"
-	screen -dmS jellyman_progress jellyman --CallFunc "ProgressBar $encoderType $preset $crf"
+	screen -dmS jellyman_progress jellyman --CallFunc "ProgressBar $encoderType $preset $crf $deleteOrNot"
 	sleep 1
 	ViewTranscodeProgress
 }
