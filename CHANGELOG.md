@@ -1,5 +1,13 @@
 # CHANGELOG.md for https://GitHub.com/Smiley-McSmiles/jellyman
 
+# Jellyman v1.8.8
+## Additions
+- `jellyman -tcp` now gives projected size and percentage of space saved per file.
+
+## Changes
+- Many language and readability changes to `jellyman -tc` and `-tcp`
+- Logging more verbose with transcodes.
+
 # Jellyman v1.8.7
 ## Changes
 - Many language and readability changes to `jellyman -tc` and `-tcp`
