@@ -1,5 +1,9 @@
 # CHANGELOG.md for https://GitHub.com/Smiley-McSmiles/jellyman
 
+# Jellyman v1.8.9
+## Fixes
+- `jellyman -tc` was not copying over all audio streams.
+
 # Jellyman v1.8.8
 ## Additions
 - `jellyman -tcp` now gives projected size and percentage of space saved per file.
