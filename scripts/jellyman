@@ -1047,7 +1047,7 @@ ProgressBar()
 			totalPercentDone=$(bc -l <<< "($currentState/$totalState)*100")
 			totalPercentDone=$(RoundNumber "$totalPercentDone")
 			ffmpegReport="$(tail -n 1 $ffReport | rev | cut -c 1-120 | rev)"
-			currentEncodeSpeed=$(echo "$ffmpegReport" | grep -o "speed=......" | tail -n 1 | cut -d "=" -f 2)
+			currentEncodeSpeed=$(echo "$ffmpegReport" | grep -o "speed=......" | tail -n 1 | cut -d "=" -f 2 | sed "s| ||g")
 			currentEncodeTime=$(echo "$ffmpegReport" | grep -o "[0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9]")
 			currentEncodeFps=$(echo "$ffmpegReport" | grep -o "fps=......." | grep -o "[0-9].*[0-9]")
 			currentVideoFrames=$(echo "$ffmpegReport" | grep -o "frame=.*f" | grep -o "[0-9].*[0-9]")
