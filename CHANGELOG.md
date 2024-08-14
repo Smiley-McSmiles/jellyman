@@ -1,5 +1,9 @@
 # CHANGELOG.md for https://GitHub.com/Smiley-McSmiles/jellyman
 
+# Jellyman v1.9.0
+## Additions
+- Added VAAPI hardware acceleration to `jellyman -tc`
+
 # Jellyman v1.8.9
 ## Fixes
 - `jellyman -tc` was not copying over all audio streams.

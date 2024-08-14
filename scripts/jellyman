@@ -1046,7 +1046,7 @@ ProgressBar()
 			totalState=$maxState
 			totalPercentDone=$(bc -l <<< "($currentState/$totalState)*100")
 			totalPercentDone=$(RoundNumber "$totalPercentDone")
-			ffmpegReport="$(tail -n 1 $ffReport | rev | cut -c 1-100 | rev)"
+			ffmpegReport="$(tail -n 1 $ffReport | rev | cut -c 1-120 | rev)"
 			currentEncodeSpeed=$(echo "$ffmpegReport" | grep -o "speed=.*x" | cut -d "=" -f 2 | sed "s| ||g")
 			currentEncodeTime=$(echo "$ffmpegReport" | grep -o "time=.*[0-9] " | cut -d "=" -f 2)
 			currentEncodeFps=$(echo "$ffmpegReport" | grep -o "fps=.*q" | grep -o "[0-9].*[0-9]")
@@ -1081,21 +1081,22 @@ ProgressBar()
 			_progressBar1=$(echo "[$_progressPercent] [${_progressBarFull:0:$_done}${_progressBarEmpty:$_done:40}]")
 
 			echo "
-> Transcoding          : $_progressBar1
-> Files Transcoded     : [$currentState/$totalState] - [$totalPercentDone%]
-> Transcoding File     : $previousVideo
-> File quality         : $videoWidth $isHDR | $previousVideoCodec --> $encoderType | preset: $preset, CRF: $crf
-> Current encode time  : $currentEncodeTime
-> Current encode speed : $currentEncodeSpeed
-> Current encode fps   : $currentEncodeFps
-> Frames encoded       : $currentVideoFrames
-> Original Size        : $previousVideoSizeMB MB
-> New Size             : $currentVideoSizeMB MB
-> Percentage Saved     : $sizeSavingsPercent%
-> Projected % saved    : $_projectedSavePercent%
-> Projected MB saved   : $_projectedMBSaved MB
-> Projected Final Size : $_projectedMB MB
-> Delete original file : $deleteOrNot
+> Transcoding           : $_progressBar1
+> Files Transcoded      : [$currentState/$totalState] - [$totalPercentDone%]
+> Transcoding File      : $previousVideo
+> File quality          : $videoWidth $isHDR | $previousVideoCodec --> $encoderType | preset: $preset, CRF: $crf
+> Hardware Acceleration : $hwaccel $hwaccelType
+> Current encode time   : $currentEncodeTime
+> Current encode speed  : $currentEncodeSpeed
+> Current encode fps    : $currentEncodeFps
+> Frames encoded        : $currentVideoFrames
+> Original Size         : $previousVideoSizeMB MB
+> New Size              : $currentVideoSizeMB MB
+> Percentage Saved      : $sizeSavingsPercent%
+> Projected % saved     : $_projectedSavePercent%
+> Projected MB saved    : $_projectedMBSaved MB
+> Projected Final Size  : $_projectedMB MB
+> Delete original file  : $deleteOrNot
 
 > Press 'CTRL + C' to exit
 > Enter 'jellyman -tcp' to bring back this page
