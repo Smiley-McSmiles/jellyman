@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.8.9"
+jellymanVersion="v1.9.0"
 logDir=/opt/jellyfin/log
 logFile=$logDir/jellyman.log
 sourceFile="/opt/jellyfin/config/jellyman.conf"
@@ -1030,6 +1030,8 @@ ProgressBar()
 	preset="$2"
 	crf="$3"
 	deleteOrNot=$4
+	hwaccel=$5
+	hwaccelType=$6
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 	progressBarConf="/tmp/jellyman_transcode.conf"
 	progressBarInfo="/tmp/jellyman_transcode_info"
@@ -1194,6 +1196,8 @@ TranscodeFile()
 	deleteOrNot=$2
 	preset=$3
 	crf=$4
+	hwaccel=$5
+	hwaccelType=$6
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 	progressBarConf="/tmp/jellyman_transcode.conf"
 	ffReportLog="/tmp/ffreport.log"
@@ -1245,11 +1249,16 @@ TranscodeFile()
 		echo "> Transcoding $currentVideo"
 
 		_videoTransfer=$(ffprobe -v quiet -show_streams -select_streams v:0 "$currentVideo" | grep ^color_transfer= | cut -d "=" -f 2)
-		if [[ $_videoTransfer == "arib-std-b67" ]] || [[ $_videoTransfer == "smpte2084" ]]; then
+		if [[ $_videoTransfer == "arib-std-b67" ]] || [[ $_videoTransfer == "smpte2084" ]] && ! $hwaccel; then
 			Log "TRANSCODE-FILE | File $currentVideo is HDR" $logFile
 			SetVar isHDR "HDR" "$progressBarConf" str
 			rm -f $ffReportLog
 			FFREPORT=file=/tmp/ffreport.log:level=32 ffmpeg -y -i "$currentVideo" -c:v $encoder -c:a copy -map 0 -c:s copy -movflags +faststart -pix_fmt yuv420p10le -colorspace bt2020nc -color_trc smpte2084 -color_primaries bt2020 -preset $preset -crf $crf "$_newName.downsampled.mkv"
+		elif [[ $_videoTransfer == "arib-std-b67" ]] || [[ $_videoTransfer == "smpte2084" ]] && $hwaccel; then
+			Log "TRANSCODE-FILE | File $currentVideo is HDR" $logFile
+			SetVar isHDR "HDR" "$progressBarConf" str
+			rm -f $ffReportLog
+			FFREPORT=file=/tmp/ffreport.log:level=32 ffmpeg -hwaccel $hwaccelType -hwaccel_output_format $hwaccelType -hwaccel_device /dev/dri/renderD128 -y -i "$currentVideo" -c:v $encoder -c:a copy -map 0 -c:s copy -movflags +faststart -pix_fmt yuv420p10le -colorspace bt2020nc -color_trc smpte2084 -color_primaries bt2020 -preset $preset -crf $crf "$_newName.downsampled.mkv"
 		else
 			Log "TRANSCODE-FILE | File $currentVideo is not HDR" $logFile
 			SetVar isHDR "SDR" "$progressBarConf" str
@@ -1299,6 +1308,8 @@ Transcode()
 	PromptUser str "> EXAMPLE: 2 OR 2.5" 0 0 "Recommended:2-4"
 	desiredGBperHour=$promptResult
 	encoder=
+	hwaccel=false
+	hwaccelType=
 	encoderType=
 	preset=0
 	crf=0
@@ -1328,26 +1339,44 @@ Transcode()
 		1) encoder=libx264
 			encoderType="h.264" ;;
 		2) encoder=h264_amf
+			hwaccel=true
+			hwaccelType=amf
 			encoderType="h.264" ;;
 		3) encoder=h264_nvenc
+			hwaccel=true
+			hwaccelType=nvenc
 			encoderType="h.264" ;;
 		4) encoder=h264_vaapi
+			hwaccel=true
+			hwaccelType=vaapi
 			encoderType="h.264" ;;
 		5) encoder=libx265
 			encoderType="h.265" ;;
 		6) encoder=hevc_amf
+			hwaccel=true
+			hwaccelType=amf
 			encoderType="h.265" ;;
 		7) encoder=hevc_nvenc
+			hwaccel=true
+			hwaccelType=nvenc
 			encoderType="h.265" ;;
 		8) encoder=hevc_vaapi
+			hwaccel=true
+			hwaccelType=vaapi
 			encoderType="h.265" ;;
 		9) encoder=libsvtav1
 			encoderType="AV1" ;;
 		10) encoder=av1_amf
+			hwaccel=true
+			hwaccelType=amf
 			encoderType="AV1" ;;
 		11) encoder=av1_nvenc
+			hwaccel=true
+			hwaccelType=nvenc
 			encoderType="AV1" ;;
 		12) encoder=av1_vaapi
+			hwaccelType=vaapi
+			hwaccel=true
 			encoderType="AV1" ;;
 	esac
 
@@ -1427,9 +1456,9 @@ Transcode()
 		QualifyTranscode "$item" $desiredGBperHour
 	done
 
-	Log "TRANSCODE | directoryToCorrect=$_directoryToCorrect, encoder=$encoder preset=$preset, crf=$crf, deleteOrNot=$deleteOrNot" $logFile
-	screen -dmS jellyman_transcode jellyman --CallFunc "TranscodeFile $encoder $deleteOrNot $preset $crf"
-	screen -dmS jellyman_progress jellyman --CallFunc "ProgressBar $encoderType $preset $crf $deleteOrNot"
+	Log "TRANSCODE | directoryToCorrect=$_directoryToCorrect, encoder=$encoder preset=$preset, crf=$crf, deleteOrNot=$deleteOrNot, hwaccel=$hwaccel" $logFile
+	screen -dmS jellyman_transcode jellyman --CallFunc "TranscodeFile $encoder $deleteOrNot $preset $crf $hwaccel $hwaccelType"
+	screen -dmS jellyman_progress jellyman --CallFunc "ProgressBar $encoderType $preset $crf $deleteOrNot $hwaccel $hwaccelType"
 	sleep 1
 	ViewTranscodeProgress
 }
