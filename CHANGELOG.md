@@ -2,7 +2,7 @@
 
 # Jellyman v1.9.0
 ## Additions
-- Added VAAPI hardware acceleration to `jellyman -tc`
+- Added hardware acceleration to `jellyman -tc`
 
 # Jellyman v1.8.9
 ## Fixes

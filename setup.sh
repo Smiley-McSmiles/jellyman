@@ -91,6 +91,9 @@ Import(){
 				echo "> Creating LINUX user $defaultUser"
 				useradd -rd /opt/jellyfin $defaultUser
 				Log "IMPORT | Useradd $defaultUser" $logFile
+				usermod -aG video $defaultUser
+				usermod -aG render $defaultUser
+
 				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
 				chmod -Rf 770 /opt/jellyfin
 				SetVar User "$defaultUser" "$jellyfinServiceLocation/jellyfin.service" str
@@ -108,6 +111,8 @@ Import(){
 
 				echo "> LINUX user = $defaultUser"
 				useradd -rd /opt/jellyfin $defaultUser
+				usermod -aG video $defaultUser
+				usermod -aG render $defaultUser
 				Log "IMPORT | Useradd $defaultUser" $logFile
 				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
 				chmod -Rf 770 /opt/jellyfin
@@ -164,11 +169,11 @@ GetArchitecture(){
 }
 
 InstallDependencies(){
-	packagesNeededDebian='ffmpeg git net-tools openssl bc screen curl'
+	packagesNeededDebian='libva libva2 mesa-va-drivers mesa-vdpau-drivers ffmpeg git net-tools openssl bc screen curl'
 	packagesNeededRHEL='libva libva-utils libva-vdpau-driver libva-intel-media-driver libva-intel-driver libva-nvidia-driver mesa-va-drivers mesa-vdpau-drivers ffmpeg ffmpeg-devel ffmpeg-libs git openssl bc screen curl'
-	packagesNeededArch='ffmpeg git openssl bc screen curl'
-	packagesNeededOpenSuse='ffmpeg-4 git openssl bc screen curl'
-	echo "> Preparing to install needed dependancies for Jellyfin..."
+	packagesNeededArch='libva-utils libva-nvidia-driver libva-intel-driver libva-mesa-driver vulkan-radeon ffmpeg git openssl bc screen curl'
+	packagesNeededOpenSuse='libva libva2 mesa-libva libva-utils libva-vdpau-driver mesa-libva mesa-gallium mesa-drivers ffmpeg-4 git openssl bc screen curl'
+	echo "> Preparing to install needed dependancies for Jellyfin and Jellyman..."
 
 	if [ -f /etc/os-release ]; then
 		source /etc/os-release
@@ -194,7 +199,7 @@ InstallDependencies(){
 				fedora)	dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
 					dnf install $packagesNeededRHEL -y
 					sudo dnf swap mesa-va-drivers mesa-va-drivers-freeworld
-					sudo dnf swap mesa-vdpau-drivers mesa-vdpau-drivers-freeworld;;
+					sudo dnf swap mesa-vdpau-drivers mesa-vdpau-drivers-freeworld ;;
 				rhel) dnf install epel-release -y
 					dnf config-manager --set-enabled $crbOrPowertools
 					dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm -y https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
@@ -336,6 +341,8 @@ Setup(){
 	echo "> Linux user = $defaultUser"
 	useradd -rd /opt/jellyfin $defaultUser
 	Log "SETUP | Created user $defaultUser" $logFile
+	usermod -aG video $defaultUser
+	usermod -aG render $defaultUser
 
 	if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
 		cp $DIRECTORY/jellyman.1 /usr/share/man/man1/
