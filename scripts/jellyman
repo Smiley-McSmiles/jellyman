@@ -1046,11 +1046,11 @@ ProgressBar()
 			totalState=$maxState
 			totalPercentDone=$(bc -l <<< "($currentState/$totalState)*100")
 			totalPercentDone=$(RoundNumber "$totalPercentDone")
-			ffmpegReport="$(tail -n 1 $ffReport | rev | cut -c 1-120 | rev)"
-			currentEncodeSpeed=$(echo "$ffmpegReport" | grep -o "speed=......" | tail -n 1 | cut -d "=" -f 2 | sed "s| ||g")
+			ffmpegReport="$(tail -n 1 $ffReport | sed "s|.*frame=||g)"
+			currentVideoFrames=$(echo "$ffmpegReport" | grep -o ".*fps=" | grep -o "[0-9].*[0-9]")
+			currentEncodeFps=$(echo "$ffmpegReport" | grep "fps.*q=" | sed "s| q.*||g")
+			currentEncodeSpeed=$(echo "$ffmpegReport" | grep -o "speed=.*" | cut -d "=" -f 2 | sed "s| ||g")
 			currentEncodeTime=$(echo "$ffmpegReport" | grep -o "[0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9]")
-			currentEncodeFps=$(echo "$ffmpegReport" | grep "fps.*q" | sed "s| q.*||g")
-			currentVideoFrames=$(echo "$ffmpegReport" | grep -o "frame=.*f" | grep -o "[0-9].*[0-9]")
 			currentVideoSizeMB=$(du -m "$currentVideo" | cut -d "	" -f 1)
 			previousVideoSizeMB=$(du -m "$previousVideo" | cut -d "	" -f 1)
 			sizeSavingsPercent=$(bc -l <<< "$currentVideoSizeMB/$previousVideoSizeMB*100")
