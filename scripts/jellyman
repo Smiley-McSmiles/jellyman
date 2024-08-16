@@ -1277,7 +1277,7 @@ TranscodeFile()
 		fi
 		_newVideoSize=$(du -h "$_newName.downsampled.mkv" | cut -d "/" -f 1)
 		echo "> Downsampled size: $_newVideoSize"
-		if $deleteOrNot; then
+		if $deleteOrNot && [[ ! "$_newVideoSize" =~ 0.* ]]; then
 			echo "> DELETING $currentVideo IN:"
 			Countdown 10
 			rm -v "$currentVideo"
