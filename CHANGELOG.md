@@ -1,6 +1,9 @@
 # CHANGELOG.md for https://GitHub.com/Smiley-McSmiles/jellyman
 
 # Jellyman v1.9.1
+## Additions
+- Added fail safe for deleting files during transcode, to make sure to not delete files if the transcode failed for any reason.
+
 ## Fixes
 - `jellyman -tc` would keep multiplying the desired GB/hour when trying to qualify multiple files.
 - `jellyman -tc` would fail if encoding a non HDR video using hardware acceleration.
