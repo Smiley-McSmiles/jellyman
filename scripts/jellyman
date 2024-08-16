@@ -1137,7 +1137,7 @@ QualifyTranscode()
 {
 	videoToEdit="$1"
 	desiredGBperHour1920=$2
-	desiredGBperHour2160=(echo "$desiredGBperHour*2.5" | bc)
+	desiredGBperHour2160=$(echo "$desiredGBperHour*2.5" | bc)
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 
 	videoSize=$(du -h "$videoToEdit" | cut -d "/" -f 1)
