@@ -1,5 +1,9 @@
 # CHANGELOG.md for https://GitHub.com/Smiley-McSmiles/jellyman
 
+# Jellyman v1.9.1
+## Fixes
+- `jellyman -tc` Would keep multiplying the desired GB/hour when trying to qualify multiple files.
+
 # Jellyman v1.9.0
 ## Additions
 - Added hardware acceleration to `jellyman -tc`

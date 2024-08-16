@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.9.0"
+jellymanVersion="v1.9.1"
 logDir=/opt/jellyfin/log
 logFile=$logDir/jellyman.log
 sourceFile="/opt/jellyfin/config/jellyman.conf"
@@ -1136,7 +1136,8 @@ ViewTranscodeProgress()
 QualifyTranscode()
 {
 	videoToEdit="$1"
-	desiredGBperHour=$2
+	desiredGBperHour1920=$2
+	desiredGBperHour2160=(echo "$desiredGBperHour*2.5" | bc)
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 
 	videoSize=$(du -h "$videoToEdit" | cut -d "/" -f 1)
@@ -1145,7 +1146,9 @@ QualifyTranscode()
 	videoDuration=$(echo "$videoInformation" | grep ^duration=[0-9] | cut -d "=" -f 2 | cut -d "." -f 1 | head -n 1)
 
 	if [[ $videoWidth -gt 1920 ]]; then
-		desiredGBperHour=$(echo "$desiredGBperHour*2.5" | bc)
+		desiredGBperHour=$desiredGBperHour2160
+	else
+		desiredGBperHour=$desiredGBperHour1920
 	fi
 
 	if IsVideo "$videoToEdit"; then
