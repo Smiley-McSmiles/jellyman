@@ -1136,8 +1136,8 @@ ViewTranscodeProgress()
 QualifyTranscode()
 {
 	videoToEdit="$1"
-	desiredGBperHour1920=$2
-	desiredGBperHour2160=$(echo "$desiredGBperHour*2.5" | bc)
+	gBperHour1920=$2
+	gBperHour3840=$(echo "$gBperHour*2.5" | bc)
 	qualifiedVideos="/tmp/jellyman_qualified_videos.txt"
 
 	videoSize=$(du -h "$videoToEdit" | cut -d "/" -f 1)
@@ -1146,9 +1146,9 @@ QualifyTranscode()
 	videoDuration=$(echo "$videoInformation" | grep ^duration=[0-9] | cut -d "=" -f 2 | cut -d "." -f 1 | head -n 1)
 
 	if [[ $videoWidth -gt 1920 ]]; then
-		desiredGBperHour=$desiredGBperHour2160
+		gBperHour=$gBperHour3840
 	else
-		desiredGBperHour=$desiredGBperHour1920
+		gBperHour=$gBperHour1920
 	fi
 
 	if IsVideo "$videoToEdit"; then
@@ -1161,7 +1161,7 @@ QualifyTranscode()
 			_videoSizeGB=$(echo $videoSize | sed -r "s|G||g")
 		fi
 		_videoRatio=$(bc -l <<< "$_videoSizeGB/$_videoTimeHours")
-		if [ 1 -eq "$(echo "$_videoRatio > $desiredGBperHour" | bc)" ]; then
+		if [ 1 -eq "$(echo "$_videoRatio > $gBperHour" | bc)" ]; then
 			echo "> Transcoding $videoToEdit ..."
 			_newName=$(echo $videoToEdit | rev | cut -d "." -f 2 | rev)
 			echo "> Video time in Hours: $_videoTimeHours"
@@ -1170,7 +1170,7 @@ QualifyTranscode()
 			echo "$videoToEdit" >> $qualifiedVideos
 			Log "QUALIFY-TRANSCODE | Added file $videoToEdit to transcode list, Duration:$_videoTimeHours Hrs Size:$_videoSizeGB GiB GiB/Hr:$_videoRatio" $logFile
 		else
-			echo "> $videoToEdit is less than $desiredGBperHour GB/Hour, skipping..."
+			echo "> $videoToEdit is less than $gBperHour GB/Hour, skipping..."
 		fi
 	else
 		_file=$(echo $videoToEdit | rev | cut -d "/" -f 1 | rev)
