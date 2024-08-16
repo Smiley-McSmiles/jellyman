@@ -2,7 +2,8 @@
 
 # Jellyman v1.9.1
 ## Fixes
-- `jellyman -tc` Would keep multiplying the desired GB/hour when trying to qualify multiple files.
+- `jellyman -tc` would keep multiplying the desired GB/hour when trying to qualify multiple files.
+- `jellyman -tc` would fail if encoding a non HDR video using hardware acceleration.
 
 # Jellyman v1.9.0
 ## Additions

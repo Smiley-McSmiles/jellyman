@@ -1264,6 +1264,11 @@ TranscodeFile()
 			SetVar isHDR "HDR" "$progressBarConf" str
 			rm -f $ffReportLog
 			FFREPORT=file=/tmp/ffreport.log:level=32 ffmpeg -hwaccel $hwaccelType -hwaccel_output_format $hwaccelType -hwaccel_device /dev/dri/renderD128 -y -i "$currentVideo" -c:v $encoder -c:a copy -map 0 -c:s copy -movflags +faststart -pix_fmt yuv420p10le -colorspace bt2020nc -color_trc smpte2084 -color_primaries bt2020 -preset $preset -crf $crf "$_newName.downsampled.mkv"
+		elif $hwaccel; then
+			Log "TRANSCODE-FILE | File $currentVideo is not HDR" $logFile
+			SetVar isHDR "SDR" "$progressBarConf" str
+			rm -f $ffReportLog
+			FFREPORT=file=/tmp/ffreport.log:level=32 ffmpeg -hwaccel $hwaccelType -hwaccel_output_format $hwaccelType -hwaccel_device /dev/dri/renderD128 -y -i "$currentVideo" -c:v $encoder -c:a copy -map 0 -c:s copy -movflags +faststart -preset $preset -crf $crf "$_newName.downsampled.mkv"
 		else
 			Log "TRANSCODE-FILE | File $currentVideo is not HDR" $logFile
 			SetVar isHDR "SDR" "$progressBarConf" str
