@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
 =======
 
-> v1.9.1 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
+> v1.9.2 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
 > Tested on Fedora 34-40, Ubuntu 22.04-24.04, Manjaro 21.3.6, EndeavourOS Artemis Neo/Nova/Cassini Nova, Linux Mint 21, and Rocky/Alma/RHEL Linux 8.6/9.0
 
@@ -24,61 +24,6 @@ cd ~/
 # Features
 
 * **Setup** - Sets up the initial install.
-* **Import Metadata and Configuration** - During setup, import the **CURRENTLY** installed Jellyfin configs and metadata.
-```
-   ├── NOTE - If you installed Jellyfin with Docker
-   ├── this will likely not work
-   └── Assumes your directory structure is similar to a bare metal install.
-```
-**For example in your Jellyfin directory it should look like this:**
-```
-/path/jellyfin
-      ├── cache
-      │   ├── audiodb-album
-      │   ├── audiodb-artist
-      │   ├── extracted-audio-images
-      │   ├── images
-      │   ├── imagesbyname
-      │   ├── omdb
-      │   └── temp
-      ├── config
-      │   ├── branding.xml
-      │   ├── dlna
-      │   ├── encoding.xml
-      │   ├── jellyman.conf
-      │   ├── logging.default.json
-      │   ├── metadata.xml
-      │   ├── migrations.xml
-      │   ├── network.xml
-      │   ├── system.xml
-      │   └── users
-      └── data
-          ├── data
-          │   ├── authentication.db
-          │   ├── authentication.db-journal
-          │   ├── jellyfin.db
-          │   ├── jellyfin.db-shm
-          │   ├── jellyfin.db-wal
-          │   ├── library.db
-          │   ├── library.db-journal
-          │   └── ScheduledTasks
-          ├── metadata
-          ├── plugins
-          ├── root
-          │   └── default
-          │       ├── Movies
-          │       │   ├── Movies111.mblink
-          │       │   ├── Movies11.mblink
-          │       │   ├── movies.collection
-          │       │   └── options.xml
-          │       └── TV Shows
-          │           ├── options.xml
-          │           ├── TV1.mblink
-          │           ├── TV.mblink
-          │           └── tvshows.collection
-          │
-          └── transcodes
-```
 * **Update** - [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
 ```
     └── NOTE - Supplied URL has to be formatted like: jellyfin_x.x.x-<ARCHITECTURE>.tar.gz

@@ -1,5 +1,10 @@
 # CHANGELOG.md for https://GitHub.com/Smiley-McSmiles/jellyman
 
+# Jellyman v1.9.2
+## Changes
+- setup.sh no longer has an option to migrate data from one install to another install.
+ - This option has caused a lot of headache to get to work correctly. If you are a BASH programmer, please feel free to post a pull request to add this _feature_ back in (If you can get migrating to work reliably across many different types of jellyfin installs)
+
 # Jellyman v1.9.1
 ## Additions
 - Added fail safe for deleting files during transcode, to make sure to not delete files if the transcode failed for any reason.
