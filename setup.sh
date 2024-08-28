@@ -222,77 +222,6 @@ InstallDependencies(){
 	fi
 }
 
-Backup(){
-	backupDirectory=$1
-	fileName=current-jellyfin-data.tar
-	if [[ $(echo "${backupDirectory: -1}") == "/" ]]; then
-		tarPath=$backupDirectory$fileName
-		echo "> Saving your current metadata to --> $tarPath"
-	else
-		tarPath=$backupDirectory/$fileName
-		echo "> Saving your current metadata to --> $tarPath"
-	fi
-	
-	cd $currentJellyfinDirectory
-	time tar cvf $tarPath data config
-	USER=$(stat -c '%U' $backupDirectory)
-	chown -f $USER:$USER $tarPath
-	chmod -f 770 $tarPath
-}
-
-
-PreviousInstall(){
-	echo "> WARNING: THIS OPTION IS HIGHLY UNSTABLE, ONLY USE IF YOU KNOW WHAT YOU'RE DOING!!!"
-	echo
-	if PromptUser yN "> Is Jellyfin CURRENTLY installed on this system?"; then
-		isDataThere=false
-		isConfigThere=false
-		newDirectory=false
-		PromptUser dir "> Where is Jellyfins intalled directory?" 0 0 "/path/to/jellyfin/dir"
-		currentJellyfinDirectory=$promptResult
-		
-		#systemFileXML=$(find $currentJellyfinDirectory -name "system.xml")
-		#configPath=$(echo $systemFileXML | sed -r "s|/system.xml||g")
-		#metadataPath=$(grep -o "<MetadataPath>.*" $systemFileXML | sed -r "s|<MetadataPath>||g" | sed -r "s|</MetadataPath>||g")
-		#if [[ $configPath != *"config" ]]; then
-		#	echo "'config' folder not found"
-		#else
-		#	
-		#fi
-		
-		if [ ! -d "$currentJellyfinDirectory/data/metadata" ]; then
-			echo "$currentJellyfinDirectory/data/metadata does not exist"
-			isDataThere=false
-		else
-			isDataThere=true
-			echo "> Found metadata!"
-		fi
-
-		if [ ! -d "$currentJellyfinDirectory/config" ]; then
-			echo "$currentJellyfinDirectory/config does not exist"
-			isConfigThere=false
-		else
-			isConfigThere=true
-			echo "> Found config!"
-		fi
-
-		
-		if ! $isDataThere || ! $isConfigThere; then
-			echo "***ERROR*** - one or more directories not found..."
-			if PromptUser Yn "> Would you like to try a different directory?"; then
-				currentJellyfinDirectory=null
-			else
-				exit
-			fi
-		fi
-		
-		Backup $HOME
-		cd /opt/jellyfin
-		tar xf $tarPath -C ./
-	else
-		echo ""
-	fi
-}
 
 InstallJellyfinFfmpeg(){
 	logFile=$1
@@ -329,7 +258,6 @@ Setup(){
 	mv $logFile /opt/jellyfin/log
 	logFile=/opt/jellyfin/log/jellyman_setup.log
 	clear
-	PreviousInstall
 	PromptUser usr "> Please enter the LINUX user for Jellyfin" 0 0 "jellyfin"
 	defaultUser=$promptResult
 	while id "$defaultUser" &>/dev/null; do
