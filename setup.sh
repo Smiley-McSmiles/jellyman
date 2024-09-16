@@ -96,7 +96,7 @@ Import(){
 
 				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
 				chmod -Rf 770 /opt/jellyfin
-				SetVar User "$defaultUser" "$jellyfinServiceLocation/jellyfin.service" str
+				SetVar User "$defaultUser" "$jellyfinServiceLocation/jellyfin.service" null
 				InstallDependencies
 				jellyman -e -s -t
 			else
@@ -117,7 +117,7 @@ Import(){
 				chown -Rf $defaultUser:$defaultUser /opt/jellyfin
 				chmod -Rf 770 /opt/jellyfin
 				InstallDependencies
-				SetVar User "$defaultUser" "$jellyfinServiceLocation/jellyfin.service" str
+				SetVar User "$defaultUser" "$jellyfinServiceLocation/jellyfin.service" null
 				jellyman -e -s -t
 			fi
 		fi
@@ -297,7 +297,7 @@ Setup(){
 	fi
 	Log "SETUP | SetVar jellyfinServiceLocation=$jellyfinServiceLocation" $logFile
 	
-	SetVar User "$defaultUser" "$jellyfinServiceLocation/jellyfin.service" str
+	SetVar User "$defaultUser" "$jellyfinServiceLocation/jellyfin.service" null
 	Log "SETUP | SetVar User to $defaultUser in $jellyfinServiceLocation/jellyfin.service" $logFile
 	cp $DIRECTORY/conf/jellyfin.conf /etc/
 	jellyfinDir=/opt/jellyfin
@@ -417,7 +417,7 @@ Update_jellyman(){
 	# deletes all empty lines in $sourcefile
 	sed -i '/^ *$/d' $sourceFile
 	
-	SetVar User "$defaultUser" "$jellyfinServiceLocation/jellyfin.service" str
+	SetVar User "$defaultUser" "$jellyfinServiceLocation/jellyfin.service" null
 	
 	if [ -x "$(command -v apt)" ] || [ -x "$(command -v pacman)" ]; then
 		cp $DIRECTORY/jellyman.1 /usr/share/man/man1/
@@ -426,8 +426,8 @@ Update_jellyman(){
 	fi
 	
 	if ( ! grep -q httpPort= "$sourceFile" ) || ( ! grep -q httpsPort= "$sourceFile" ); then
-		SetVar httpPort "8096" "$sourceFile" str
-		SetVar httpsPort "8920" "$sourceFile" str
+		SetVar httpPort "8096" "$sourceFile" null
+		SetVar httpsPort "8920" "$sourceFile" null
 	fi
 	
 	DelVar networkPort $sourceFile

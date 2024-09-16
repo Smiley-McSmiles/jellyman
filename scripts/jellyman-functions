@@ -201,8 +201,11 @@ SetVar()
 		elif [[ $varType == "array" ]]; then
 			sed -i "s|$varToChange=.*|$varToChange=\($newVarContent\)|g" $fileToChange
 			return 0
-		else
+		elif [[ $varType == "str" ]]; then
 			sed -i "s|$varToChange=.*|$varToChange=\'$newVarContent\'|g" $fileToChange
+			return 0
+		else
+			sed -i "s|$varToChange=.*|$varToChange=$newVarContent|g" $fileToChange
 			return 0
 		fi
 	fi
