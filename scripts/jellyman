@@ -605,7 +605,7 @@ SearchMedia()
 		exit
 	fi
 	source $sourceFile
-	query=$1
+	query="$1"
 	tree -h -i -f --du -I "*.nfo" $defaultPath | grep -i "$query"
 }
 
@@ -1654,7 +1654,7 @@ if [ -n "$1" ]; then
 			-s | --start) Control "start" ;;
 			-S | --stop) Control "stop" ;;
 			-t | --status) Status ;;
-			-sm | --search-media) SearchMedia $2
+			-sm | --search-media) SearchMedia "$2"
 									shift ;;
 			-lm | --list-media) ListMedia ;;
 			-u | --update-jellyfin) if [[ "$2" == "-"* ]]; then
