@@ -1,5 +1,20 @@
 # CHANGELOG.md for https://GitHub.com/Smiley-McSmiles/jellyman
 
+# Jellyman v1.9.4
+## Changes
+- jellyman.log now keeps 5000 lines instead of 1000.
+- Updated the `--help` command.
+- Changed some laguage outputs.
+- Added help info for `less` command (`jellyman -vl`)
+
+## Additions 
+- `-sm,  --search-media         Search Media in your media directory/directories.`
+- `-lm,  --list-media           Provide a tree list of all media (output saved to /tmp/media.txt).`
+
+# Jellyman v1.9.3
+## Fixes
+- Fixed issue with jellyfin.service during setup.
+
 # Jellyman v1.9.2
 ## Changes
 - setup.sh no longer has an option to migrate data from one install to another install.
