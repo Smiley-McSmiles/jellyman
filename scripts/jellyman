@@ -59,7 +59,9 @@ helpList="
 
 Backup()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	# Backup /opt/jellyfin to passed directory
 	backupDirectory="$1"
@@ -103,7 +105,9 @@ Backup()
 
 BackupAuto()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	if [[ ! -n $backupDir ]]; then
 		Log "ERROR | BACKUP-AUTO | AUTO-BACKUPS HAVE NOT BEEN SETUP." $logFile
@@ -134,7 +138,9 @@ BackupAuto()
 
 BackupUtility()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	while true; do
 		clear
 		optionNumber=
@@ -335,7 +341,9 @@ GetJellymanVersion()
 
 GetJellyfinVersion()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	versionFormatted=$(echo "$currentVersion" | sed -r "s|_| v|g" | sed -r "s|j|J|g")
 	echo "$versionFormatted"
@@ -343,7 +351,9 @@ GetJellyfinVersion()
 
 VersionDownload()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	versionListVar=$(curl -sL https://repo.jellyfin.org/files/server/linux/stable/)
 	versionList=$(echo "$versionListVar" | grep '>v' | cut -d '>' -f 2 | cut -d '/' -f 1)
@@ -369,7 +379,9 @@ VersionDownload()
 
 VersionSwitch()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	versionToSwitchNumber=0
 	installedVersions=$(ls /opt/jellyfin/ | grep "_")
@@ -399,7 +411,9 @@ VersionSwitch()
 
 VersionRemove()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	installedVersions=$(ls /opt/jellyfin/ | grep "_")
 	installedVersionsClean=$(echo "$installedVersions" | sed -r "s|j|J|g" | sed -r "s|_| v|g")
@@ -429,7 +443,9 @@ VersionRemove()
 
 Import()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	importTar=$1
 	importDir=
@@ -543,7 +559,9 @@ Import()
 
 LibraryScan()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	CheckApiKey
 	curl -d POST http://localhost:$httpPort/Library/Refresh?api_key=$apiKey
@@ -552,7 +570,9 @@ LibraryScan()
 
 ImportApiKey()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	echo "> Create a API key by signing into Jellyfin, going to Dashboard, then"
 	echo "> clicking on API Keys under the Advanced section on the left."
 	echo
@@ -565,7 +585,9 @@ ImportApiKey()
 
 CheckApiKey()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	if [[ ! -n $apiKey ]]; then
 		Log "ERROR | CHECK-API-KEY | NO API KEY FOUND" $logFile
@@ -579,7 +601,9 @@ CheckApiKey()
 
 SearchMedia()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	query=$1
 	tree -h -i -f --du -I "*.nfo" $defaultPath | grep -i "$query"
@@ -587,7 +611,9 @@ SearchMedia()
 
 ListMedia()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	echo ">>> List of media stored in /tmp/media.txt"
 	tree -h --du -I "*.nfo" $defaultPath > /tmp/media.txt
@@ -596,7 +622,9 @@ ListMedia()
 
 HttpPortChange()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	echo
 	echo "> Default http port is 8096"
@@ -633,7 +661,9 @@ HttpPortChange()
 
 HttpsPortChange()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	if IsJellyfinSetup; then
 		echo "> Default https port is 8920"
@@ -670,7 +700,9 @@ HttpsPortChange()
 
 Permissions()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	checkForDefaultPath="yes"
 	directoryToFix=
@@ -722,7 +754,9 @@ Status()
 
 Update()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	customVersionLink=
 	customVersion=""
@@ -804,7 +838,9 @@ Update()
 # needs testing when new beta is available
 UpdateBeta()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	betasAvailable=$(curl -sL https://repo.jellyfin.org/?path=/server/linux/latest-unstable/$architecture/)
 	jellyfinArchives=$(echo "$betasAvailable" | grep -o ">jellyfin_.*-$architecture.tar.gz<" | cut -d "'" -f 1 | sed -r "s|<||g" | sed -r "s|>||g" | head -1)
@@ -860,7 +896,9 @@ UpdateBeta()
 
 RecertifyHttps()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	echo "+------------------------------------------------------+"
 	echo "|  Creating OpenSSL self signed certificate for https. |"
@@ -888,7 +926,9 @@ RecertifyHttps()
 
 RenameTv()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	nameOfTestFile=
 	loop=true
@@ -978,7 +1018,9 @@ RenameTv()
 
 Uninstall()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	echo "|-------------------------------------------------------------------|"
 	echo "|                        ******WARNING******                        |"
@@ -1038,7 +1080,9 @@ KillJob()
 
 CallFunc()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 	$1
 }
@@ -1494,7 +1538,9 @@ Transcode()
 
 UpdateJellyman()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	jellymanManFile=$(curl -sL https://raw.githubusercontent.com/Smiley-McSmiles/jellyman/main/jellyman.1)
 	currentJellymanVersion=$(echo $jellymanManFile | grep " - v" | cut -d "v" -f2 | cut -d " " -f1)
 	if [[ "v$currentJellymanVersion" == $jellymanVersion ]]; then
@@ -1513,7 +1559,9 @@ UpdateJellyman()
 
 ChangeMediaDirectory()
 {
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	mediaPath=""
 	warning=""
 	continue=true
@@ -1550,7 +1598,9 @@ ChangeMediaDirectory()
 }
 
 Control(){
-	HasSudo
+	if ! HasSudo; then
+		exit
+	fi
 	source $sourceFile
 
 	case "$1" in
@@ -1621,7 +1671,9 @@ if [ -n "$1" ]; then
 			-vd | --version-download) VersionDownload ;;
 			-vs | --version-switch) VersionSwitch ;;
 			-vr | --version-remove) VersionRemove ;;
-			-vl | --view-log) HasSudo
+			-vl | --view-log) if ! HasSudo; then
+	exit
+fi
 				 ViewLog "$logDir" ;;
 			-rc | --recertify) RecertifyHttps ;;
 			-rn | --rename) RenameTv ;;
