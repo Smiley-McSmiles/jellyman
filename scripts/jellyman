@@ -583,7 +583,6 @@ SearchMedia()
 	source $sourceFile
 	query=$1
 	tree -h -i -f --du -I "*.nfo" $defaultPath | grep -i "$query"
-)
 }
 
 ListMedia()
