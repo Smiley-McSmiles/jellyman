@@ -37,7 +37,7 @@ helpList="
 -rn,  --rename               Batch renaming script for TV shows.
 -cp,  --change-http          Change Jellyfins http network port - Default = 8096.
 -cps, --change-https         Change Jellyfins https network port - Default = 8920.
--ik,  --import-key           Import a Jellyfin API key (Needed for `-ls` command).
+-ik,  --import-key           Import a Jellyfin API key (Needed for -ls command).
 -md,  --media-directory      Change the Media Directory for Jellyman.
 -tc,  --transcode            Transcode a file/directory with a GB per hour filter (1.5GB is recommended).
 -tcp, --transcode-progress   View progress of the Transcode.
