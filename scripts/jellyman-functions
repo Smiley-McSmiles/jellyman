@@ -322,7 +322,7 @@ Log()
 
 	_logFileLines=$(wc -l $_logFile | cut -d " " -f 1)
 
-	if [ $_logFileLines -ge 1000 ]; then
+	if [ $_logFileLines -ge 5000 ]; then
 		sed -i '1d' $_logFile
 	fi
 }
@@ -355,7 +355,7 @@ ViewLog()
 	logDir=$1
 	PresentList "$logDir" "> Please enter the number corresponding with the log you wish to view." ".log"
 	logToView=$presentListResult
-	less +G -FS $logDir/$logToView
+	less -P 'File %f Position %lb (%l lines) %P\% | Press "Q" to exit' +G -FS $logDir/$logToView
 
 # ViewLog "/dir/to/logs"
 }

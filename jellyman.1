@@ -7,7 +7,7 @@
 .B Jellyman - a Jellyfin Manager for the Jellyfin generic linux amd64.tar.gz package
 
 .SH VERSION
-.B Jellyman - The Jellyfin Manager - v1.9.3
+.B Jellyman - The Jellyfin Manager - v1.9.4
 
 .SH SYNOPSIS
 .B jellyman
@@ -40,7 +40,7 @@ is a set of scripts to install/manage and update the jellyfin-combined tar.gz ge
 .TP
 .B -h, --help                   Print this Help.
 .TP
-.B -i, --import                 [FILE.tar - optional] Input file to Import jellyfin-backup.tar.
+.B -i, --import                 Display list of backup .tar files to Import and automatically restores the selected backup.
 .BR
     ├── Media metadata will only import if your new OS/setup and old OS/setup media folders are exactly the same.
 .BR
@@ -57,6 +57,10 @@ is a set of scripts to install/manage and update the jellyfin-combined tar.gz ge
 .B -S, --stop                   Stop Jellyfin.
 .TP
 .B -t, --status                 Status of Jellyfin.
+.TP
+-B -sm,  --search-media         Search Media in your media directory/directories.
+.TP
+.B -lm,  --list-media           Provide a tree list of all media (output saved to /tmp/media.txt).
 .TP
 .B -u, --update-jellyfin        [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
 .BR

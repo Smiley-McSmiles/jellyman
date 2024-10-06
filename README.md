@@ -1,7 +1,7 @@
 ![jellyman](.github/banner-shadow.png?raw=true "Jellyman Logo")
 =======
 
-> v1.9.3 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
+> v1.9.4 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
 > Tested on Fedora 34-40, Ubuntu 22.04-24.04, Manjaro 21.3.6, EndeavourOS Artemis Neo/Nova/Cassini Nova, Linux Mint 21, and Rocky/Alma/RHEL Linux 8.6/9.0
 
@@ -68,6 +68,8 @@ cd ~/
     └── Provides a list of currently installed versions of Jellyfin for you to switch to.
 ```
 * **View Logs** - Select from a list of logs to view.
+* **Search Media** - Search Media in your media directory/directories.
+* **List Media** - Provide a tree list of all media (output saved to /tmp/media.txt).
 * **Recertify https** - Removes old https certifications and creates new **self signed** keys for the next 365 days. 
 * **Rename TV** - Batch renaming script for TV shows.
 * **Library Scan** - Tell Jellyfin to scan your media library.
@@ -170,36 +172,39 @@ Jellyman - The Jellyfin Manager
 Syntax: jellyman -[COMMAND] [PARAMETER]
 
 COMMANDS:
--b, --backup                 [DIRECTORY] Input directory to output backup archive.
--ba, --backup-auto           Perform an automatic backup.
--bu, --backup-utility        Start the automatic backup utility.
--d, --disable                Disable Jellyfin on System Start.
--e, --enable                 Enable Jellyfin on System Start.
--h, --help                   Print this Help.
--i, --import                 [FILE.tar - optional] Input file to Import jellyfin-backup.tar.
--p, --permissions            [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
--r, --restart                Restart Jellyfin.
--s, --start                  Start Jellyfin.
--S, --stop                   Stop Jellyfin.
--t, --status                 Status of Jellyfin.
--u, --update-jellyfin        [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
--U, --update-jellyman        Update Jellyman - The Jellyfin Manager.
--ub, --update-beta           Update Jellyfin to the most recent Beta.
--v, --version                Get the current installed version of Jellyfin.
--vd, --version-download      Download an available Jellyfin version from the stable repository.
--vs, --version-switch        Switch Jellyfin version for another previously installed version.
--rv, --remove-version        Remove a Jellyfin version.
--rc, --recertify             Removes old https certifications and creates new ones for the next 365 days.
--rn, --rename                Batch renaming script for TV shows.
--ls, --library-scan          Tell Jellyfin to scan your media library.
--cp, --change-http           Change Jellyfins http network port - Default = 8096.
+-b,   --backup               [DIRECTORY] Input directory to output backup archive.
+-ba,  --backup-auto          Perform an automatic backup.
+-bu,  --backup-utility       Start the automatic backup utility.
+-d,   --disable              Disable Jellyfin on System Start.
+-e,   --enable               Enable Jellyfin on System Start.
+-h,   --help                 Print this Help.
+-i,   --import               Display list of backup .tar files to Import and automatically restores the selected backup.
+-p,   --permissions          [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
+-r,   --restart              Restart Jellyfin.
+-s,   --start                Start Jellyfin.
+-S,   --stop                 Stop Jellyfin.
+-t,   --status               Status of Jellyfin.
+-sm,  --search-media         Search Media in your media directory/directories.
+-lm,  --list-media           Provide a tree list of all media (output saved to /tmp/media.txt).
+-u,   --update-jellyfin      [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
+-U,   --update-jellyman      Update Jellyman - The Jellyfin Manager.
+-ub,  --update-beta          Update Jellyfin to the most recent Beta.
+-ls,  --library-scan         Tell Jellyfin to scan your media library.
+-v,   --version              Get the current installed version of Jellyfin.
+-vd,  --version-download     Download an available Jellyfin version from the stable repository.
+-vs,  --version-switch       Switch Jellyfin version for another previously installed version.
+-vr,  --version-remove       Remove a Jellyfin version.
+-vl   --view-log             Choose from a list of logs to view.
+-rc,  --recertify            Removes old https certifications and creates new ones for the next 365 days.
+-rn,  --rename               Batch renaming script for TV shows.
+-cp,  --change-http          Change Jellyfins http network port - Default = 8096.
 -cps, --change-https         Change Jellyfins https network port - Default = 8920.
--ik, --import-key            Import an API key
--md, --media-directory       Change the Media Directory for Jellyman.
--tc, --transcode             Transcode a file/directory with a GB per hour filter (1.5GB is recommended).
+-ik,  --import-key           Import a Jellyfin API key (Needed for `-ls` command).
+-md,  --media-directory      Change the Media Directory for Jellyman.
+-tc,  --transcode            Transcode a file/directory with a GB per hour filter (1.5GB is recommended).
 -tcp, --transcode-progress   View progress of the Transcode.
 -tcs, --transcode-stop       Stop the current transcode process.
--X, --uninstall              Uninstall Jellyfin and Jellyman Completely.
+-X,   --uninstall            Uninstall Jellyfin and Jellyman Completely.
 
 EXAMPLE:
 - To stop jellyfin, disable on startup, and then get status of the jellyfin service:

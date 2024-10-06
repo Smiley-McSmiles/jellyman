@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.9.3"
+jellymanVersion="v1.9.4"
 logDir=/opt/jellyfin/log
 logFile=$logDir/jellyman.log
 sourceFile="/opt/jellyfin/config/jellyman.conf"
@@ -16,12 +16,14 @@ helpList="
 -d,   --disable              Disable Jellyfin on System Start.
 -e,   --enable               Enable Jellyfin on System Start.
 -h,   --help                 Print this Help.
--i,   --import               [FILE.tar - optional] Input file to Import jellyfin-backup.tar.
+-i,   --import               Display list of backup .tar files to Import and automatically restores the selected backup.
 -p,   --permissions          [DIRECTORY - optional] Reset the permissions of Jellyfin's Media Library or supplied directory.
 -r,   --restart              Restart Jellyfin.
 -s,   --start                Start Jellyfin.
 -S,   --stop                 Stop Jellyfin.
 -t,   --status               Status of Jellyfin.
+-sm,  --search-media         Search Media in your media directory/directories.
+-lm,  --list-media           Provide a tree list of all media (output saved to /tmp/media.txt).
 -u,   --update-jellyfin      [URL - optional] Downloads and updates the current stable or supplied Jellyfin version.
 -U,   --update-jellyman      Update Jellyman - The Jellyfin Manager.
 -ub,  --update-beta          Update Jellyfin to the most recent Beta.
@@ -35,7 +37,7 @@ helpList="
 -rn,  --rename               Batch renaming script for TV shows.
 -cp,  --change-http          Change Jellyfins http network port - Default = 8096.
 -cps, --change-https         Change Jellyfins https network port - Default = 8920.
--ik,  --import-key           Import an API key.
+-ik,  --import-key           Import a Jellyfin API key (Needed for `-ls` command).
 -md,  --media-directory      Change the Media Directory for Jellyman.
 -tc,  --transcode            Transcode a file/directory with a GB per hour filter (1.5GB is recommended).
 -tcp, --transcode-progress   View progress of the Transcode.
@@ -573,6 +575,24 @@ CheckApiKey()
 	else
 		return 0
 	fi
+}
+
+SearchMedia()
+{
+	HasSudo
+	source $sourceFile
+	query=$1
+	tree -h -i -f --du -I "*.nfo" $defaultPath | grep -i "$query"
+)
+}
+
+ListMedia()
+{
+	HasSudo
+	source $sourceFile
+	echo ">>> List of media stored in /tmp/media.txt"
+	tree -h --du -I "*.nfo" $defaultPath > /tmp/media.txt
+	less -P 'File %f Position %lb (%l lines) %P\% | Press "Q" to exit' /tmp/media.txt
 }
 
 HttpPortChange()
@@ -1505,6 +1525,8 @@ ChangeMediaDirectory()
 		echo "| Please enter all media directories separated by a space |"
 		echo "|                       example:                          |"
 		echo "|          /media/hdd1/Movies /media/hdd2/TV              |"
+		echo "|                       example2:                         |"
+		echo "|               /media/hdd1 /media/hdd2                   |"
 		echo "|---------------------------------------------------------|"
 		echo
 		echo $warning
@@ -1583,6 +1605,9 @@ if [ -n "$1" ]; then
 			-s | --start) Control "start" ;;
 			-S | --stop) Control "stop" ;;
 			-t | --status) Status ;;
+			-sm | --search-media) SearchMedia $2
+									shift ;;
+			-lm | --list-media) ListMedia ;;
 			-u | --update-jellyfin) if [[ "$2" == "-"* ]]; then
 					 Update
 				 else
@@ -1608,10 +1633,6 @@ if [ -n "$1" ]; then
 			-md | --media-directory) ChangeMediaDirectory ;;
 			-tc | --transcode) Transcode ;;
 			-tcp | --transcode-progress) ViewTranscodeProgress ;;
-#			-tcf) TranscodeFile $2 $3 $4
-#						shift
-#						shift
-#						shift ;;
 			-tcs | --transcode-stop) TranscodeStop ;;
 			-X | --uninstall) Uninstall ;;
 			--CallFunc) CallFunc "$2"
