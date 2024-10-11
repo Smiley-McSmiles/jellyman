@@ -170,7 +170,7 @@ GetArchitecture(){
 
 InstallDependencies(){
 	packagesNeededDebian='libva libva2 mesa-va-drivers mesa-vdpau-drivers ffmpeg git net-tools openssl bc screen curl wget tar'
-	packagesNeededRHEL='libva libva-utils libva-vdpau-driver libva-intel-media-driver libva-intel-driver libva-nvidia-driver mesa-va-drivers mesa-vdpau-drivers ffmpeg ffmpeg-devel ffmpeg-libs git openssl bc screen curl wget tar'
+	packagesNeededRHEL='libva libva-utils libva-vdpau-driver libva-intel-media-driver libva-intel-driver libva-nvidia-driver mesa-va-drivers mesa-vdpau-drivers ffmpeg ffmpeg-devel ffmpeg-libs libicu git openssl bc screen curl wget tar'
 	packagesNeededArch='libva-utils libva-nvidia-driver libva-intel-driver libva-mesa-driver vulkan-radeon ffmpeg git openssl bc screen curl wget tar'
 	packagesNeededOpenSuse='libva libva2 mesa-libva libva-utils libva-vdpau-driver mesa-libva mesa-gallium mesa-drivers ffmpeg-4 git openssl bc screen curl wget tar'
 	echo "> Preparing to install needed dependancies for Jellyfin and Jellyman..."
@@ -191,6 +191,8 @@ InstallDependencies(){
 			if (( $VERSION_ID < 9 )); then
 				crbOrPowertools="powertools"
 			else
+				echo "> RHEL 9 detected, removing unavailable packages: libva-vdpau-driver libva-intel-media-driver libva-nvidia-driver mesa-va-drivers mesa-vdpau-drivers"
+				echo "> Please compile from source VAAPI drivers to take advantage of hardware acceleration"
 				packagesNeededRHEL=$(echo "$packagesNeededRHEL" | sed 's/ libva-vdpau-driver//g' | sed 's/ libva-intel-media-driver//g' | sed 's/ libva-nvidia-driver//g' | sed 's/ mesa-va-drivers//g' | sed 's/ mesa-vdpau-drivers//g')
 				crbOrPowertools="crb"
 			fi
