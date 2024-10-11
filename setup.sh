@@ -244,6 +244,10 @@ InstallJellyfinFfmpeg(){
 
 Setup(){
 	logFile=/tmp/jellyman_setup.log
+
+	echo "> Installing dependencies..."
+	InstallDependencies
+
 	echo "> Fetching newest stable Jellyfin version..."
 	GetArchitecture
 	jellyfin=
@@ -319,9 +323,6 @@ Setup(){
 	SetVar defaultUser "$defaultUser" "$jellyfinConfigFile" str
 	SetVar jellyfinServiceLocation "$jellyfinServiceLocation" "$jellyfinConfigFile" str
 	Log "SETUP | SetVar $architecture 8096 8920 $jellyfin $defaultUser $jellyfinServiceLocation" $logFile
-
-	echo "> Installing dependencies..."
-	InstallDependencies
 
 	echo "> Setting Permissions for Jellyfin..."
 	chown -R $defaultUser:$defaultUser /opt/jellyfin
