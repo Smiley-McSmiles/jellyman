@@ -326,7 +326,7 @@ Setup(){
 
 	echo "> Setting Permissions for Jellyfin..."
 	chown -R $defaultUser:$defaultUser /opt/jellyfin
-	chmod u+x $jellyfinDir/jellyfin.sh
+	chmod +x $jellyfinDir/jellyfin.sh
 	chmod +rx /usr/bin/jellyman
 
 	echo "> Unblocking port 8096 and 8920..."
