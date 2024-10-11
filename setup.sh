@@ -191,7 +191,7 @@ InstallDependencies(){
 			if (( $VERSION_ID < 9 )); then
 				crbOrPowertools="powertools"
 			else
-				packagesNeededRHEL=$(echo "$packagesNeededRHEL" | sed 's/ libva-vdpau-driver//g' | sed 's/ libva-intel-media-driver//g' | sed 's/ libva-nvidia-driver//g' | sed 's/ mesa-va-drivers//g')
+				packagesNeededRHEL=$(echo "$packagesNeededRHEL" | sed 's/ libva-vdpau-driver//g' | sed 's/ libva-intel-media-driver//g' | sed 's/ libva-nvidia-driver//g' | sed 's/ mesa-va-drivers//g' | sed 's/ mesa-vdpau-drivers//g')
 				crbOrPowertools="crb"
 			fi
 		fi
