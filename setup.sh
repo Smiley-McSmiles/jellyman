@@ -169,11 +169,11 @@ GetArchitecture(){
 }
 
 InstallDependencies(){
-	packagesNeededDebian='libva libva2 mesa-va-drivers mesa-vdpau-drivers ffmpeg git net-tools openssl bc screen curl wget tar'
-	packagesNeededRHEL='libva libva-utils libva-vdpau-driver libva-intel-media-driver libva-intel-driver libva-nvidia-driver mesa-va-drivers mesa-vdpau-drivers ffmpeg ffmpeg-devel ffmpeg-libs libicu git openssl bc screen curl wget tar'
-	packagesNeededArch='libva-utils libva-nvidia-driver libva-intel-driver libva-mesa-driver vulkan-radeon ffmpeg git openssl bc screen curl wget tar'
-	packagesNeededOpenSuse='libva libva2 mesa-libva libva-utils libva-vdpau-driver mesa-libva mesa-gallium mesa-drivers ffmpeg-4 git openssl bc screen curl wget tar'
-	echo "> Preparing to install needed dependancies for Jellyfin and Jellyman..."
+	packagesNeededDebian=(libva libva2 mesa-va-drivers mesa-vdpau-drivers ffmpeg git net-tools openssl bc screen curl wget tar)
+    packagesNeededRHEL=(libva libva-utils libva-vdpau-driver libva-intel-media-driver libva-intel-driver libva-nvidia-driver mesa-va-drivers mesa-vdpau-drivers ffmpeg ffmpeg-devel ffmpeg-libs libicu git openssl bc screen curl wget tar)
+    packagesNeededArch=(libva-utils libva-nvidia-driver libva-intel-driver libva-mesa-driver vulkan-radeon ffmpeg git openssl bc screen curl wget tar)
+    packagesNeededOpenSuse=(libva libva2 mesa-libva libva-utils libva-vdpau-driver mesa-libva mesa-gallium mesa-drivers ffmpeg-4 git openssl bc screen curl wget tar)
+    echo "> Preparing to install needed dependancies for Jellyfin and Jellyman..."
 
 	if [ -f /etc/os-release ]; then
 		source /etc/os-release
@@ -191,9 +191,12 @@ InstallDependencies(){
 			if (( $VERSION_ID < 9 )); then
 				crbOrPowertools="powertools"
 			else
-				echo "> RHEL 9 detected, removing unavailable packages: libva-vdpau-driver libva-intel-media-driver libva-nvidia-driver mesa-va-drivers mesa-vdpau-drivers"
+				packagesRemoved="libva-vdpau-driver libva-intel-media-driver libva-nvidia-driver mesa-va-drivers mesa-vdpau-drivers"
+				echo "> RHEL 9 detected, removing unavailable packages: $packagesRemoved"
 				echo "> Please compile from source VAAPI drivers to take advantage of hardware acceleration"
-				packagesNeededRHEL=$(echo "$packagesNeededRHEL" | sed 's/ libva-vdpau-driver//g' | sed 's/ libva-intel-media-driver//g' | sed 's/ libva-nvidia-driver//g' | sed 's/ mesa-va-drivers//g' | sed 's/ mesa-vdpau-drivers//g')
+				for pkg in "$packagesRemoved"; do
+					packagesNeededRHEL=("${packagesNeededRHEL[@]/$pkg}")
+				done
 				crbOrPowertools="crb"
 			fi
 		fi
@@ -201,7 +204,7 @@ InstallDependencies(){
 			case "$ID" in
 				fedora)
 					dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm -y
-					dnf install $packagesNeededRHEL -y
+					dnf install "${packagesNeededRHEL[@]}" -y
 					sudo dnf swap mesa-va-drivers mesa-va-drivers-freeworld
 					sudo dnf swap mesa-vdpau-drivers mesa-vdpau-drivers-freeworld ;;
 				rhel)
@@ -209,13 +212,13 @@ InstallDependencies(){
 					dnf config-manager --set-enabled $crbOrPowertools
 					dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm \
 					https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
-					dnf install $packagesNeededRHEL -y ;;
+					dnf install "${packagesNeededRHEL[@]}" -y ;;
 				debian | ubuntu | linuxmint | elementary)
-					apt install $packagesNeededDebian -y ;;
+					apt install "${packagesNeededDebian[@]}" -y ;;
 				arch | endeavouros | manjaro)
-					pacman -Syu $packagesNeededArch ;;
+					pacman -Syu "${packagesNeededArch[@]}" ;;
 				opensuse*)
-					zypper install $packagesNeededOpenSuse ;;
+					zypper install "${packagesNeededOpenSuse[@]}" ;;
 			esac
 	else
 		osDetected=false
