@@ -1,5 +1,9 @@
 # CHANGELOG.md for https://GitHub.com/Smiley-McSmiles/jellyman
 
+# Jellyman v1.9.5
+## Fixes
+- Fixed `setup.sh` failing to install jellyfin on RHEL 9 based systems. (Thank you cstackpole)
+
 # Jellyman v1.9.4
 ## Changes
 - jellyman.log now keeps 5000 lines instead of 1000.
