@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.9.4"
+jellymanVersion="v1.9.5"
 logDir=/opt/jellyfin/log
 logFile=$logDir/jellyman.log
 sourceFile="/opt/jellyfin/config/jellyman.conf"

@@ -11,6 +11,9 @@
 - `-sm,  --search-media         Search Media in your media directory/directories.`
 - `-lm,  --list-media           Provide a tree list of all media (output saved to /tmp/media.txt).`
 
+## Fixes
+- Fixed the `HasSudo` checker
+
 # Jellyman v1.9.3
 ## Fixes
 - Fixed issue with jellyfin.service during setup.
