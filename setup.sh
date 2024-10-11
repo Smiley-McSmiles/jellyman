@@ -191,10 +191,10 @@ InstallDependencies(){
 			if (( $VERSION_ID < 9 )); then
 				crbOrPowertools="powertools"
 			else
-				packagesRemoved="libva-vdpau-driver libva-intel-media-driver libva-nvidia-driver mesa-va-drivers mesa-vdpau-drivers"
+				packagesRemoved=(libva-vdpau-driver libva-intel-media-driver libva-nvidia-driver mesa-va-drivers mesa-vdpau-drivers)
 				echo "> RHEL 9 detected, removing unavailable packages: $packagesRemoved"
 				echo "> Please compile from source VAAPI drivers to take advantage of hardware acceleration"
-				for pkg in "$packagesRemoved"; do
+				for pkg in ${packagesRemoved[@]}; do
 					packagesNeededRHEL=("${packagesNeededRHEL[@]/$pkg}")
 				done
 				crbOrPowertools="crb"
@@ -210,7 +210,7 @@ InstallDependencies(){
 				rhel)
 					dnf install epel-release -y
 					dnf config-manager --set-enabled $crbOrPowertools
-					dnf install --nogpgcheck https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm \
+					dnf install --nogpgcheck https://mirrors.trpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm \
 					https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm -y
 					dnf install "${packagesNeededRHEL[@]}" -y ;;
 				debian | ubuntu | linuxmint | elementary)
