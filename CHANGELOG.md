@@ -1,5 +1,9 @@
 # CHANGELOG.md for https://GitHub.com/Smiley-McSmiles/jellyman
 
+# Jellyman v1.9.6
+## Fixes
+- Fixed bug where automatic backup was deleting newer backup files since December->January
+
 # Jellyman v1.9.5
 ## Fixes
 - Fixed `setup.sh` failing to install jellyfin on RHEL 9 based systems. (Thank you cstackpole)

@@ -1,5 +1,5 @@
 #!/bin/bash
-jellymanVersion="v1.9.5"
+jellymanVersion="v1.9.6"
 logDir=/opt/jellyfin/log
 logFile=$logDir/jellyman.log
 sourceFile="/opt/jellyfin/config/jellyman.conf"
@@ -116,7 +116,7 @@ BackupAuto()
 	else
 		jellyman -b "$backupDir"
 
-		tarList=$(ls -1 "$backupDir"/jellyfin-backup*.tar)
+		tarList=$(ls -1 --sort=time -r "$backupDir"/jellyfin-backup*.tar)
 		newestTar=$(echo "$tarList" | tail -n 1)
 		oldestTar=$(echo "$tarList" | head -n 1)
 		tarCount=$(echo "$tarList" | wc -l)
