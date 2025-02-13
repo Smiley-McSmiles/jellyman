@@ -128,7 +128,7 @@ BackupAuto()
 			echo "> Jellyman is removing $oldestTar"
 			# echo "> NewBackup=$newestTar"
 			rm -f "$oldestTar"
-			tarList=$(ls -1 "$backupDir"/jellyfin-backup*.tar)
+			tarList=$(ls -1 --sort=time -r "$backupDir"/jellyfin-backup*.tar)
 			newestTar=$(echo "$tarList" | tail -n 1)
 			oldestTar=$(echo "$tarList" | head -n 1)
 			tarCount=$(echo "$tarList" | wc -l)
