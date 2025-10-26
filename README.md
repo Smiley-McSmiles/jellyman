@@ -3,7 +3,7 @@
 
 > v1.9.6 - A Jellyfin Manager for the Jellyfin generic linux amd64, arm64, and armhf tar.gz packages
 
-> Tested on Fedora 34-40, Ubuntu 22.04-24.04, Manjaro 21.3.6, EndeavourOS Artemis Neo/Nova/Cassini Nova, Linux Mint 21, and Rocky/Alma/RHEL Linux 8.6/9.0
+> Tested on Fedora 40-42, Ubuntu 22.04-24.04, Manjaro 21.3.6, EndeavourOS Artemis Neo/Nova/Cassini Nova, Linux Mint 21, and Rocky/Alma/RHEL Linux 8.6/9.0
 
 > Should work on Any Debian, Arch, or RHEL Based Distribution **with SystemD**
 
@@ -222,6 +222,12 @@ chmod ug+x setup.sh
 sudo ./setup.sh -U
 cd ~/
 ```
+
+### Fresh Install with a Specific Jellyfin Version
+
+- Acquire a specific, archived Jellyfin release (a Jellyfin.tar.gz file) from [the official repository](https://repo.jellyfin.org/files/server/linux/stable/).
+- Place this archive in the same directory where the Jellyman setup.sh script is located.
+- Proceed to install Jellyman normally. The setup.sh script will automatically recognize and install the included archive.tar.gz release.
 
 ### License
 
