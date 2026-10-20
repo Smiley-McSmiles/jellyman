@@ -71,7 +71,7 @@ Import(){
 				SetVar autoBackups true "$sourceFile" str
 				SetVar "backupFrequency" "weekly" "$sourceFile"
 			else
-				systemctl enable --now jellyfin-backup.timer
+				systemctl disable --now jellyfin-backup.timer
 				SetVar autoBackups false "$sourceFile" str
 				SetVar "backupFrequency" "weekly" "$sourceFile"
 			fi

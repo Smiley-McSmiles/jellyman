@@ -500,7 +500,7 @@ Import()
 				SetVar "backupFrequency" "weekly" "$sourceFile"
 				Log "IMPORT | User enabled automatic backups" $logFile
 			else
-				systemctl enable --now jellyfin-backup.timer
+				systemctl disable --now jellyfin-backup.timer
 				SetVar autoBackups false "$sourceFile" str
 				SetVar "backupFrequency" "weekly" "$sourceFile"
 				Log "IMPORT | User disabled automatic backups" $logFile
