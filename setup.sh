@@ -169,10 +169,10 @@ GetArchitecture(){
 }
 
 InstallDependencies(){
-	packagesNeededDebian='libva libva2 mesa-va-drivers mesa-vdpau-drivers ffmpeg git net-tools openssl bc screen curl wget tar'
-	packagesNeededRHEL='libva libva-utils libva-vdpau-driver libva-intel-media-driver libva-intel-driver libva-nvidia-driver mesa-va-drivers mesa-vdpau-drivers ffmpeg ffmpeg-devel ffmpeg-libs libicu git openssl bc screen curl wget tar'
-	packagesNeededArch='libva-utils libva-nvidia-driver libva-intel-driver libva-mesa-driver vulkan-radeon ffmpeg git openssl bc screen curl wget tar'
-	packagesNeededOpenSuse='libva libva2 mesa-libva libva-utils libva-vdpau-driver mesa-libva mesa-gallium mesa-drivers ffmpeg-4 git openssl bc screen curl wget tar'
+	packagesNeededDebian='libva libva2 mesa-va-drivers mesa-vdpau-drivers ffmpeg git net-tools openssl bc screen tree curl wget tar'
+	packagesNeededRHEL='libva libva-utils libva-vdpau-driver libva-intel-media-driver libva-intel-driver libva-nvidia-driver mesa-va-drivers mesa-vdpau-drivers ffmpeg ffmpeg-devel ffmpeg-libs libicu git openssl bc screen tree curl wget tar'
+	packagesNeededArch='libva-utils libva-nvidia-driver libva-intel-driver libva-mesa-driver vulkan-radeon ffmpeg git openssl bc screen tree curl wget tar'
+	packagesNeededOpenSuse='libva libva2 mesa-libva libva-utils libva-vdpau-driver mesa-libva mesa-gallium mesa-drivers ffmpeg-4 git openssl bc screen tree curl wget tar'
 	echo "> Preparing to install needed dependancies for Jellyfin and Jellyman..."
 
 	if [ -f /etc/os-release ]; then

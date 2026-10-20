@@ -629,7 +629,7 @@ HttpPortChange()
 	echo
 	echo "> Default http port is 8096"
 	if IsJellyfinSetup; then
-		PromptUser num "> Please enter the new http network port for Jellyfin" 1000 100000 "http port"
+		PromptUser num "> Please enter the new http network port for Jellyfin" 1000 65535 "http port"
 		port=$promptResult
 		oldPort=$httpPort
 		SetVar httpPort $port "$sourceFile"
@@ -667,7 +667,7 @@ HttpsPortChange()
 	source $sourceFile
 	if IsJellyfinSetup; then
 		echo "> Default https port is 8920"
-		PromptUser num "> Please enter the new https network port for Jellyfin" 1000 100000 "https port"
+		PromptUser num "> Please enter the new https network port for Jellyfin" 1000 65535 "https port"
 		port=$promptResult
 		oldPort=$httpsPort
 		SetVar httpsPort $port "$sourceFile"
@@ -852,7 +852,7 @@ UpdateBeta()
 	newVersionArchive=
 	warning=""
 	
-	if [[ ! $betasAvailable == .*"tar.gz".* ]]; then
+	if [[ -z $jellyfinArchives ]]; then
 		Log "UPDATE-BETA | Tried to update to newest beta, but there are no betas available." $logFile
 		echo "> Sorry, no betas are available right now..."
 		exit
@@ -875,13 +875,22 @@ UpdateBeta()
 	else
 		newVersionArchive=$(echo "$jellyfinArchives" | head -n $versionSelected | tail -n 1)
 		echo "> Getting $newVersionArchive..."
-		wget -O /opt/jellyfin/update/$newVersionName https://repo.jellyfin.org/files/server/linux/latest-unstable/$architecture/$newVersionArchive
+		mkdir -p /opt/jellyfin/update
+		wget -O "/opt/jellyfin/update/$newVersionArchive" "https://repo.jellyfin.org/files/server/linux/latest-unstable/$architecture/$newVersionArchive"
+		Log "UPDATE-BETA | Downloaded $newVersionArchive to /opt/jellyfin/update" $logFile
 		echo "> Unpacking $newVersionArchive to /opt/jellyfin/..."
-		tar xvzf /opt/jellyfin/update/$newVersionArchive -C /opt/jellyfin/
-		Log "UPDATE-BETA | Unpacked $newVersionArchive to /opt/jellyfin/" $logFile
 		jellyman -S
 		unlink /opt/jellyfin/jellyfin
-		ln -s /opt/jellyfin/$newVersionName /opt/jellyfin/jellyfin
+		tar xvzf "/opt/jellyfin/update/$newVersionArchive" -C /opt/jellyfin/
+		if [ -n "$(ls -A /opt/jellyfin/jellyfin/ 2>/dev/null)" ]; then
+			mv -f /opt/jellyfin/jellyfin "/opt/jellyfin/$newVersionName"
+			Log "UPDATE-BETA | Unpacked $newVersionArchive to /opt/jellyfin/$newVersionName" $logFile
+		else
+			Log "ERROR | UPDATE-BETA | Attempted to unpack /opt/jellyfin/update/$newVersionArchive, but the archive is empty!" $logFile
+			echo "> ERROR: Attempted to unpack /opt/jellyfin/update/$newVersionArchive, but the archive is empty!"
+			exit
+		fi
+		ln -s "/opt/jellyfin/$newVersionName" /opt/jellyfin/jellyfin
 		echo "> Removing $newVersionArchive"
 		rm -rfv /opt/jellyfin/update
 		Log "UPDATE-BETA | Removed /$newVersionArchive" $logFile
